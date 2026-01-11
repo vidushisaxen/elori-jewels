@@ -1,14 +1,30 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { CartProvider } from "../components/cart/cart-context";
+import LenisSmoothScroll from "../components/LenisSmoothScroll";
 import "./globals.css";
+import localFont from "next/font/local";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import { Suspense } from "react";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const BSTSpyre = localFont({
+  src: [
+    {
+      path: "./fonts/BSTSpyre-Book.woff2",
+      weight: "400",
+    },
+    {
+      path: "./fonts/BSTSpyre-Light.woff2",
+      weight: "300",
+    },
+  ],
+  variable: "--font-heading",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const Calibre = localFont({
+  src: "./fonts/Calibre-Light.woff2",
+  variable: "--font-calibre",
+  subsets: ["latin"]
 });
 
 export const metadata = {
@@ -19,10 +35,16 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${BSTSpyre.variable} ${Calibre.variable} antialiased`}>
+        <CartProvider>
+          <LenisSmoothScroll>
+            <Header/>
+            <Suspense fallback={<div>Loading...</div>}>
+              {children}
+            </Suspense>
+            <Footer/>
+          </LenisSmoothScroll>
+        </CartProvider>
       </body>
     </html>
   );
