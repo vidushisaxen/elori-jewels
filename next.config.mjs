@@ -2,8 +2,8 @@
 const nextConfig = {
   /* config options here */
   reactCompiler: true,
+  cacheComponents: true, // Moved out of experimental
   experimental: {
-    cacheComponents: true, // Changed from ppr: true
     inlineCss: true,
     useCache: true
   },
@@ -19,10 +19,9 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
       },
-
       {
-        protocol:'https',
-        hostname:'images.unsplash.com'
+        protocol: 'https',
+        hostname: 'images.unsplash.com'
       }
     ]
   }
