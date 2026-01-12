@@ -115,7 +115,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-20">
       <div className="mx-auto max-w-7xl px-4 py-16">
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
@@ -129,19 +129,19 @@ export default function WishlistPage() {
             </p>
           </div>
 
-          <button
+          {/* <button
             onClick={clearWishlist}
             className="text-sm uppercase tracking-wider text-zinc-600 hover:text-black border-b border-zinc-600 hover:border-black pb-1 transition-colors"
           >
             Clear All
-          </button>
+          </button> */}
         </div>
 
         {/* Wishlist Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {wishlistItems.map((item) => (
             <div
-              key={item.id}
+              key={item.name}
               className="group relative"
               onMouseEnter={() => setHoveredItem(item.id)}
               onMouseLeave={() => setHoveredItem(null)}

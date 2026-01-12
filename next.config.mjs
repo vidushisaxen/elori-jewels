@@ -24,7 +24,23 @@ const nextConfig = {
         hostname: 'images.unsplash.com'
       }
     ]
-  }
+  },
+ async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'header',
+            key: 'x-invoke-status',
+            value: '404',
+          },
+        ],
+        destination: '/',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

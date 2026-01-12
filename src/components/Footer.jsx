@@ -64,7 +64,7 @@ export default function Footer() {
           </div>
 
           <p className="text-sm opacity-80 mt-6 leading-snug">
-            NOIR JEWELS is an ethically crafted conceptual fine jewellery studio.  
+            ELORI JEWELS is an ethically crafted conceptual fine jewellery studio.  
             Explore ethically sourced natural diamonds and gemstones, bespoke engagement & bridal pieces and more.  
             Shop online or visit us in-store.
           </p>
@@ -77,17 +77,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between text-xs border-t border-zinc-200 gap-4">
 
         <p className="uppercase tracking-widest opacity-70">
-          © NOIR JEWELS
+          © Elori Jewels
         </p>
-
-        <div className="flex items-center gap-6 uppercase tracking-widest">
-          <span>$/USD</span>
-
-          <div className="text-lg font-semibold">
-            NJ
-          </div>
-        </div>
-
       </div>
 
     </footer>

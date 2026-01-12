@@ -9,7 +9,7 @@ import type { Cart } from '../lib/shopify/types';
 export default function CartPageClient({ cart }: { cart: Cart | undefined }) {
   if (!cart || cart.lines.length === 0) {
     return (
-      <div className="min-h-screen bg-white px-4 py-16 text-center">
+      <div className="min-h-screen bg-white px-4 py-16 text-center ">
         <h1 className="text-4xl font-light uppercase tracking-wide mb-6">My Cart</h1>
         <p className="text-zinc-600 mb-8">Your cart is empty.</p>
         <Link
@@ -23,7 +23,7 @@ export default function CartPageClient({ cart }: { cart: Cart | undefined }) {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-20">
       <div className="mx-auto max-w-7xl px-4 py-16">
         <div className="flex items-center justify-between mb-12">
           <div>

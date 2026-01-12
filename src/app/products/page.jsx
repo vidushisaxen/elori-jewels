@@ -3,7 +3,7 @@ import CollectionSwiperComponent from "../../components/CollectionSwiperComponen
 import { getAllCollections, getCollectionProducts } from "../lib/shopify";
 
 export const metadata = {
-  title: "Products · Noir Jewels",
+  title: "Products · Elori Jewels",
   description: "Browse our collection of minimal jewellery pieces",
 };
 

@@ -277,11 +277,13 @@ const reshapeProducts = (products: ShopifyProduct[]) => {
 
 export async function createCart(): Promise<Cart> {
   const res = await shopifyFetch<ShopifyCreateCartOperation>({
-    query: createCartMutation
+    query: createCartMutation,
+    cache: 'no-store'
   });
 
   return reshapeCart(res.body.data.cartCreate.cart);
 }
+
 
 export async function addToCart(
   lines: { merchandiseId: string; quantity: number }[]
@@ -289,26 +291,25 @@ export async function addToCart(
   const cartId = (await cookies()).get('cartId')?.value!;
   const res = await shopifyFetch<ShopifyAddToCartOperation>({
     query: addToCartMutation,
-    variables: {
-      cartId,
-      lines
-    }
+    variables: { cartId, lines },
+    cache: 'no-store'
   });
+
   return reshapeCart(res.body.data.cartLinesAdd.cart);
 }
+
 
 export async function removeFromCart(lineIds: string[]): Promise<Cart> {
   const cartId = (await cookies()).get('cartId')?.value!;
   const res = await shopifyFetch<ShopifyRemoveFromCartOperation>({
     query: removeFromCartMutation,
-    variables: {
-      cartId,
-      lineIds
-    }
+    variables: { cartId, lineIds },
+    cache: 'no-store'
   });
 
   return reshapeCart(res.body.data.cartLinesRemove.cart);
 }
+
 
 export async function updateCart(
   lines: { id: string; merchandiseId: string; quantity: number }[]
@@ -316,34 +317,30 @@ export async function updateCart(
   const cartId = (await cookies()).get('cartId')?.value!;
   const res = await shopifyFetch<ShopifyUpdateCartOperation>({
     query: editCartItemsMutation,
-    variables: {
-      cartId,
-      lines
-    }
+    variables: { cartId, lines },
+    cache: 'no-store'
   });
 
   return reshapeCart(res.body.data.cartLinesUpdate.cart);
 }
 
+
 export async function getCart(): Promise<Cart | undefined> {
   const cartId = (await cookies()).get('cartId')?.value;
 
-  if (!cartId) {
-    return undefined;
-  }
+  if (!cartId) return undefined;
 
   const res = await shopifyFetch<ShopifyCartOperation>({
     query: getCartQuery,
-    variables: { cartId }
+    variables: { cartId },
+    cache: 'no-store' // ✅ IMPORTANT: do not cache cart per user
   });
 
-  // Old carts becomes `null` when you checkout.
-  if (!res.body.data.cart) {
-    return undefined;
-  }
+  if (!res.body.data.cart) return undefined;
 
   return reshapeCart(res.body.data.cart);
 }
+
 
 // export async function getCollection(
 //   handle: string

@@ -3,7 +3,6 @@
 import React, {
   createContext,
   startTransition,
-  use,
   useContext,
   useMemo,
   useOptimistic,
@@ -26,8 +25,8 @@ type CartAction =
 
 type CartContextType = {
   cart: Cart | undefined;
-  updateCartItem: (merchandiseId: string, updateType: UpdateType) => void;
-  addCartItem: (variant: ProductVariant, product: Product) => void;
+  updateCartItem: (merchandiseId: string, updateType: UpdateType) => Promise<void>;
+  addCartItem: (variant: ProductVariant, product: Product) => Promise<void>;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -90,7 +89,8 @@ function createOrUpdateCartItem(
         id: product.id,
         handle: product.handle,
         title: product.title,
-        featuredImage: product.featuredImage
+        featuredImage: product.featuredImage,
+        // images: product.images
       }
     }
   };
@@ -132,6 +132,10 @@ function createEmptyCart(): Cart {
 
 function cartReducer(state: Cart | undefined, action: CartAction): Cart {
   const currentCart = state || createEmptyCart();
+  
+  if (!currentCart.lines) {
+    currentCart.lines = [];
+  }
 
   switch (action.type) {
     case 'UPDATE_ITEM': {
@@ -190,24 +194,56 @@ function cartReducer(state: Cart | undefined, action: CartAction): Cart {
   }
 }
 
+const CART_SNAPSHOT_KEY = 'cart_snapshot_v1';
+
+function readCartSnapshot(): Cart | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const raw = localStorage.getItem(CART_SNAPSHOT_KEY);
+    if (!raw) return undefined;
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
+}
+
+function writeCartSnapshot(cart: Cart | undefined) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (!cart) {
+      localStorage.removeItem(CART_SNAPSHOT_KEY);
+      return;
+    }
+    localStorage.setItem(CART_SNAPSHOT_KEY, JSON.stringify(cart));
+  } catch {
+    // ignore
+  }
+}
+
+
 export function CartProvider({
   children
 }: {
   children: React.ReactNode;
 }) {
-  const [initialCart, setInitialCart] = useState<Cart | undefined>(createEmptyCart());
+  const [initialCart, setInitialCart] = useState<Cart | undefined>(() => {
+   return readCartSnapshot() ?? createEmptyCart();
+ });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch cart on client side
     const fetchCart = async () => {
       try {
         const response = await fetch('/api/cart');
         if (response.ok) {
           const cart = await response.json();
           setInitialCart(cart);
+          writeCartSnapshot(cart);
         }
       } catch (error) {
         console.error('Failed to fetch cart:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -219,19 +255,91 @@ export function CartProvider({
     cartReducer
   );
 
-  const updateItem = (merchandiseId: string, updateType: UpdateType) => {
+  useEffect(() => {
+  writeCartSnapshot(optimisticCart);
+}, [optimisticCart]);
+
+  const updateItem = async (merchandiseId: string, updateType: UpdateType) => {
     startTransition(() => {
       updateOptimisticCart({
         type: 'UPDATE_ITEM',
         payload: { merchandiseId, updateType }
       });
     });
+    
+    try {
+      const response = await fetch('/api/cart/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchandiseId, updateType })
+      });
+      
+      if (response.ok) {
+        const updatedCart = await response.json();
+        setInitialCart(updatedCart);
+        writeCartSnapshot(updatedCart);
+      }
+    } catch (error) {
+      console.error('Failed to update cart:', error);
+      // Refetch cart to sync state
+      const response = await fetch('/api/cart');
+      if (response.ok) {
+        const cart = await response.json();
+        setInitialCart(cart);
+      }
+    }
   };
 
-  const addItem = (variant: ProductVariant, product: Product) => {
+  const addItem = async (variant: ProductVariant, product: Product) => {
+    // Optimistic update
     startTransition(() => {
-      updateOptimisticCart({ type: 'ADD_ITEM', payload: { variant, product } });
+      updateOptimisticCart({ 
+        type: 'ADD_ITEM', 
+        payload: { variant, product } 
+      });
     });
+    
+    // Persist to backend
+    try {
+      console.log('🔄 Calling /api/cart/add with:', { variantId: variant.id });
+      
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variant, product })
+      });
+      
+      const data = await response.json();
+      console.log('📥 Response from /api/cart/add:', { 
+        ok: response.ok, 
+        status: response.status,
+        hasError: !!data.error 
+      });
+      
+      if (response.ok && !data.error) {
+        // Update the actual cart state after successful API call
+        setInitialCart(data);
+        writeCartSnapshot(data);
+        console.log('✅ Cart updated successfully');
+      } else {
+        console.error('❌ API error:', data.error || data.details);
+        throw new Error(data.error || 'Failed to add item');
+      }
+    } catch (error) {
+      console.error('❌ Failed to add to cart:', error);
+      // Revert by refetching current cart state
+      try {
+        const response = await fetch('/api/cart');
+        if (response.ok) {
+          const cart = await response.json();
+          setInitialCart(cart);
+          console.log('🔄 Cart state reverted');
+        }
+      } catch (revertError) {
+        console.error('Failed to revert cart state:', revertError);
+      }
+      throw error; // Re-throw so the component can handle it
+    }
   };
 
   const value = useMemo(
@@ -242,6 +350,10 @@ export function CartProvider({
     }),
     [optimisticCart]
   );
+
+  if (isLoading) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <CartContext.Provider value={value}>

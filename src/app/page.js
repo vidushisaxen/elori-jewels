@@ -1,7 +1,6 @@
 import React from 'react'
 import Hero from '../components/Hero'
 import Journey from '../components/Journey'
-import Journal from '../components/Journal'
 import OverlappingCollage from '../components/OverlappingCollage'
 import JewelrySection from '../components/JewelleryItem'
 import Necklaces from '../components/Necklaces'
@@ -22,7 +21,6 @@ export default async function page(){
    <Earrings/>
    <Journey collections={collections}/>
    <Rings/>
-   <Journal/>
    {/* <Products/> */}
    </>
   )

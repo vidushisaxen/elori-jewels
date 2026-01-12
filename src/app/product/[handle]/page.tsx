@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { Suspense} from 'react';
+import { Suspense } from 'react';
 import { Gallery } from '../../../components/product/gallery';
 import { ProductProvider } from '../../../components/product/product-context';
 import { HIDDEN_PRODUCT_TAG } from '../../lib/constants';
@@ -11,55 +10,45 @@ import WishlistButton from '../../../components/WishlistButton';
 import RelatedProductsGrid from '../../../components/RelatedProductsGrid';
 import { AddToCart } from '../../../components/cart/add-to-cart';
 
+// export async function generateMetadata(props: {
+//   params: Promise<{ handle: string }>;
+// }): Promise<Metadata> {
+//   const { handle } = await props.params;
 
-export async function generateMetadata(props: {
+//   const product = await getProduct(handle);
+//   if (!product) return notFound();
+
+//   const { url, width, height, altText: alt } = product.featuredImage || {};
+//   const indexable = !product.tags.includes(HIDDEN_PRODUCT_TAG);
+
+//   return {
+//     title: product.seo?.title || product.title,
+//     description: product.seo?.description || product.description,
+//     robots: {
+//       index: indexable,
+//       follow: indexable,
+//       googleBot: { index: indexable, follow: indexable }
+//     },
+//     openGraph: url ? { images: [{ url, width, height, alt }] } : undefined
+//   };
+// }
+
+
+export default async function ProductPage(props: {
   params: Promise<{ handle: string }>;
-}): Promise<Metadata> {
-  const params = await props.params;
-  const product = await getProduct(params.handle);
+}) {
+  const { handle } = await props.params;
 
-  if (!product) return notFound();
-
-  const { url, width, height, altText: alt } = product.featuredImage || {};
-  const indexable = !product.tags.includes(HIDDEN_PRODUCT_TAG);
-
-  return {
-    title: product.seo?.title || product.title,
-    description: product.seo?.description || product.description,
-    robots: {
-      index: indexable,
-      follow: indexable,
-      googleBot: {
-        index: indexable,
-        follow: indexable
-      }
-    },
-    openGraph: url
-      ? {
-          images: [
-            {
-              url,
-              width,
-              height,
-              alt
-            }
-          ]
-        }
-      : null
-  };
-}
-
-export default async function ProductPage(props: { params: Promise<{ handle: string }> }) {
   return (
     <Suspense fallback={<ProductPageSkeleton />}>
-      <ProductPageContent params={props.params} />
+      <ProductPageContent handle={handle} />
     </Suspense>
   );
 }
 
-async function ProductPageContent({ params }: { params: Promise<{ handle: string }> }) {
-  const resolvedParams = await params;
-  const product = await getProduct(resolvedParams.handle);
+
+async function ProductPageContent({ handle }: { handle: string }) {
+  const product = await getProduct(handle);
 
   if (!product) return notFound();
 
@@ -80,8 +69,6 @@ async function ProductPageContent({ params }: { params: Promise<{ handle: string
     }
   };
 
-  
-
   return (
     <ProductProvider>
       <script
@@ -95,8 +82,6 @@ async function ProductPageContent({ params }: { params: Promise<{ handle: string
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* Left Side - Scrollable Gallery (50%) */}
           <div className="relative bg-zinc-50">
-           
-
             <Suspense
               fallback={
                 <div className="relative w-full h-screen bg-zinc-100" />
@@ -113,16 +98,16 @@ async function ProductPageContent({ params }: { params: Promise<{ handle: string
 
           {/* Right Side - Sticky Product Details (50%) */}
           <div className="lg:sticky lg:top-20 lg:h-screen lg:overflow-y-auto px-8 py-12 lg:px-16 lg:py-20">
-            <div className="max-w-2xl  ">
+            <div className="max-w-2xl">
               <div className='w-full flex gap-5 justify-between'>
-              {/* Product Title */}
-              <h1 className="text-3xl lg:text-4xl font-light uppercase tracking-wide mb-4">
-                {product.title}
-              </h1>
-              <div>
-               <WishlistButton product={product} />
-               </div>
-               </div>
+                {/* Product Title */}
+                <h1 className="text-3xl lg:text-4xl font-light uppercase tracking-wide mb-4">
+                  {product.title}
+                </h1>
+                <div>
+                  <WishlistButton product={product} />
+                </div>
+              </div>
 
               {/* Product Subtitle/Type */}
               <p className="text-sm text-zinc-600 uppercase tracking-wider mb-6">
@@ -131,27 +116,8 @@ async function ProductPageContent({ params }: { params: Promise<{ handle: string
 
               {/* Price */}
               <p className="text-2xl font-light mb-8">
-               {product.priceRange.maxVariantPrice.currencyCode} {product.priceRange.maxVariantPrice.amount} 
+                {product.priceRange.maxVariantPrice.currencyCode} {product.priceRange.maxVariantPrice.amount} 
               </p>
-
-              {/* Variants/Options (if any) */}
-              {/* {product.options?.map((option: any) => (
-                <div key={option.id} className="mb-6">
-                  <label className="block text-sm uppercase tracking-wider text-zinc-700 mb-3">
-                    {option.name}:
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {option.values.map((value: string) => (
-                      <button
-                        key={value}
-                        className="px-4 py-2 border border-zinc-300 text-sm uppercase tracking-wide hover:border-black transition-colors"
-                      >
-                        {value}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))} */}
 
               {/* Estimated Dispatch */}
               <p className="text-xs uppercase tracking-wider text-amber-600 mb-8">
@@ -190,7 +156,6 @@ async function ProductPageContent({ params }: { params: Promise<{ handle: string
         </div>
       </div>
     </ProductProvider>
-    
   );
 }
 
@@ -206,52 +171,6 @@ function ProductPageSkeleton() {
   );
 }
 
-// async function RelatedProducts({ id }: { id: string }) {
-//   const relatedProducts = await getProductRecommendations(id);
-
-//   if (!relatedProducts.length) return null;
-
-//   return (
-//     <div className="py-16 border-t border-zinc-200">
-//       <h2 className="mb-8 text-2xl font-light uppercase tracking-tight">
-//         Related Products
-//       </h2>
-//       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-//         {relatedProducts.slice(0, 4).map((product) => (
-//           <Link
-//             key={product.handle}
-//             href={`/product/${product.handle}`}
-//             className="group"
-//           >
-//             <div className="relative overflow-hidden bg-zinc-100 aspect-square mb-4">
-//               {product.featuredImage?.url ? (
-//                 <img
-//                   src={product.featuredImage.url}
-//                   alt={product.title}
-//                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-//                 />
-//               ) : (
-//                 <div className="h-full w-full bg-zinc-200 flex items-center justify-center">
-//                   <span className="text-zinc-400 text-sm">No image</span>
-//                 </div>
-//               )}
-//             </div>
-
-//             <div className="space-y-2">
-//               <h3 className="text-sm font-light uppercase tracking-wide text-black">
-//                 {product.title}
-//               </h3>
-//               <p className="text-sm font-light text-zinc-800">
-//                 {product.priceRange.maxVariantPrice.amount} {product.priceRange.maxVariantPrice.currencyCode}
-//               </p>
-//             </div>
-//           </Link>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
 async function RelatedProducts({ id }: { id: string }) {
   const relatedProducts = await getProductRecommendations(id);
 
@@ -262,8 +181,6 @@ async function RelatedProducts({ id }: { id: string }) {
       <h2 className="mb-8 text-2xl font-light uppercase tracking-tight">
         Related Products
       </h2>
-
-      {/* ✅ Client component renders wishlist buttons */}
       <RelatedProductsGrid products={relatedProducts} />
     </div>
   );

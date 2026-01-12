@@ -25,4 +25,22 @@ body {
   color: var(--foreground);
   font-family: "BST Spyre", sans-serif;
 }
+::-webkit-scrollbar {
+  width: 4px;
+  padding-left: 5vw;
+  height: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    #111111,
+    #e17100
+  ); /* gradient from top to bottom */
+  border-radius: 8px;
+}
 

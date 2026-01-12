@@ -46,7 +46,7 @@ async function JewelrySectionContent() {
         <JewelryItemClient items={jewelryItems} />
 
         <div className="text-center mt-12 flex items-center justify-center">
-          <Link href="/products" className='cursor-pointer w-fit'>
+          <Link href="/collection/necklaces" className='cursor-pointer w-fit'>
             <div className="uppercase text-xs w-20 tracking-widest border-b border-black pb-1">
               Shop Now
             </div>

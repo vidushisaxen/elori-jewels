@@ -4,21 +4,87 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import AnnouncementBar from "./AnnouncementsBar";
 import { SearchModal } from "./SeachModal";
+import { useLenis } from 'lenis/react'
+import { useCart } from '../components/cart/cart-context';
+
+
 export default function Header() {
   const [hovered, setHovered] = useState(null);
   const [megaMenuOpen, setMegaMenuOpen] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [collections, setCollections] = useState([]);
+  const [leftLinks, setLeftLinks] = useState([]);
+const { cart } = useCart();
+const [wishlistCount, setWishlistCount] = useState(0);
+
+
+useEffect(() => {
+  const updateWishlistCount = () => {
+    try {
+      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      setWishlistCount(Array.isArray(wishlist) ? wishlist.length : 0);
+    } catch {
+      setWishlistCount(0);
+    }
+  };
+
+  // initial load
+  updateWishlistCount();
+
+  // updates from other tabs/windows
+  const onStorage = (e) => {
+    if (e.key === 'wishlist') updateWishlistCount();
+  };
+
+  // updates from same tab (we’ll dispatch this)
+  const onWishlistChange = () => updateWishlistCount();
+
+  window.addEventListener('storage', onStorage);
+  window.addEventListener('wishlist:changed', onWishlistChange);
+
+  return () => {
+    window.removeEventListener('storage', onStorage);
+    window.removeEventListener('wishlist:changed', onWishlistChange);
+  };
+}, []);
+
+
+
+
+    const lenis = useLenis();
+  
+    useEffect(() => {
+      if (!lenis) return;
+  
+      if (megaMenuOpen) {
+        lenis.stop();   
+      } else {
+        lenis.start(); 
+      }
+  
+      return () => {
+        
+        lenis.start();
+      };
+    }, [megaMenuOpen, lenis]);
 
   // Fetch products and collections from Shopify
   useEffect(() => {
     fetchShopifyData();
   }, []);
 
+  // Stop Lenis when search modal is open
+  useEffect(() => {
+    if (isSearchOpen) {
+      window.lenis?.stop();
+    } else {
+      window.lenis?.start();
+    }
+  }, [isSearchOpen]);
+
   const fetchShopifyData = async () => {
     try {
-      // Replace with your actual Shopify API endpoint and credentials
       const response = await fetch('/api/shopify', {
         method: 'POST',
         headers: {
@@ -27,34 +93,65 @@ export default function Header() {
         body: JSON.stringify({
           query: `
             query {
-              products(first: 250) {
+              collections(first: 250) {
                 edges {
                   node {
                     id
                     title
-                    tags
-                    productType
-                    vendor
-                    featuredImage {
+                    handle
+                    description
+                    image {
                       url
+                      altText
                     }
-                    variants(first: 1) {
+                    products(first: 5) {
                       edges {
                         node {
-                          price
+                          id
+                          title
+                          handle
+                          featuredImage {
+                            url
+                            altText
+                          }
+                          variants(first: 1) {
+                            edges {
+                              node {
+                                priceV2 {
+                                  amount
+                                  currencyCode
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }
                   }
                 }
               }
-              collections(first: 10) {
+              products(first: 250) {
                 edges {
                   node {
                     id
                     title
-                    image {
+                    handle
+                    tags
+                    productType
+                    vendor
+                    featuredImage {
                       url
+                      altText
+                    }
+                    variants(first: 1) {
+                      edges {
+                        node {
+                          priceV2 {
+                            amount
+                            currencyCode
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -64,189 +161,90 @@ export default function Header() {
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       
-      // Transform Shopify GraphQL response to flat array
+      if (!data || !data.data) {
+        console.error('Invalid response structure:', data);
+        return;
+      }
+
+      if (data.errors) {
+        console.error('GraphQL errors:', data.errors);
+        return;
+      }
+      
+      // Transform products
       const productsData = data.data.products.edges.map(edge => ({
         id: edge.node.id,
         title: edge.node.title,
+        handle: edge.node.handle,
         tags: edge.node.tags,
         productType: edge.node.productType,
         vendor: edge.node.vendor,
         featuredImage: edge.node.featuredImage,
-        variants: edge.node.variants.edges.map(v => v.node),
+        variants: edge.node.variants.edges.map(v => ({
+          price: v.node.priceV2.amount,
+          currencyCode: v.node.priceV2.currencyCode
+        })),
       }));
       
+      // Transform collections with their top 5 products
       const collectionsData = data.data.collections.edges.map(edge => ({
         id: edge.node.id,
         title: edge.node.title,
+        handle: edge.node.handle,
+        description: edge.node.description,
         image: edge.node.image,
+        products: edge.node.products.edges.map(productEdge => ({
+          id: productEdge.node.id,
+          title: productEdge.node.title,
+          handle: productEdge.node.handle,
+          featuredImage: productEdge.node.featuredImage,
+          price: productEdge.node.variants.edges[0]?.node.priceV2.amount,
+          currencyCode: productEdge.node.variants.edges[0]?.node.priceV2.currencyCode
+        }))
       }));
       
       setProducts(productsData);
       setCollections(collectionsData);
+      
+      // Build dynamic navigation from collections
+      buildDynamicNavigation(collectionsData);
     } catch (error) {
       console.error('Error fetching Shopify data:', error);
     }
   };
 
-  const leftLinks = [
-    { 
-      href: "/collections/all", 
-      label: "Shop",
+  const buildDynamicNavigation = (collections) => {
+    // Filter out any system collections (like "All" or "Home page")
+    const userCollections = collections.filter(col => 
+      !col.handle.includes('all') && 
+      !col.handle.includes('frontpage') &&
+      !col.handle.includes('home')
+    );
+
+    // Build navigation links directly from collections with their products
+    const navigationLinks = userCollections.map(collection => ({
+      href: `/collection/${collection.handle}`,
+      label: collection.title,
+      description: collection.description,
       megaMenu: {
-        sections: [
-          {
-            title: "NEW ARRIVALS",
-            links: []
-          },
-          {
-            title: "PERSONALISED",
-            links: []
-          },
-          {
-            title: "ICONS",
-            links: []
-          },
-          {
-            title: "GIFTS",
-            links: []
-          },
-          {
-            title: "NECKLACES",
-            links: []
-          },
-          {
-            title: "EARRINGS",
-            links: []
-          },
-          {
-            title: "BRACELETS",
-            links: []
-          },
-          {
-            title: "RINGS",
-            links: []
-          },
-          {
-            title: "MEN'S",
-            links: []
-          },
-          {
-            title: "ENGAGEMENT & BRIDAL",
-            links: []
-          },
-          {
-            title: "COLLECTIONS",
-            links: []
-          }
-        ],
+        products: collection.products, // Top 5 products in this collection
         featured: [
-          { label: "SHOP ALL", href: "/collections/all" },
-          { label: "ONDINE", href: "/collections/ondine" },
-          { label: "SILVER", href: "/collections/silver" },
-          { label: "MARINE", href: "/collections/marine" }
+          { label: `SHOP ALL ${collection.title.toUpperCase()}`, href: `/collection/${collection.handle}` }
         ],
-        image: "https://picsum.photos/id/1011/600/800"
+        image: collection.image?.url || "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&h=800&fit=crop"
       }
-    },
-    { 
-      href: "/pages/appointments", 
-      label: "Book Appointment",
-      megaMenu: {
-        sections: [
-          {
-            title: "PIERCING",
-            links: []
-          },
-          {
-            title: "ENGAGEMENT & BRIDAL",
-            links: []
-          },
-          {
-            title: "SOLDERED",
-            links: []
-          },
-          {
-            title: "VIRTUAL",
-            links: []
-          }
-        ],
-        featured: [
-          { label: "LEARN MORE", href: "#" },
-          { label: "BOOK PIERCING APPOINTMENT", href: "/book/piercing" },
-          { label: "BOOK EAR STYLING APPOINTMENT", href: "/book/styling" },
-          { label: "BOOK AFTERCARE APPOINTMENT", href: "/book/aftercare" },
-          { label: "BOOK EAR SPA APPOINTMENT", href: "/book/spa" },
-          { label: "KIDS & TEENS PIERCING", href: "/book/kids" },
-          { label: "SHOP PIERCING EARRINGS", href: "/collections/piercing" },
-          { label: "STYLE GUIDE", href: "/style-guide" },
-          { label: "AFTERCARE GUIDE", href: "/aftercare" },
-          { label: "FAQS", href: "/faqs" }
-        ],
-        image: "https://picsum.photos/id/1002/600/800"
-      }
-    },
-    { 
-      href: "/pages/engagement-experience", 
-      label: "Engagement & Bridal",
-      megaMenu: {
-        sections: [
-          {
-            title: "SHOP BY",
-            links: []
-          },
-          {
-            title: "DISCOVER",
-            links: []
-          }
-        ],
-        featured: [
-          { label: "ENGAGEMENT RINGS", href: "/collections/engagement-rings" },
-          { label: "WOMENS WEDDING BANDS", href: "/collections/womens-wedding-bands" },
-          { label: "MENS WEDDING BANDS", href: "/collections/mens-wedding-bands" },
-          { label: "ETERNITY BANDS", href: "/collections/eternity-bands" },
-          { label: "BRIDAL JEWELLERY", href: "/collections/bridal-jewellery" },
-          { label: "MILESTONE JEWELLERY", href: "/collections/milestone" },
-          { label: "READY TO SET", href: "/collections/ready-to-set" }
-        ],
-        image: "https://picsum.photos/id/1025/600/800"
-      }
-    },
-    { 
-      href: "/pages/our-world", 
-      label: "Our World",
-      megaMenu: {
-        sections: [
-          {
-            title: "STORES",
-            links: []
-          },
-          {
-            title: "BRAND",
-            links: []
-          },
-          {
-            title: "JOURNAL",
-            links: []
-          },
-          {
-            title: "PHILANTHROPY",
-            links: []
-          }
-        ],
-        featured: [
-          { label: "ALL STORES", href: "/pages/stores" },
-          { label: "VICTORIA", href: "/pages/stores/victoria" },
-          { label: "NEW SOUTH WALES", href: "/pages/stores/nsw" },
-          { label: "QUEENSLAND", href: "/pages/stores/queensland" },
-          { label: "WESTERN AUSTRALIA", href: "/pages/stores/wa" },
-          { label: "WHATS ON IN STORE", href: "/pages/events" }
-        ],
-        image: "https://picsum.photos/id/1039/600/800"
-      }
-    }
-  ];
+    }));
+
+    setLeftLinks(navigationLinks);
+  };
+
+
 
   const rightLinks = [
     { href: "/wishlist", label: "Wishlist" },
@@ -254,34 +252,48 @@ export default function Header() {
     { href: "/account", label: "Account" },
   ];
 
-  const renderLink = (link, position) => {
-    const id = `${position}-${link.label}`;
-
-    return (
-      <span
-        key={id}
-        onMouseEnter={() => {
-          setHovered(id);
-          if (link.megaMenu) {
-            setMegaMenuOpen(id);
-          }
-        }}
-        onMouseLeave={() => {
-          setHovered(null);
-          setMegaMenuOpen(null);
-        }}
-        className={`
-          transition-colors duration-300 uppercase cursor-pointer
-          ${hovered === id ? "text-black" : hovered ? "text-gray-300" : "text-black"}
-        `}
-      >
-        <Link href={link.href}>{link.label}</Link>
-      </span>
-    );
+  const closeMenu = () => {
+    setHovered(null);
+    setMegaMenuOpen(null);
   };
 
+  const renderLink = (link, position) => {
+  const id = `${position}-${link.label}`;
+  const showBadge = link.label === 'Cart' || link.label === 'Wishlist';
+  const count = link.label === 'Cart' ? (cart?.totalQuantity || 0) : link.label === 'Wishlist' ? wishlistCount : 0;
+
   return (
-    <header className="w-full fixed top-0 left-0 z-999">
+    <span
+      key={id}
+      onMouseEnter={() => {
+        setHovered(id);
+        if (link.megaMenu) {
+          setMegaMenuOpen(id);
+        }
+      }}
+      onMouseLeave={() => {
+        setHovered(null);
+        setMegaMenuOpen(null);
+      }}
+      className={`
+        transition-colors duration-300 uppercase cursor-pointer relative inline-block
+        ${hovered === id ? "text-black" : hovered ? "text-gray-300" : "text-black"}
+      `}
+    >
+      <Link href={link.href} onClick={closeMenu} className="relative inline-block cursor-pointer">
+        {link.label}
+        {showBadge && count > 0 && (
+          <span className="absolute -top-2 -right-2  text-[10px] font-medium rounded-full flex items-center justify-center z-10">
+            {count}
+          </span>
+        )}
+      </Link>
+    </span>
+  );
+};
+
+  return (
+    <header className="w-full fixed top-0 left-0 z-50">
       <AnnouncementBar/>
       <nav className="grid grid-cols-3 items-center px-6 py-4 relative z-50 bg-white">
         {/* LEFT MENU */}
@@ -294,6 +306,7 @@ export default function Header() {
           <Link
             href="/"
             className="text-xl font-medium uppercase"
+            onClick={closeMenu}
           >
             ELORI JEWELS
           </Link>
@@ -301,10 +314,14 @@ export default function Header() {
 
         {/* RIGHT MENU */}
         <div className="flex items-center justify-end font-light tracking-wide gap-6 text-xs">
-          {/* Search Button */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="transition-colors duration-300 uppercase cursor-pointer hover:text-black"
+            onMouseEnter={() => setHovered("right-search")}
+            onMouseLeave={() => setHovered(null)}
+            className={`
+              transition-colors duration-300 uppercase cursor-pointer
+              ${hovered === "right-search" ? "text-black" : hovered ? "text-gray-300" : "text-black"}
+            `}
           >
             Search
           </button>
@@ -316,13 +333,10 @@ export default function Header() {
       {/* MEGA MENU OVERLAY */}
       <div
         className={`
-          fixed inset-0 top-18 bg-black/40 transition-opacity duration-500 z-30
+          fixed inset-0 top-[4.5rem] bg-black/40 transition-opacity duration-500 z-30
           ${megaMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}
         `}
-        onClick={() => {
-          setHovered(null);
-          setMegaMenuOpen(null);
-        }}
+        onClick={closeMenu}
       />
 
       {/* MEGA MENU */}
@@ -343,61 +357,72 @@ export default function Header() {
               setMegaMenuOpen(null);
             }}
             className={`
-              fixed left-0 top-18 w-1/2 bg-white shadow-2xl transition-transform duration-500 z-40
+              fixed left-0 top-[4.5rem] w-1/2 bg-white shadow-2xl transition-transform duration-500 z-40
               ${isOpen ? 'translate-x-0' : '-translate-x-full'}
             `}
             style={{ 
-              height: 'calc(100vh - 72px)'
+              height: 'calc(100vh - 4.5rem)'
             }}
           >
             <div className="h-full flex">
-              {/* LEFT SIDE - LINKS */}
-              <div className="w-1/2 px-5 pt-20 flex! gap-6">
-                {/* Main Sections */}
-                <div className="space-y-2 mb-8">
-                  {link.megaMenu.sections.map((section, idx) => (
-                    <div key={idx}>
-                      <Link href={"/"} className="text-2xl font-extralight text-gray-300 uppercase tracking-wide font-heading! hover:text-black transition-colors duration-300 ease-in">
-                        {section.title}
-                      </Link>
-                      {section.links.length > 0 && (
-                        <div className="space-y-2">
-                          {section.links.map((subLink, subIdx) => (
-                            <Link
-                              key={subIdx}
-                              href={subLink.href}
-                              className="block text-sm hover:text-gray-600 transition-colors uppercase"
-                            >
-                              {subLink.label}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+              {/* LEFT SIDE - CONTENT */}
+              <div className="w-1/2 px-8 pt-20 flex flex-col overflow-y-auto">
+                {/* Collection Title */}
+                <h2 className="text-3xl font-light text-gray-900 uppercase tracking-wide mb-6">
+                  {link.label}
+                </h2>
 
-                {/* Featured Links */}
-                <div className="space-y-2 w-full">
-                  {link.megaMenu.featured.map((featuredLink, idx) => (
-                    <Link
-                      key={idx}
-                      href={featuredLink.href}
-                      className="block text-xs text-gray-300 hover:text-black transition-colors uppercase"
-                    >
-                      {featuredLink.label}
-                    </Link>
-                  ))}
-                </div>
+                {/* Top 5 Products */}
+                {link.megaMenu.products && link.megaMenu.products.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+                      Featured Products
+                    </h3>
+                    <div className="space-y-2">
+                      {link.megaMenu.products.map((product, idx) => (
+                        <Link
+                          key={idx}
+                          href={`/product/${product.handle}`}
+                          className="block text-sm text-gray-700 hover:text-black transition-colors"
+                          onClick={closeMenu}
+                        >
+                          {product.title}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Featured Link */}
+                {link.megaMenu.featured && link.megaMenu.featured.length > 0 && (
+                  <div className="space-y-2 border-t pt-4">
+                    {link.megaMenu.featured.map((featuredLink, idx) => (
+                      <Link
+                        key={idx}
+                        href={featuredLink.href}
+                        className="block text-sm cursor-pointer font-medium text-gray-900 hover:text-black transition-colors uppercase"
+                        onClick={closeMenu}
+                      >
+                        {featuredLink.label} →
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* Description if available */}
+                {link.description && (
+                  <p className="mt-4 text-xs text-gray-500 leading-relaxed">
+                    {link.description}
+                  </p>
+                )}
               </div>
 
               {/* RIGHT SIDE - IMAGE */}
-              <div className="w-[20vw] h-[28vw] relative top-20 -right-10 overflow-hidden">
+              <div className="w-[30vw] h-[40vw] relative overflow-hidden">
                 <img
                   src={link.megaMenu.image}
                   alt={link.label}
                   className="absolute inset-0 w-full h-full object-cover"
-                  style={{ width: '100%', height: '100%' }}
                 />
               </div>
             </div>

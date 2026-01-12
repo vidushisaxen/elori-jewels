@@ -1,28 +1,22 @@
 // components/cart/add-to-cart.tsx
 'use client';
 
-import { useActionState } from 'react';
-import { useCart } from './cart-context';
-import { useProduct } from '../product/product-context';
-import { addItem } from './actions';
-import type { Product, ProductVariant } from '../../app/lib/shopify/types';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
-
+import { useCart } from './cart-context';
+import { useProduct } from '../product/product-context';
+import type { Product, ProductVariant } from '../../app/lib/shopify/types';
 
 export function AddToCart({ product }: { product: Product }) {
   const { variants, availableForSale } = product;
   const { addCartItem } = useCart();
   const { state } = useProduct();
 
-  const [message, formAction] = useActionState(addItem, null);
-
   const [toastOpen, setToastOpen] = useState(false);
   const [toastText, setToastText] = useState<string>('');
   const timerRef = useRef<number | null>(null);
 
   const [isPending, startTransition] = useTransition();
-  const [isAdding, setIsAdding] = useState(false);
 
   const variant = useMemo(
     () =>
@@ -55,36 +49,28 @@ export function AddToCart({ product }: { product: Product }) {
   const handleAddToCart = () => {
     if (!selectedVariantId || !finalVariant) return;
 
-    // ✅ updates immediately
-    setIsAdding(true);
-
-    // ✅ optimistic UI update
-    addCartItem(finalVariant, product);
-
-    // ✅ call server action without using form submission lifecycle
     startTransition(async () => {
-    //   const err = await formAction(selectedVariantId);
-
-    //   setIsAdding(false);
-
-    //   if (!err) {
-    //     showToast(`Added to cart: ${product.title}`);
-    //   } else {
-    //     showToast('Could not add to cart. Please try again.');
-    //   }
-    const err = await formAction(selectedVariantId);
-
-setIsAdding(false);
-
-if (err === undefined || err === null) {
-  showToast(`Added to cart: ${product.title}`);
-} else {
-  showToast('Could not add to cart. Please try again.');
-}
- });
+      try {
+        console.log('🛍️ Starting add to cart...', {
+          variantId: finalVariant.id,
+          productTitle: product.title
+        });
+        
+        // Call addCartItem which handles both optimistic update AND API call
+        await addCartItem(finalVariant, product);
+        
+        console.log('✅ Add to cart successful');
+        showToast(`Added to cart: ${product.title}`);
+      } catch (error) {
+        console.error('❌ Add to cart failed:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error details:', errorMessage);
+        showToast(`Failed: ${errorMessage}`);
+      }
+    });
   };
 
-  const disabled = !availableForSale || !selectedVariantId || isAdding || isPending;
+  const disabled = !availableForSale || !selectedVariantId || isPending;
 
   return (
     <>
@@ -94,14 +80,10 @@ if (err === undefined || err === null) {
         disabled={disabled}
         className="w-full bg-black text-white py-4 px-8 text-sm uppercase tracking-widest hover:bg-black/80 transition-colors disabled:opacity-60"
       >
-        {isAdding || isPending ? 'Adding to Cart…' : 'Add To Cart'}
+        {isPending ? 'Adding to Cart…' : 'Add To Cart'}
       </button>
 
-      <p aria-live="polite" className="sr-only" role="status">
-        {message}
-      </p>
-
-      {/* ✅ Bottom-right toast */}
+      {/* Bottom-right toast */}
       <div
         className={[
           'fixed bottom-6 right-6 z-[9999] w-[320px] max-w-[90vw]',

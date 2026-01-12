@@ -1,51 +1,82 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { Product } from '../app/lib/shopify/types'; // adjust path if needed
 
-export default function WishlistButton({ product, className = '' }: { product: Product; className?: string }) {
+type WishlistItem = {
+  id: string;
+  handle: string;
+  name: string;
+  price: string;
+  defaultImage: string;
+  hoverImage?: string;
+  variantId?: string; // ✅ OPTIONAL
+};
+
+function readWishlist(): WishlistItem[] {
+  try {
+    const raw = localStorage.getItem('wishlist');
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeWishlist(items: WishlistItem[]) {
+  localStorage.setItem('wishlist', JSON.stringify(items));
+  window.dispatchEvent(new Event('wishlist:changed'));
+}
+
+export default function WishlistButton({ product }: { product: any }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
+  const productId = product?.id ?? product?.handle;
+  const handle = product.handle;
+
+  const defaultImage = product.featuredImage?.url || '';
+  const hoverImage = product.images?.[1]?.url || product.images?.[0]?.url || defaultImage;
+
+  // pick a variant id (first variant)
+  const variantId = product.variants?.[0]?.id;
+
+  // format price from priceRange (or variant price)
+  const currency = product.priceRange?.maxVariantPrice?.currencyCode;
+  const amount = product.priceRange?.maxVariantPrice?.amount;
+  const price = currency && amount ? `${currency} ${amount}` : '';
+
   useEffect(() => {
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    setIsWishlisted(wishlist.some((item: any) => item.id === product.id));
-  }, [product.id]);
+    const wishlist = readWishlist();
+   setIsWishlisted(wishlist.some((x) => x.id === productId));
+  }, [productId]);
 
-  const handleWishlistClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const toggle = () => {
+  const wishlist = readWishlist();
+  const exists = wishlist.some((x) => x.id === productId);
 
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    const exists = wishlist.some((item: any) => item.id === product.id);
-    if (exists) return;
+  if (exists) {
+    const next = wishlist.filter((x) => x.id !== productId);
+    writeWishlist(next);
+    setIsWishlisted(false);
+    return;
+  }
 
-    // ✅ Always store a valid variant id
-    const firstVariantId = product.variants?.[0]?.id;
-    if (!firstVariantId) {
-      console.error('No variants on product:', product);
-      return;
-    }
-
-    const wishlistItem = {
-      id: product.id,
-      handle: product.handle,
-      name: product.title,
-      variantId: firstVariantId, // ✅ THIS FIXES YOUR ISSUE
-      price: `${product.priceRange.maxVariantPrice.currencyCode} ${product.priceRange.maxVariantPrice.amount}`,
-      defaultImage: product.images?.[0]?.url || '',
-      hoverImage: product.images?.[1]?.url || product.images?.[0]?.url || ''
-    };
-
-    localStorage.setItem('wishlist', JSON.stringify([...wishlist, wishlistItem]));
-    setIsWishlisted(true);
+  const item = {
+    id: productId,
+  handle: product.handle,
+  name: product.title,
+    price, 
+    defaultImage,
+    hoverImage,
+    ...(variantId ? { variantId } : {}) // ✅ optional
   };
 
+  writeWishlist([...wishlist, item]);
+  setIsWishlisted(true);
+};
+
   return (
-    <button
-      onClick={handleWishlistClick}
-      className={`z-50 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-300 ${className}`}
-      aria-label={isWishlisted ? 'In wishlist' : 'Add to wishlist'}
-    >
+    <button type="button" onClick={toggle} aria-label="Toggle wishlist" className="text-xl">
+      
       <svg
         className={`w-5 h-5 transition-colors ${
           isWishlisted ? 'fill-red-500 stroke-red-500' : 'fill-none stroke-zinc-700 hover:stroke-red-500'
@@ -62,3 +93,4 @@ export default function WishlistButton({ product, className = '' }: { product: P
     </button>
   );
 }
+

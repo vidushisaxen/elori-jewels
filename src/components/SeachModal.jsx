@@ -1,11 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Search, X } from 'lucide-react';
+import { useLenis } from 'lenis/react'
+
 
 // SearchModal Component - Export this to use in your Header
 export const SearchModal = ({ isOpen, onClose, products, collections }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
-
+const lenis = useLenis();
+  
+    useEffect(() => {
+      if (!lenis) return;
+  
+      if (isOpen) {
+        lenis.stop();   
+      } else {
+        lenis.start(); 
+      }
+  
+      return () => {
+        
+        lenis.start();
+      };
+    }, [isOpen, lenis]);
   useEffect(() => {
     if (searchTerm.trim()) {
       const filtered = products.filter(product => {
@@ -47,7 +65,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[999] transition-all duration-500 ${
+      className={`fixed inset-0 z-[999] transition-all duration-500 min-h-screen ${
         isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
     >
@@ -67,7 +85,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-6 right-6 text-stone-600 hover:text-stone-900 transition-colors"
+            className="absolute cursor-pointer top-6 right-6 text-stone-600 hover:text-stone-900 transition-colors"
           >
             <X size={24} />
           </button>
@@ -116,8 +134,9 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {collections.slice(0, 3).map((collection) => (
-                  <div
+                  <Link
                     key={collection.id}
+                    href={`/collection/${collection.handle}`}
                     className="group cursor-pointer"
                     onClick={handleClose}
                   >
@@ -135,7 +154,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
                       )}
                     </div>
                     <h3 className="font-serif text-xl text-center">{collection.title}</h3>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -164,8 +183,9 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
                                    product.price;
 
                       return (
-                        <div
+                        <Link
                           key={product.id}
+                          href={`/product/${product.handle}`}
                           className="group cursor-pointer"
                           onClick={handleClose}
                         >
@@ -188,7 +208,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
                               ${typeof price === 'string' ? price : Number(price).toFixed(2)}
                             </p>
                           )}
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>

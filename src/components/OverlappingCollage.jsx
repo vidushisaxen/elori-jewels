@@ -49,17 +49,17 @@ const Advantage = () => {
   }, []);
 
   return (
-    <section className="bg-[#747977] overflow-hidden h-screen">
+    <section className="bg-[#f1efea] overflow-hidden h-screen">
       <div className="flex items-center h-full">
         {/* Left - Text */}
-        <div className="text-white w-1/2 px-16 flex flex-col justify-center">
+        <div className=" w-1/2 px-16 flex flex-col justify-center">
           <h2 className="text-6xl font-light mb-8">Advantage</h2>
           <div className="space-y-6 mb-8">
             <p className="text-lg leading-relaxed">
               A light-catching pendant made of marquise and round diamonds. The organic clustered shape features 11 white diamonds. Perfectly dainty to layer with other necklaces.
             </p>
           </div>
-          <button className="bg-white/10 backdrop-blur-md text-white px-8 py-3 text-xs uppercase tracking-widest hover:bg-white/20 transition-all border border-white/30 w-fit">
+          <button className="bg-black/10 backdrop-blur-md  px-8 py-3 text-xs uppercase tracking-widest hover:bg-black/20 transition-all border border-black/30 w-fit">
             Shop Now
           </button>
         </div>
