@@ -293,7 +293,7 @@ useEffect(() => {
 };
 
   return (
-    <header className="w-full fixed top-0 left-0 z-50">
+    <header className="w-full fixed top-0 left-0 z-9999">
       <AnnouncementBar/>
       <nav className="grid grid-cols-3 items-center px-6 py-4 relative z-50 bg-white">
         {/* LEFT MENU */}

@@ -279,3 +279,18 @@ export type ShopifyProductsOperation = {
 };
 
 
+export interface ShopPolicy {
+  id: string;
+  title: string;
+  body: string;
+  handle: string;
+}
+
+export interface ShopPolicies {
+  privacyPolicy: ShopPolicy | null;
+  refundPolicy: ShopPolicy | null;
+  shippingPolicy: ShopPolicy | null;
+  termsOfService: ShopPolicy | null;
+}
+
+

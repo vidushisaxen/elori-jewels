@@ -1,22 +1,39 @@
 // components/Footer.jsx
 import Link from "next/link";
+import { getShopPolicies } from "../app/lib/shopify/policies";
 
-export default function Footer() {
+export default async function Footer() {
+  const policies = await getShopPolicies();
+
   return (
     <footer className="w-full bg-white text-black border-t border-zinc-200">
       <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-10">
 
-        {/* COLUMN 1 */}
+        {/* COLUMN 1 - Policies */}
         <div className="flex flex-col gap-3 text-xs uppercase tracking-widest">
           <h4 className="font-semibold mb-2">Contact Us</h4>
 
-          <Link href="/contact">Shipping</Link>
-          <Link href="/returns">Returns & Repairs</Link>
-          <Link href="/faqs">FAQs</Link>
-          <Link href="/warranty">Warranty Policy</Link>
-          <Link href="/terms">Terms & Conditions</Link>
-          <Link href="/privacy">Privacy Policy</Link>
-          <Link href="/cookies">Cookies Policy</Link>
+          {policies.shippingPolicy && (
+            <Link href={`/policies/${policies.shippingPolicy.handle}`}>
+              Shipping
+            </Link>
+          )}
+          {policies.refundPolicy && (
+            <Link href={`/policies/${policies.refundPolicy.handle}`}>
+              Returns & Refunds
+            </Link>
+          )}
+          {policies.termsOfService && (
+            <Link href={`/policies/${policies.termsOfService.handle}`}>
+              Terms & Conditions
+            </Link>
+          )}
+          {policies.privacyPolicy && (
+            <Link href={`/policies/${policies.privacyPolicy.handle}`}>
+              Privacy Policy
+            </Link>
+          )}
+          
         </div>
 
 
@@ -36,9 +53,15 @@ export default function Footer() {
         <div className="flex flex-col gap-3 text-xs uppercase tracking-widest">
           <h4 className="font-semibold mb-2">Social</h4>
 
-          <a href="https://instagram.com">Instagram</a>
-          <a href="https://facebook.com">Facebook</a>
-          <a href="https://pinterest.com">Pinterest</a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+            Instagram
+          </a>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+            Facebook
+          </a>
+          <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer">
+            Pinterest
+          </a>
         </div>
 
 

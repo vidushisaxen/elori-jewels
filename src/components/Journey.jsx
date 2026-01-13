@@ -1,9 +1,10 @@
 "use client"
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
 import { Observer } from 'gsap/Observer';
+import { Draggable } from 'gsap/Draggable';
 
-gsap.registerPlugin(Observer);
+gsap.registerPlugin(Observer, Draggable);
 
 const NEXT = 1;
 const PREV = -1;
@@ -14,8 +15,21 @@ const Journey = ({ collections }) => {
   const [isLoading, setIsLoading] = useState(true);
   const slidesRef = useRef([]);
   const slidesInnerRef = useRef([]);
+  const isAnimatingRef = useRef(false);
+  const currentRef = useRef(0);
+  const autoplayTimerRef = useRef(null);
+  const containerRef = useRef(null);
   
   const slidesTotal = collections?.length || 0;
+
+  // Sync refs with state
+  useEffect(() => {
+    isAnimatingRef.current = isAnimating;
+  }, [isAnimating]);
+
+  useEffect(() => {
+    currentRef.current = current;
+  }, [current]);
 
   useEffect(() => {
     if (!collections || collections.length === 0) return;
@@ -35,33 +49,25 @@ const Journey = ({ collections }) => {
     });
   }, [collections]);
 
-  useEffect(() => {
-    if (isLoading) return;
-
-    // Initialize GSAP Observer
-    const observer = Observer.create({
-      type: 'wheel,touch,pointer',
-      onDown: () => navigate(PREV),
-      onUp: () => navigate(NEXT),
-      wheelSpeed: -1,
-      tolerance: 10,
-    });
-
-    return () => observer.kill();
-  }, [isLoading, isAnimating, current]);
-
-  const navigate = (direction) => {
-    if (isAnimating) return false;
+  const navigate = useCallback((direction) => {
+    if (isAnimatingRef.current || !collections || collections.length === 0) return false;
+    
+    // Clear autoplay timer when manually navigating
+    if (autoplayTimerRef.current) {
+      clearTimeout(autoplayTimerRef.current);
+    }
+    
     setIsAnimating(true);
+    isAnimatingRef.current = true;
 
-    const previous = current;
+    const previous = currentRef.current;
     const newCurrent =
       direction === 1
-        ? current < slidesTotal - 1
-          ? current + 1
+        ? previous < slidesTotal - 1
+          ? previous + 1
           : 0
-        : current > 0
-        ? current - 1
+        : previous > 0
+        ? previous - 1
         : slidesTotal - 1;
 
     const currentSlide = slidesRef.current[previous];
@@ -69,15 +75,25 @@ const Journey = ({ collections }) => {
     const upcomingSlide = slidesRef.current[newCurrent];
     const upcomingInner = slidesInnerRef.current[newCurrent];
 
+    if (!currentSlide || !upcomingSlide || !currentInner || !upcomingInner) {
+      setIsAnimating(false);
+      isAnimatingRef.current = false;
+      return;
+    }
+
     gsap
       .timeline({
         onStart: () => {
           gsap.set(upcomingSlide, { zIndex: 99 });
           setCurrent(newCurrent);
+          currentRef.current = newCurrent;
         },
         onComplete: () => {
           gsap.set(upcomingSlide, { zIndex: 1 });
           setIsAnimating(false);
+          isAnimatingRef.current = false;
+          
+          startAutoplay();
         },
       })
       .addLabel('start', 0)
@@ -142,11 +158,89 @@ const Journey = ({ collections }) => {
         },
         'middle'
       );
-  };
+  }, [collections, slidesTotal]);
+
+  // Autoplay functionality
+  const startAutoplay = useCallback(() => {
+    if (autoplayTimerRef.current) {
+      clearTimeout(autoplayTimerRef.current);
+    }
+    
+    autoplayTimerRef.current = setTimeout(() => {
+      navigate(NEXT);
+    }, 3000); // Change slide every 5 seconds
+  }, [navigate]);
+
+  // Initialize autoplay
+  useEffect(() => {
+    if (isLoading) return;
+    
+    startAutoplay();
+
+    return () => {
+      if (autoplayTimerRef.current) {
+        clearTimeout(autoplayTimerRef.current);
+      }
+    };
+  }, [isLoading, startAutoplay]);
+
+  // Drag functionality
+  useEffect(() => {
+    if (isLoading || !containerRef.current) return;
+
+    const draggable = Draggable.create(containerRef.current, {
+      type: "x",
+      trigger: containerRef.current,
+      onDragEnd: function() {
+        const dragDistance = this.x;
+        const threshold = 50; // minimum drag distance to trigger navigation
+        
+        if (Math.abs(dragDistance) > threshold) {
+          if (dragDistance < 0) {
+            // Dragged left, go next
+            navigate(NEXT);
+          } else {
+            // Dragged right, go previous
+            navigate(PREV);
+          }
+        }
+        
+        // Reset position
+        gsap.to(containerRef.current, {
+          x: 0,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      }
+    });
+
+    return () => {
+      draggable[0].kill();
+    };
+  }, [isLoading, navigate]);
+
+  // SCROLL/WHEEL NAVIGATION - COMMENTED OUT
+  // Uncomment the code below to enable scroll/wheel navigation
+  /*
+  useEffect(() => {
+    if (isLoading) return;
+
+    // Initialize GSAP Observer
+    const observer = Observer.create({
+      type: 'wheel,touch,pointer',
+      onDown: () => navigate(PREV),
+      onUp: () => navigate(NEXT),
+      wheelSpeed: -1,
+      tolerance: 10,
+    });
+
+    return () => observer.kill();
+  }, [isLoading, navigate]);
+  */
 
   if (!collections || collections.length === 0) {
     return (
-      <div className="w-full h-screen bg-black flex items-center justify-center">
+      <div className="w-full h-[95vh] bg-black flex items-center justify-center">
         <p className="text-white text-xl">No collections available</p>
       </div>
     );
@@ -155,19 +249,23 @@ const Journey = ({ collections }) => {
   const currentCollection = collections[current];
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden font-sans">
+    <div 
+      ref={containerRef}
+      className="relative w-full h-[95vh]  overflow-hidden  cursor-grab active:cursor-grabbing"
+    >
       {/* Loading overlay */}
       {isLoading && (
         <div className="absolute inset-0 bg-black z-50 flex items-center justify-center">
           <div className="text-white text-2xl">Loading...</div>
         </div>
       )}
+      
       {/* Navigation Buttons */}
-      <nav className="absolute bottom-8 left-15 z-20 flex gap-4">
+      <nav className="absolute bottom-8 left-8 z-20 flex gap-4">
         <button
           onClick={() => navigate(PREV)}
           disabled={isAnimating}
-          className="w-12 h-12 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-xl"
+          className="w-12 h-12 bg-black/20 backdrop-blur-sm text-white rounded-full hover:bg-black/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-xl cursor-pointer"
           aria-label="Previous slide"
         >
           ←
@@ -175,7 +273,7 @@ const Journey = ({ collections }) => {
         <button
           onClick={() => navigate(NEXT)}
           disabled={isAnimating}
-          className="w-12 h-12 bg-black/30 backdrop-blur-sm text-white rounded-full hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-xl"
+          className="w-12 h-12 bg-black/20 backdrop-blur-sm text-white rounded-full hover:bg-black/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-xl cursor-pointer"
           aria-label="Next slide"
         >
           →
@@ -207,14 +305,11 @@ const Journey = ({ collections }) => {
       </div>
 
       {/* Collection Info Overlay */}
-      <div className="absolute inset-x-0 bottom-10 z-20 text-center px-6">
+      <div className="absolute inset-x-0 bottom-24 z-20 text-center px-6">
         <div className="max-w-2xl mx-auto">
-          {/* <h2 className="text-4xl md:text-5xl font-light text-black mb-4 tracking-wide">
-            {currentCollection.title}
-          </h2> */}
           <a
             href={`/collection/${currentCollection.handle}`}
-            className="inline-block px-8 py-3 bg-black/10 backdrop-blur-sm text-white text-sm uppercase tracking-wider border border-white/30 hover:bg-white hover:text-black transition-all duration-300"
+            className="inline-block px-8 py-3 bg-black/20 backdrop-blur-sm text-white text-sm uppercase tracking-wider border border-black/30 hover:bg-white hover:text-black transition-all duration-300"
           >
             Explore Collection
           </a>
@@ -222,11 +317,31 @@ const Journey = ({ collections }) => {
       </div>
 
       {/* Slide counter */}
-      <div className="absolute bottom-8 right-8 z-20 text-white text-sm font-light">
+      <div className="absolute bottom-8 right-8 z-20 text-black text-sm font-light">
         <span className="text-2xl font-bold">{String(current + 1).padStart(2, '0')}</span>
         <span className="mx-2 opacity-60">/</span>
         <span className="opacity-60">{String(slidesTotal).padStart(2, '0')}</span>
       </div>
+
+      {/* Autoplay indicator dots
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {collections.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => {
+              if (index !== current) {
+                navigate(index > current ? NEXT : PREV);
+              }
+            }}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              index === current 
+                ? 'bg-white w-8' 
+                : 'bg-white/40 hover:bg-white/60'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div> */}
     </div>
   );
 };
