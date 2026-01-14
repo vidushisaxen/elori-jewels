@@ -3,29 +3,29 @@ import { getCollection, getCollectionProducts } from "../../lib/shopify";
 import { notFound } from "next/navigation";
 import ProductsGridClient from '../../../components/ProductsGridClient'
 
-// export async function generateMetadata({ params }) {
-//   const { handle } = await params;
+export async function generateMetadata({ params }) {
+  const { handle } = await params;
   
-//   try {
-//     const collection = await getCollection(handle);
+  try {
+    const collection = await getCollection(handle);
     
-//     if (!collection) {
-//       return {
-//         title: "Collection Not Found · Elori Jewels",
-//       };
-//     }
+    if (!collection) {
+      return {
+        title: "Collection Not Found · Elori Jewels",
+      };
+    }
     
-//     return {
-//       title: `${collection.title} · Elori Jewels`,
-//       description: collection.description || `Browse our ${collection.title} collection`,
-//     };
-//   } catch (error) {
-//     return {
-//       title: "Collection · Elori Jewels",
-//       description: "Browse our collection",
-//     };
-//   }
-// }
+    return {
+      title: `${collection.title} · Elori Jewels`,
+      description: collection.description || `Browse our ${collection.title} collection`,
+    };
+  } catch (error) {
+    return {
+      title: "Collection · Elori Jewels",
+      description: "Browse our collection",
+    };
+  }
+}
 
 export default async function CollectionPage({ params }) {
   const { handle } = await params;
