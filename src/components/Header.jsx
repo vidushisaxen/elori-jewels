@@ -6,6 +6,7 @@ import AnnouncementBar from "./AnnouncementsBar";
 import { SearchModal } from "./SeachModal";
 import { useLenis } from 'lenis/react';
 import { useStore } from '../store';
+import Image from "next/image";
 
 export default function Header() {
   const [hovered, setHovered] = useState(null);
@@ -326,7 +327,7 @@ export default function Header() {
               setMegaMenuOpen(null);
             }}
             className={`
-              fixed left-0 top-[4.5rem] w-1/2 bg-white shadow-2xl transition-transform duration-500 z-40
+              fixed left-0 top-[4.5rem] w-1/2 bg-white transition-transform duration-500 z-40
               ${isOpen ? 'translate-x-0' : '-translate-x-full'}
             `}
             style={{
@@ -387,11 +388,13 @@ export default function Header() {
               </div>
 
               {/* RIGHT SIDE - IMAGE */}
-              <div className="w-[30vw] h-[40vw] relative overflow-hidden">
-                <img
+              <div className="w-[25vw] h-[30vw] relative overflow-hidden">
+                <Image
                   src={link.megaMenu.image}
                   alt={link.label}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  height={1000}
+                  width={800}
+                  className="absolute inset-0 w-full h-full object-contain"
                 />
               </div>
             </div>

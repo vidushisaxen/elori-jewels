@@ -67,63 +67,6 @@ export default async function CollectionPage({ params }) {
 
         {/* Products Grid */}
         {products.length > 0 ? (
-          // <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-          //   {products.map((product) => {
-          //     const firstImage = product.images?.[0];
-          //     const secondImage = product.images?.[1];
-          //     const price = product.variants?.[0]?.price;
-              
-          //     return (
-          //       <Link
-          //         key={product.id}
-          //         href={`/product/${product.handle}`}
-          //         className="group"
-          //       >
-          //         <div className="relative overflow-hidden bg-zinc-100">
-          //           {firstImage ? (
-          //             <>
-          //               <img
-          //                 src={firstImage.url}
-          //                 alt={firstImage.altText || product.title}
-          //                 width={500}
-          //                 height={500}
-          //                 className="h-96 w-full object-cover transition-all duration-700 ease-out group-hover:opacity-0 group-hover:scale-110"
-          //               />
-          //               {secondImage && (
-          //                 <img
-          //                   src={secondImage.url}
-          //                   alt={secondImage.altText || product.title}
-          //                   width={500}
-          //                   height={500}
-          //                   className="absolute inset-0 h-96 w-full object-cover opacity-0 scale-110 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-105"
-          //                 />
-          //               )}
-          //             </>
-          //           ) : (
-          //             <div className="h-96 w-full bg-zinc-200 flex items-center justify-center">
-          //               <span className="text-zinc-400 text-sm">No image</span>
-          //             </div>
-          //           )}
-          //         </div>
-          //         <div className="mt-4 space-y-2">
-          //           <h3 className="text-sm font-light uppercase tracking-[0.2em] text-black transition-colors duration-300 group-hover:text-neutral-500">
-          //             {product.title}
-          //           </h3>
-          //           {product.description && (
-          //             <p className="text-xs text-zinc-600 line-clamp-2">
-          //               {product.description}
-          //             </p>
-          //           )}
-          //           {price && (
-          //             <p className="text-sm font-light text-zinc-800">
-          //               {price.amount} {price.currencyCode}
-          //             </p>
-          //           )}
-          //         </div>
-          //       </Link>
-          //     );
-          //   })}
-          // </div>
           <ProductsGridClient products={products} defaultCols={4} />
         ) : (
           <div className="text-center py-20">
