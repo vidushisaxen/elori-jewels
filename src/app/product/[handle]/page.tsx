@@ -9,6 +9,7 @@ import { Image } from '../../lib/shopify/types';
 import WishlistButton from '../../../components/WishlistButton';
 import RelatedProductsGrid from '../../../components/RelatedProductsGrid';
 import { AddToCart } from '../../../components/cart/add-to-cart';
+import { BuyNowButton } from '../../../components/cart/buy-now';
 
 // export async function generateMetadata(props: {
 //   params: Promise<{ handle: string }>;
@@ -129,9 +130,7 @@ async function ProductPageContent({ handle }: { handle: string }) {
               {/* Action Buttons */}
               <div className="space-y-4 mb-8">
                 <AddToCart product={product} />
-                <button className="w-full bg-amber-600 text-white py-4 px-8 text-sm uppercase tracking-widest hover:bg-amber-700 transition-colors">
-                  Buy Now
-                </button>
+                <BuyNowButton product={product} />
               </div>
 
               {/* Tabs */}

@@ -284,6 +284,18 @@ export async function createCart(): Promise<Cart> {
   return reshapeCart(res.body.data.cartCreate.cart);
 }
 
+export async function createCartWithLines(
+  lines: { merchandiseId: string; quantity: number }[]
+): Promise<Cart> {
+  const res = await shopifyFetch<ShopifyCreateCartOperation>({
+    query: createCartMutation,
+    variables: { lineItems: lines },
+    cache: 'no-store'
+  });
+
+  return reshapeCart(res.body.data.cartCreate.cart);
+}
+
 
 export async function addToCart(
   lines: { merchandiseId: string; quantity: number }[]

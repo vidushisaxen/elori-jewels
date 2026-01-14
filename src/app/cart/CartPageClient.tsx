@@ -33,6 +33,12 @@ export default function CartPageClient({
     clearCart();
   };
 
+  const handleCheckout = () => {
+    if (cart?.checkoutUrl) {
+      window.open(cart.checkoutUrl, '_blank');
+    }
+  };
+
   if (!cart || cart.lines.length === 0) {
     return (
       <div className="min-h-screen bg-white px-4 py-16 text-center ">
@@ -85,11 +91,12 @@ export default function CartPageClient({
             </div>
           </div>
 
-          <form action={redirectToCheckout}>
-            <button className="bg-black text-white px-10 py-4 text-sm uppercase tracking-widest hover:bg-zinc-800">
-              Checkout
-            </button>
-          </form>
+          <button
+            onClick={handleCheckout}
+            className="bg-black text-white px-10 py-4 text-sm uppercase tracking-widest hover:bg-zinc-800"
+          >
+            Checkout
+          </button>
         </div>
       </div>
     </div>
