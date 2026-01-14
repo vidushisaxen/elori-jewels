@@ -11,28 +11,28 @@ import RelatedProductsGrid from '../../../components/RelatedProductsGrid';
 import { AddToCart } from '../../../components/cart/add-to-cart';
 import { BuyNowButton } from '../../../components/cart/buy-now';
 
-// export async function generateMetadata(props: {
-//   params: Promise<{ handle: string }>;
-// }): Promise<Metadata> {
-//   const { handle } = await props.params;
+export async function generateMetadata(props: {
+  params: Promise<{ handle: string }>;
+}): Promise<Metadata> {
+  const { handle } = await props.params;
 
-//   const product = await getProduct(handle);
-//   if (!product) return notFound();
+  const product = await getProduct(handle);
+  if (!product) return notFound();
 
-//   const { url, width, height, altText: alt } = product.featuredImage || {};
-//   const indexable = !product.tags.includes(HIDDEN_PRODUCT_TAG);
+  const { url, width, height, altText: alt } = product.featuredImage || {};
+  const indexable = !product.tags.includes(HIDDEN_PRODUCT_TAG);
 
-//   return {
-//     title: product.seo?.title || product.title,
-//     description: product.seo?.description || product.description,
-//     robots: {
-//       index: indexable,
-//       follow: indexable,
-//       googleBot: { index: indexable, follow: indexable }
-//     },
-//     openGraph: url ? { images: [{ url, width, height, alt }] } : undefined
-//   };
-// }
+  return {
+    title: product.seo?.title || product.title,
+    description: product.seo?.description || product.description,
+    robots: {
+      index: indexable,
+      follow: indexable,
+      googleBot: { index: indexable, follow: indexable }
+    },
+    openGraph: url ? { images: [{ url, width, height, alt }] } : undefined
+  };
+}
 
 
 export default async function ProductPage(props: {
