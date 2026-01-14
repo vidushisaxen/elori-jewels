@@ -150,14 +150,14 @@ export default function JewelryItemClient({ items }: { items: any[] }) {
 
       <button
         ref={prevRef}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-10 w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 opacity-100 hover:bg-white/20 z-10"
+        className="absolute left-[-5%] top-1/2  translate-y-[-50%] w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 opacity-100 hover:bg-white/20 z-10"
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
 
       <button
         ref={nextRef}
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-15 cursor-pointer w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 opacity-100 hover:bg-white/20 z-10"
+        className="absolute right-[-5%] top-1/2  translate-y-[-50%] cursor-pointer w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 opacity-100 hover:bg-white/20 z-10"
       >
         <ChevronRight className="w-6 h-6" />
       </button>

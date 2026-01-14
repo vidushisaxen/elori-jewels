@@ -14,6 +14,8 @@ export type WishlistItem = {
   defaultImage: string;
   hoverImage?: string;
   variantId?: string;
+  currencyCode?: string;
+  priceAmount?: string;
 };
 
 type UpdateType = 'plus' | 'minus' | 'delete';
@@ -39,6 +41,8 @@ interface StoreState {
   addCartItem: (variant: ProductVariant, product: Product) => Promise<void>;
   updateCartItem: (merchandiseId: string, updateType: UpdateType) => Promise<void>;
   fetchCart: () => Promise<void>;
+  clearCart: () => Promise<void>;
+  
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -101,6 +105,8 @@ function createOrUpdateCartItem(
     },
   };
 }
+
+
 
 function updateCartTotals(lines: CartItem[]): Pick<Cart, 'totalQuantity' | 'cost'> {
   const totalQuantity = lines.reduce((sum, item) => sum + item.quantity, 0);
@@ -314,6 +320,30 @@ export const useStore = create<StoreState>()(
           }
         } catch (error) {
           console.error('Failed to update cart:', error);
+          await get().fetchCart();
+        }
+      },
+
+      clearCart: async () => {
+        const emptyCart = createEmptyCart();
+
+        // Optimistic UI update
+        set({ cart: emptyCart });
+
+        try {
+          const response = await fetch("/api/cart/clear", {
+            method: "POST",
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to clear cart");
+          }
+
+          const clearedCart = await response.json();
+          set({ cart: clearedCart });
+        } catch (error) {
+          console.error("Clear cart failed:", error);
+          // Re-sync cart if something goes wrong
           await get().fetchCart();
         }
       },

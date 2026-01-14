@@ -1,17 +1,26 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useActionState } from 'react';
-import { removeItem, updateItemQuantity, redirectToCheckout } from '../../components/cart/actions';
-import { useStore } from '../../store';
-import type { Cart } from '../lib/shopify/types';
-import { useEffect } from 'react';
+import Link from "next/link";
+import Image from "next/image";
+import { startTransition, useActionState } from "react";
+import {
+  removeItem,
+  updateItemQuantity,
+  redirectToCheckout,
+} from "../../components/cart/actions";
+import { useStore } from "../../store";
+import type { Cart } from "../lib/shopify/types";
+import { useEffect } from "react";
 
-export default function CartPageClient({ cart: initialCart }: { cart: Cart | undefined }) {
+export default function CartPageClient({
+  cart: initialCart,
+}: {
+  cart: Cart | undefined;
+}) {
   // Use Zustand store for real-time cart state
   const cart = useStore((state) => state.cart);
   const setCart = useStore((state) => state.setCart);
+  const clearCart = useStore((state) => state.clearCart);
 
   // Sync initial server cart with Zustand store
   useEffect(() => {
@@ -20,10 +29,16 @@ export default function CartPageClient({ cart: initialCart }: { cart: Cart | und
     }
   }, [initialCart, setCart]);
 
+  const handleDeleteAll = () => {
+    clearCart();
+  };
+
   if (!cart || cart.lines.length === 0) {
     return (
       <div className="min-h-screen bg-white px-4 py-16 text-center ">
-        <h1 className="text-4xl font-light uppercase tracking-wide mb-6">My Cart</h1>
+        <h1 className="text-4xl font-light uppercase tracking-wide mb-6">
+          My Cart
+        </h1>
         <p className="text-zinc-600 mb-8">Your cart is empty.</p>
         <Link
           href="/products"
@@ -38,10 +53,20 @@ export default function CartPageClient({ cart: initialCart }: { cart: Cart | und
   return (
     <div className="min-h-screen bg-white pt-20">
       <div className="mx-auto max-w-7xl px-4 py-16">
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex items-start justify-between mb-12">
           <div>
-            <h1 className="text-4xl font-light uppercase tracking-wide mb-2">My Cart</h1>
+            <h1 className="text-4xl font-light uppercase tracking-wide mb-2">
+              My Cart
+            </h1>
             <p className="text-zinc-600 text-sm">{cart.totalQuantity} items</p>
+          </div>
+          <div className="mt-0 text-center border-zinc-200 cursor-pointer">
+            <p
+              className="inline-block bg-black text-white px-8 py-3 text-sm uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+              onClick={handleDeleteAll}
+            >
+              Delete All
+            </p>
           </div>
         </div>
 
@@ -55,7 +80,8 @@ export default function CartPageClient({ cart: initialCart }: { cart: Cart | und
           <div className="text-zinc-700">
             <div className="text-sm uppercase tracking-wider">Total</div>
             <div className="text-2xl font-light">
-              {cart.cost.totalAmount.currencyCode} {cart.cost.totalAmount.amount}
+              {cart.cost.totalAmount.currencyCode}{" "}
+              {cart.cost.totalAmount.amount}
             </div>
           </div>
 
@@ -85,17 +111,17 @@ function CartItemCard({ line }: { line: any }) {
     line.merchandise.product?.images?.edges?.[1]?.node ?? featured;
 
   const handleRemove = async () => {
-    updateCartItem(merchandiseId, 'delete');
+    updateCartItem(merchandiseId, "delete");
     removeBound();
   };
 
   const handleDecrement = async () => {
-    updateCartItem(merchandiseId, 'minus');
+    updateCartItem(merchandiseId, "minus");
     qtyAction.bind(null, { merchandiseId, quantity: line.quantity - 1 })();
   };
 
   const handleIncrement = async () => {
-    updateCartItem(merchandiseId, 'plus');
+    updateCartItem(merchandiseId, "plus");
     qtyAction.bind(null, { merchandiseId, quantity: line.quantity + 1 })();
   };
 
@@ -127,7 +153,9 @@ function CartItemCard({ line }: { line: any }) {
         {/* Hover image */}
         <Image
           src={secondImage.url}
-          alt={secondImage.altText || `${line.merchandise.product.title} detail`}
+          alt={
+            secondImage.altText || `${line.merchandise.product.title} detail`
+          }
           fill
           className="absolute inset-0 object-cover transition-all duration-700 ease-out
                      opacity-0 scale-[1.2]
@@ -156,13 +184,17 @@ function CartItemCard({ line }: { line: any }) {
 
         <div className="flex items-center gap-3">
           <form action={handleDecrement}>
-            <button type="submit" className="px-3 py-1 border">-</button>
+            <button type="submit" className="px-3 py-1 border">
+              -
+            </button>
           </form>
 
           <span className="min-w-6 text-center">{line.quantity}</span>
 
           <form action={handleIncrement}>
-            <button type="submit" className="px-3 py-1 border">+</button>
+            <button type="submit" className="px-3 py-1 border">
+              +
+            </button>
           </form>
         </div>
       </div>

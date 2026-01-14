@@ -9,7 +9,7 @@ export default function WishlistPage() {
   const wishlistItems = useStore((state) => state.wishlist);
   const removeFromWishlist = useStore((state) => state.removeFromWishlist);
   const addCartItem = useStore((state) => state.addCartItem);
-
+  const clearWishlist = useStore((state) => state.clearWishlist);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isAddingId, setIsAddingId] = useState<string | null>(null);
@@ -29,6 +29,94 @@ export default function WishlistPage() {
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
   }, []);
+
+  const handleAddToCart = (item: WishlistItem) => {
+    setIsAddingId(item.id);
+    startTransition(async () => {
+      try {
+        let variantId = item.variantId;
+        let priceAmount = item.priceAmount || "0";
+        let currencyCode = item.currencyCode || "USD";
+
+        // If no variantId, fetch the product to get it
+        if (!variantId) {
+          const res = await fetch(`/api/shopify?handle=${item.handle}`);
+          if (!res.ok) {
+            throw new Error("Failed to fetch product details");
+          }
+          const productData = await res.json();
+
+          if (!productData?.variants?.[0]?.id) {
+            throw new Error("Product variant not available");
+          }
+
+          variantId = productData.variants[0].id;
+          priceAmount = productData.variants[0].price?.amount || priceAmount;
+          currencyCode =
+            productData.variants[0].price?.currencyCode || currencyCode;
+        }
+
+        // Create a minimal variant and product object for the cart
+        const variant = {
+          id: variantId,
+          title: "Default",
+          availableForSale: true,
+          selectedOptions: [],
+          price: {
+            amount: priceAmount,
+            currencyCode: currencyCode,
+          },
+        };
+
+        const product = {
+          id: item.id,
+          handle: item.handle,
+          title: item.name,
+          availableForSale: true,
+          description: "",
+          descriptionHtml: "",
+          options: [],
+          priceRange: {
+            maxVariantPrice: variant.price,
+            minVariantPrice: variant.price,
+          },
+          variants: [variant],
+          featuredImage: {
+            url: item.defaultImage,
+            altText: item.name,
+            width: 800,
+            height: 800,
+          },
+          images: [],
+          seo: { title: item.name, description: "" },
+          tags: [],
+          updatedAt: new Date().toISOString(),
+        };
+
+        await addCartItem(variant, product);
+        removeFromWishlist(item.id);
+        showToast(`Added to cart: ${item.name}`);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        showToast(`Failed: ${errorMessage}`);
+      } finally {
+        setIsAddingId(null);
+      }
+    });
+  };
+
+  const handleDeleteAll = () => {
+    startTransition(async () => {
+      try {
+        clearWishlist();
+        showToast("All items removed from wishlist");
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        showToast(`Failed: ${errorMessage}`);
+      }
+    });
+  };
 
   if (wishlistItems.length === 0) {
     return (
@@ -63,7 +151,7 @@ export default function WishlistPage() {
     <div className="min-h-screen bg-white pt-20">
       <div className="mx-auto max-w-7xl px-4 py-16">
         {/* Header */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex items-start justify-between mb-12">
           <div>
             <h1 className="text-4xl font-light uppercase tracking-wide mb-2">
               My Wishlist
@@ -73,7 +161,12 @@ export default function WishlistPage() {
               {wishlistItems.length === 1 ? "item" : "items"}
             </p>
           </div>
-        </div>
+            <div className="mt-0 text-center border-zinc-200 cursor-pointer">
+              <p className="inline-block bg-black text-white px-8 py-3 text-sm uppercase tracking-widest hover:bg-zinc-800 transition-colors" onClick={handleDeleteAll}>
+                Delete All
+              </p>
+            </div>
+          </div>
 
         {/* Wishlist Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -122,7 +215,19 @@ export default function WishlistPage() {
 
                   {/* Add to Cart Overlay */}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {/* Cart button can be added here if needed */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAddToCart(item);
+                      }}
+                      disabled={isPending && isAddingId === item.id}
+                      className="w-full bg-white text-black py-3 px-6 text-sm uppercase tracking-widest hover:bg-zinc-100 transition-colors disabled:opacity-60"
+                    >
+                      {isPending && isAddingId === item.id
+                        ? "Adding…"
+                        : "Add To Cart"}
+                    </button>
                   </div>
                 </div>
 

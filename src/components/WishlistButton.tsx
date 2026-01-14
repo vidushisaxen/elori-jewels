@@ -48,6 +48,8 @@ export default function WishlistButton({ product }: { product: any }) {
       defaultImage,
       hoverImage,
       ...(variantId ? { variantId } : {}),
+      currencyCode: currency || 'USD',
+      priceAmount: amount || '0',
     });
   };
 
