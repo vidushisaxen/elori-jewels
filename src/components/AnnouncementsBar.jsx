@@ -6,16 +6,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function AnnouncementBar() {
   const messages = [
     {
-      text: "YOUR SIGNATURE EAR STARTS HERE | SHOP EARRINGS",
-      link: "/collections/earrings"
+      text: "FREE SHIPPING ON ORDERS OVER $100",
+      link: "/collections/all"
     },
     {
-      text: "EAR ALCHEMY PIERCING | BOOK APPOINTMENT",
-      link: "/pages/piercing-ear-alchemy"
+      text: "15% OFF YOUR FIRST ORDER | USE CODE: WELCOME15",
+      link: "/collections/all"
     },
     {
-      text: "SHOP GARNET, JANUARY'S BIRTHSTONE",
-      link: "/collections/birthstone-jewellery"
+      text: "BUY 2 GET 1 FREE ON SELECTED ITEMS",
+      link: "/collections/sale"
     }
   ];
 
@@ -39,12 +39,12 @@ export default function AnnouncementBar() {
           exit={{ x: '-100%' }}
           transition={{ duration: 0.6, ease: 'easeInOut' }}
         >
-          <a 
-            href={messages[index].link} 
+          <p
+            // href={messages[index].link} 
             className="text-[0.8rem] font-calibre tracking-wide hover:text-primary transition-colors duration-300"
           >
             {messages[index].text}
-          </a>
+          </p>
         </motion.div>
       </AnimatePresence>
     </div>

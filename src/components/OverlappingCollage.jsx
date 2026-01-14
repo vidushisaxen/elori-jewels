@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useRef } from "react";
-import gsap from 'gsap';
-import ScrollTrigger from 'gsap/dist/ScrollTrigger';
+import gsap from "gsap";
+import ScrollTrigger from "gsap/dist/ScrollTrigger";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,12 +12,12 @@ export default function JewelryOverlappingCollage() {
     <div className="bg-white">
       {/* First Section - Left text, Right image */}
       <section className="min-h-screen w-full relative">
-        <Advantage/>
+        <Advantage />
       </section>
 
       {/* Second Section - Left image, Right text */}
       <section className="relative w-full min-h-screen">
-        <Diversify/>
+        <Diversify />
       </section>
     </div>
   );
@@ -26,7 +28,8 @@ const Advantage = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(imageRef.current, 
+      gsap.fromTo(
+        imageRef.current,
         {
           scale: 1.3,
           y: -100,
@@ -40,11 +43,11 @@ const Advantage = () => {
             start: "top bottom",
             end: "bottom top",
             scrub: 1,
-          }
+          },
         }
       );
     });
-    
+
     return () => ctx.revert();
   }, []);
 
@@ -56,14 +59,37 @@ const Advantage = () => {
           <h2 className="text-6xl font-light mb-8">Advantage</h2>
           <div className="space-y-6 mb-8">
             <p className="text-lg leading-relaxed">
-              A light-catching pendant made of marquise and round diamonds. The organic clustered shape features 11 white diamonds. Perfectly dainty to layer with other necklaces.
+              A light-catching pendant made of marquise and round diamonds. The
+              organic clustered shape features 11 white diamonds. Perfectly
+              dainty to layer with other necklaces.
             </p>
           </div>
-          <button className="bg-black/10 backdrop-blur-md  px-8 py-3 text-xs uppercase tracking-widest hover:bg-black/20 transition-all border border-black/30 w-fit">
-            Shop Now
-          </button>
+          <Link
+            href="/collections/earrings"
+            className=" flex items-center w-[20vw] justify-between gap-3 px-2 py-2 rounded-full bg-white text-black text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-gray-100 group"
+          >
+            <div className="flex pl-[1vw] flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
+              <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full">
+                Shop Now
+              </span>
+              <span className="font-medium absolute top-full left-[1vw] transition-transform duration-300 group-hover:-translate-y-full">
+                Shop Now
+              </span>
+            </div>
+
+            <div className="size-[2vw] p-2 rounded-full  overflow-hidden bg-[#3b3b3b]">
+              <span className="size-full  relative flex items-center justify-center">
+                <div className="size-full -rotate-45  group-hover:translate-x-[150%] group-hover:translate-y-[-150%] transition-all duration-300 flex items-center justify-center">
+                  <ArrowRight color="white" />
+                </div>
+                <div className="size-full -rotate-45 absolute top-0 duration-300 translate-x-[-150%] translate-y-[150%] left-0 flex items-center justify-center group-hover:translate-x-[0%] group-hover:translate-y-[0%]">
+                  <ArrowRight color="white" />
+                </div>
+              </span>
+            </div>
+          </Link>
         </div>
-        
+
         {/* Right - Image */}
         <div className="w-1/2 h-full overflow-hidden">
           <img
@@ -83,7 +109,8 @@ const Diversify = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(imageRef.current,
+      gsap.fromTo(
+        imageRef.current,
         {
           scale: 1.3,
           y: -100,
@@ -97,11 +124,11 @@ const Diversify = () => {
             start: "top bottom",
             end: "bottom top",
             scrub: 1,
-          }
+          },
         }
       );
     });
-    
+
     return () => ctx.revert();
   }, []);
 
@@ -117,18 +144,41 @@ const Diversify = () => {
             alt="diversify image"
           />
         </div>
-        
+
         {/* Right - Text */}
         <div className="text-gray-900 w-1/2 px-16 flex flex-col justify-center">
           <h3 className="text-6xl font-light mb-8 leading-tight">Diversify</h3>
           <div className="space-y-6 mb-8">
             <p className="text-lg leading-relaxed">
-              A light-catching pendant made of marquise and round diamonds. The organic clustered shape features 11 white diamonds. Perfectly dainty to layer with other necklaces.
+              A light-catching pendant made of marquise and round diamonds. The
+              organic clustered shape features 11 white diamonds. Perfectly
+              dainty to layer with other necklaces.
             </p>
           </div>
-          <button className="bg-gray-900/10 backdrop-blur-md text-gray-900 px-8 py-3 text-xs uppercase tracking-widest hover:bg-gray-900/20 transition-all border border-gray-900/30 w-fit">
-            Shop Now
-          </button>
+          <Link
+            href="/collections/earrings"
+            className=" flex items-center w-[20vw] justify-between gap-3 px-2 py-2 rounded-full bg-white text-black text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-gray-100 group"
+          >
+            <div className="flex pl-[1vw] flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
+              <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full">
+                Shop Now
+              </span>
+              <span className="font-medium absolute top-full left-[1vw] transition-transform duration-300 group-hover:-translate-y-full">
+                Shop Now
+              </span>
+            </div>
+
+            <div className="size-[2vw] p-2 rounded-full  overflow-hidden bg-[#3b3b3b]">
+              <span className="size-full  relative flex items-center justify-center">
+                <div className="size-full -rotate-45  group-hover:translate-x-[150%] group-hover:translate-y-[-150%] transition-all duration-300 flex items-center justify-center">
+                  <ArrowRight color="white" />
+                </div>
+                <div className="size-full -rotate-45 absolute top-0 duration-300 translate-x-[-150%] translate-y-[150%] left-0 flex items-center justify-center group-hover:translate-x-[0%] group-hover:translate-y-[0%]">
+                  <ArrowRight color="white" />
+                </div>
+              </span>
+            </div>
+          </Link>
         </div>
       </div>
     </section>
