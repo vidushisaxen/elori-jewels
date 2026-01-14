@@ -4,9 +4,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import AnnouncementBar from "./AnnouncementsBar";
 import { SearchModal } from "./SeachModal";
-import { useLenis } from 'lenis/react'
-import { useCart } from '../components/cart/cart-context';
-
+import { useLenis } from 'lenis/react';
+import { useStore } from '../store';
 
 export default function Header() {
   const [hovered, setHovered] = useState(null);
@@ -15,59 +14,31 @@ export default function Header() {
   const [products, setProducts] = useState([]);
   const [collections, setCollections] = useState([]);
   const [leftLinks, setLeftLinks] = useState([]);
-const { cart } = useCart();
-const [wishlistCount, setWishlistCount] = useState(0);
 
+  // Zustand store
+  const cart = useStore((state) => state.cart);
+  const wishlist = useStore((state) => state.wishlist);
+  const hasHydrated = useStore((state) => state._hasHydrated);
+  
+  // Only show counts after hydration to prevent flicker
+  const wishlistCount = hasHydrated ? wishlist.length : 0;
+  const cartCount = hasHydrated ? (cart?.totalQuantity || 0) : 0;
 
-useEffect(() => {
-  const updateWishlistCount = () => {
-    try {
-      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-      setWishlistCount(Array.isArray(wishlist) ? wishlist.length : 0);
-    } catch {
-      setWishlistCount(0);
+  const lenis = useLenis();
+
+  useEffect(() => {
+    if (!lenis) return;
+
+    if (megaMenuOpen) {
+      lenis.stop();
+    } else {
+      lenis.start();
     }
-  };
 
-  // initial load
-  updateWishlistCount();
-
-  // updates from other tabs/windows
-  const onStorage = (e) => {
-    if (e.key === 'wishlist') updateWishlistCount();
-  };
-
-  // updates from same tab (we’ll dispatch this)
-  const onWishlistChange = () => updateWishlistCount();
-
-  window.addEventListener('storage', onStorage);
-  window.addEventListener('wishlist:changed', onWishlistChange);
-
-  return () => {
-    window.removeEventListener('storage', onStorage);
-    window.removeEventListener('wishlist:changed', onWishlistChange);
-  };
-}, []);
-
-
-
-
-    const lenis = useLenis();
-  
-    useEffect(() => {
-      if (!lenis) return;
-  
-      if (megaMenuOpen) {
-        lenis.stop();   
-      } else {
-        lenis.start(); 
-      }
-  
-      return () => {
-        
-        lenis.start();
-      };
-    }, [megaMenuOpen, lenis]);
+    return () => {
+      lenis.start();
+    };
+  }, [megaMenuOpen, lenis]);
 
   // Fetch products and collections from Shopify
   useEffect(() => {
@@ -166,7 +137,7 @@ useEffect(() => {
       }
 
       const data = await response.json();
-      
+
       if (!data || !data.data) {
         console.error('Invalid response structure:', data);
         return;
@@ -176,7 +147,7 @@ useEffect(() => {
         console.error('GraphQL errors:', data.errors);
         return;
       }
-      
+
       // Transform products
       const productsData = data.data.products.edges.map(edge => ({
         id: edge.node.id,
@@ -191,7 +162,7 @@ useEffect(() => {
           currencyCode: v.node.priceV2.currencyCode
         })),
       }));
-      
+
       // Transform collections with their top 5 products
       const collectionsData = data.data.collections.edges.map(edge => ({
         id: edge.node.id,
@@ -208,10 +179,10 @@ useEffect(() => {
           currencyCode: productEdge.node.variants.edges[0]?.node.priceV2.currencyCode
         }))
       }));
-      
+
       setProducts(productsData);
       setCollections(collectionsData);
-      
+
       // Build dynamic navigation from collections
       buildDynamicNavigation(collectionsData);
     } catch (error) {
@@ -221,8 +192,8 @@ useEffect(() => {
 
   const buildDynamicNavigation = (collections) => {
     // Filter out any system collections (like "All" or "Home page")
-    const userCollections = collections.filter(col => 
-      !col.handle.includes('all') && 
+    const userCollections = collections.filter(col =>
+      !col.handle.includes('all') &&
       !col.handle.includes('frontpage') &&
       !col.handle.includes('home')
     );
@@ -244,8 +215,6 @@ useEffect(() => {
     setLeftLinks(navigationLinks);
   };
 
-
-
   const rightLinks = [
     { href: "/wishlist", label: "Wishlist" },
     { href: "/cart", label: "Cart" },
@@ -258,43 +227,43 @@ useEffect(() => {
   };
 
   const renderLink = (link, position) => {
-  const id = `${position}-${link.label}`;
-  const showBadge = link.label === 'Cart' || link.label === 'Wishlist';
-  const count = link.label === 'Cart' ? (cart?.totalQuantity || 0) : link.label === 'Wishlist' ? wishlistCount : 0;
+    const id = `${position}-${link.label}`;
+    const showBadge = link.label === 'Cart' || link.label === 'Wishlist';
+    const count = link.label === 'Cart' ? cartCount : link.label === 'Wishlist' ? wishlistCount : 0;
 
-  return (
-    <span
-      key={id}
-      onMouseEnter={() => {
-        setHovered(id);
-        if (link.megaMenu) {
-          setMegaMenuOpen(id);
-        }
-      }}
-      onMouseLeave={() => {
-        setHovered(null);
-        setMegaMenuOpen(null);
-      }}
-      className={`
-        transition-colors duration-300 uppercase cursor-pointer relative inline-block
-        ${hovered === id ? "text-black" : hovered ? "text-gray-300" : "text-black"}
-      `}
-    >
-      <Link href={link.href} onClick={closeMenu} className="relative inline-block cursor-pointer">
-        {link.label}
-        {showBadge && count > 0 && (
-          <span className="absolute -top-2 -right-2  text-[10px] font-medium rounded-full flex items-center justify-center z-10">
-            {count}
-          </span>
-        )}
-      </Link>
-    </span>
-  );
-};
+    return (
+      <span
+        key={id}
+        onMouseEnter={() => {
+          setHovered(id);
+          if (link.megaMenu) {
+            setMegaMenuOpen(id);
+          }
+        }}
+        onMouseLeave={() => {
+          setHovered(null);
+          setMegaMenuOpen(null);
+        }}
+        className={`
+          transition-colors duration-300 uppercase cursor-pointer relative inline-block
+          ${hovered === id ? "text-black" : hovered ? "text-gray-300" : "text-black"}
+        `}
+      >
+        <Link href={link.href} onClick={closeMenu} className="relative inline-block cursor-pointer">
+          {link.label}
+          {showBadge && count > 0 && (
+            <span className="absolute -top-2 -right-2  text-[10px] font-medium rounded-full flex items-center justify-center z-10">
+              {count}
+            </span>
+          )}
+        </Link>
+      </span>
+    );
+  };
 
   return (
     <header className="w-full fixed top-0 left-0 z-9999">
-      <AnnouncementBar/>
+      <AnnouncementBar />
       <nav className="grid grid-cols-3 items-center px-6 py-4 relative z-50 bg-white">
         {/* LEFT MENU */}
         <div className="flex items-center font-light tracking-wide gap-6 text-xs">
@@ -325,7 +294,7 @@ useEffect(() => {
           >
             Search
           </button>
-          
+
           {rightLinks.map(link => renderLink(link, "right"))}
         </div>
       </nav>
@@ -360,7 +329,7 @@ useEffect(() => {
               fixed left-0 top-[4.5rem] w-1/2 bg-white shadow-2xl transition-transform duration-500 z-40
               ${isOpen ? 'translate-x-0' : '-translate-x-full'}
             `}
-            style={{ 
+            style={{
               height: 'calc(100vh - 4.5rem)'
             }}
           >

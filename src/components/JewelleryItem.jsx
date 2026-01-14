@@ -133,26 +133,33 @@ const JewelryItem = ({ item }) => {
        
       >
         <div className="relative w-full aspect-3/4 overflow-hidden">
-          {/* ✅ Reused WishlistButton */}
-          <WishlistButton
-            className="absolute top-4 right-4"
-            product={{
-              id: item.id,
-              handle: item.handle,
-              title: item.name,
-              variants: item.variants,
-              priceRange: {
-                maxVariantPrice: {
-                  amount: String(item.priceAmount ?? item.price).replace(/[^\d.]/g, ''),
-                  currencyCode: item.currencyCode ?? 'INR'
-                }
-              },
-              images: [
-                { url: item.defaultImage, altText: item.name },
-                ...(item.hoverImage ? [{ url: item.hoverImage, altText: `${item.name} hover` }] : [])
-              ]
+          {/* Wishlist button */}
+          <div 
+            className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-white transition-all duration-300"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
-          />
+          >
+            <WishlistButton
+              product={{
+                id: item.id,
+                handle: item.handle,
+                title: item.name,
+                variants: item.variants,
+                priceRange: {
+                  maxVariantPrice: {
+                    amount: String(item.priceAmount ?? item.price).replace(/[^\d.]/g, ''),
+                    currencyCode: item.currencyCode ?? 'INR'
+                  }
+                },
+                images: [
+                  { url: item.defaultImage, altText: item.name },
+                  ...(item.hoverImage ? [{ url: item.hoverImage, altText: `${item.name} hover` }] : [])
+                ]
+              }}
+            />
+          </div>
 
           <img
             ref={defaultImageRef}

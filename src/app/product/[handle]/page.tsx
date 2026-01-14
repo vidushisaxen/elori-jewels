@@ -99,12 +99,14 @@ async function ProductPageContent({ handle }: { handle: string }) {
           {/* Right Side - Sticky Product Details (50%) */}
           <div className="lg:sticky lg:top-20 lg:h-screen lg:overflow-y-auto px-8 py-12 lg:px-16 lg:py-20">
             <div className="max-w-2xl">
-              <div className='w-full flex gap-5 justify-between'>
+              <div className='w-full flex gap-5 justify-between items-start'>
                 {/* Product Title */}
                 <h1 className="text-3xl lg:text-4xl font-light uppercase tracking-wide mb-4">
                   {product.title}
                 </h1>
-                <div>
+                <div 
+                  className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-white transition-all duration-300 shrink-0"
+                >
                   <WishlistButton product={product} />
                 </div>
               </div>

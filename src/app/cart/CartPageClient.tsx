@@ -4,9 +4,22 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useActionState } from 'react';
 import { removeItem, updateItemQuantity, redirectToCheckout } from '../../components/cart/actions';
+import { useStore } from '../../store';
 import type { Cart } from '../lib/shopify/types';
+import { useEffect } from 'react';
 
-export default function CartPageClient({ cart }: { cart: Cart | undefined }) {
+export default function CartPageClient({ cart: initialCart }: { cart: Cart | undefined }) {
+  // Use Zustand store for real-time cart state
+  const cart = useStore((state) => state.cart);
+  const setCart = useStore((state) => state.setCart);
+
+  // Sync initial server cart with Zustand store
+  useEffect(() => {
+    if (initialCart) {
+      setCart(initialCart);
+    }
+  }, [initialCart, setCart]);
+
   if (!cart || cart.lines.length === 0) {
     return (
       <div className="min-h-screen bg-white px-4 py-16 text-center ">
@@ -57,65 +70,9 @@ export default function CartPageClient({ cart }: { cart: Cart | undefined }) {
   );
 }
 
-// function CartItemCard({ line }: { line: any }) {
-//   const merchandiseId = line.merchandise.id;
-
-//   const [_, removeAction] = useActionState(removeItem, null);
-//   const removeBound = removeAction.bind(null, merchandiseId);
-
-//   const [__, qtyAction] = useActionState(updateItemQuantity, null);
-
-//   return (
-//     <div className="group relative">
-//       <div className="relative aspect-3/4 overflow-hidden bg-zinc-100 mb-4">
-//         <Image
-//           src={line.merchandise.product.featuredImage.url}
-//           alt={line.merchandise.product.featuredImage.altText || line.merchandise.product.title}
-//           fill
-//           className="object-cover"
-//         />
-
-//         <form action={removeBound}>
-//           <button
-//             type="submit"
-//             className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full shadow-md"
-//             aria-label="Remove from cart"
-//           >
-//             ✕
-//           </button>
-//         </form>
-//       </div>
-
-//       <div className="space-y-2">
-//         <h3 className="text-lg font-light tracking-[0.15em] uppercase text-zinc-700">
-//           {line.merchandise.product.title}
-//         </h3>
-//         <p className="text-sm text-zinc-600 tracking-wider">
-//           {line.cost.totalAmount.currencyCode} {line.cost.totalAmount.amount}
-//         </p>
-
-//         <div className="flex items-center gap-3">
-//           <form
-//             action={qtyAction.bind(null, { merchandiseId, quantity: line.quantity - 1 })}
-//           >
-//             <button type="submit" className="px-3 py-1 border">-</button>
-//           </form>
-
-//           <span className="min-w-6 text-center">{line.quantity}</span>
-
-//           <form
-//             action={qtyAction.bind(null, { merchandiseId, quantity: line.quantity + 1 })}
-//           >
-//             <button type="submit" className="px-3 py-1 border">+</button>
-//           </form>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 function CartItemCard({ line }: { line: any }) {
   const merchandiseId = line.merchandise.id;
+  const updateCartItem = useStore((state) => state.updateCartItem);
 
   const [_, removeAction] = useActionState(removeItem, null);
   const removeBound = removeAction.bind(null, merchandiseId);
@@ -124,15 +81,29 @@ function CartItemCard({ line }: { line: any }) {
 
   const featured = line.merchandise.product.featuredImage;
 
-  // ✅ Try to use a 2nd image for hover (Shopify usually has product.images.edges)
   const secondImage =
     line.merchandise.product?.images?.edges?.[1]?.node ?? featured;
+
+  const handleRemove = async () => {
+    updateCartItem(merchandiseId, 'delete');
+    removeBound();
+  };
+
+  const handleDecrement = async () => {
+    updateCartItem(merchandiseId, 'minus');
+    qtyAction.bind(null, { merchandiseId, quantity: line.quantity - 1 })();
+  };
+
+  const handleIncrement = async () => {
+    updateCartItem(merchandiseId, 'plus');
+    qtyAction.bind(null, { merchandiseId, quantity: line.quantity + 1 })();
+  };
 
   return (
     <div className="group relative">
       <div className="relative aspect-3/4 overflow-hidden bg-zinc-100 mb-4">
         {/* Remove button */}
-        <form action={removeBound}>
+        <form action={handleRemove}>
           <button
             type="submit"
             className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100"
@@ -164,7 +135,7 @@ function CartItemCard({ line }: { line: any }) {
           sizes="(max-width: 768px) 100vw, 25vw"
         />
 
-        {/* (Optional) bottom overlay like wishlist */}
+        {/* Bottom overlay */}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <Link
             href={`/product/${line.merchandise.product.handle}`}
@@ -184,13 +155,13 @@ function CartItemCard({ line }: { line: any }) {
         </p>
 
         <div className="flex items-center gap-3">
-          <form action={qtyAction.bind(null, { merchandiseId, quantity: line.quantity - 1 })}>
+          <form action={handleDecrement}>
             <button type="submit" className="px-3 py-1 border">-</button>
           </form>
 
           <span className="min-w-6 text-center">{line.quantity}</span>
 
-          <form action={qtyAction.bind(null, { merchandiseId, quantity: line.quantity + 1 })}>
+          <form action={handleIncrement}>
             <button type="submit" className="px-3 py-1 border">+</button>
           </form>
         </div>
@@ -198,4 +169,3 @@ function CartItemCard({ line }: { line: any }) {
     </div>
   );
 }
-

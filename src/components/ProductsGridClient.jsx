@@ -1,77 +1,141 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
+import WishlistButton from "./WishlistButton";
 
-const WISHLIST_KEY = "wishlist";
+// Product card component with smooth hover animations (matching Jewellery.tsx)
+function ProductCard({ product }) {
+  const defaultImageRef = useRef(null);
+  const hoverImageRef = useRef(null);
+  const titleRef = useRef(null);
 
-function readWishlist() {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(WISHLIST_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
+  const firstImage = product.images?.[0];
+  const secondImage = product.images?.[1];
+  const price = product.variants?.[0]?.price;
 
-function writeWishlist(items) {
-  try {
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(items));
-  } catch {
-    // ignore storage failures
-  }
+  // Map product to the shape WishlistButton expects
+  const productForWishlist = {
+    id: product.id ?? product.handle,
+    handle: product.handle,
+    title: product.title,
+    featuredImage: { url: firstImage?.url },
+    images: [
+      { url: firstImage?.url },
+      { url: secondImage?.url || firstImage?.url }
+    ],
+    priceRange: price ? {
+      maxVariantPrice: {
+        amount: price.amount,
+        currencyCode: price.currencyCode
+      }
+    } : undefined,
+    variants: product.variants
+  };
+
+  const handleMouseEnter = () => {
+    if (!defaultImageRef.current || !hoverImageRef.current) return;
+
+    defaultImageRef.current.style.transform = 'scale(1.15)';
+    defaultImageRef.current.style.opacity = '0';
+    defaultImageRef.current.style.transition = 'all 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
+
+    hoverImageRef.current.style.transform = 'scale(1.1)';
+    hoverImageRef.current.style.opacity = '1';
+    hoverImageRef.current.style.transition = 'all 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
+
+    if (titleRef.current) {
+      titleRef.current.style.color = '#a3a3a3';
+      titleRef.current.style.transition = 'color 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!defaultImageRef.current || !hoverImageRef.current) return;
+
+    defaultImageRef.current.style.transform = 'scale(1)';
+    defaultImageRef.current.style.opacity = '1';
+    defaultImageRef.current.style.transition = 'all 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
+
+    hoverImageRef.current.style.transform = 'scale(1.15)';
+    hoverImageRef.current.style.opacity = '0';
+    hoverImageRef.current.style.transition = 'all 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
+
+    if (titleRef.current) {
+      titleRef.current.style.color = '#000000';
+      titleRef.current.style.transition = 'color 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+    }
+  };
+
+  return (
+    <Link href={`/product/${product.handle}`} className="block cursor-pointer">
+      <div
+        className="relative cursor-pointer"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="relative w-full aspect-3/4 overflow-hidden bg-neutral-50">
+          {firstImage ? (
+            <>
+              {/* Wishlist button */}
+              <div 
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-white transition-all duration-300"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <WishlistButton product={productForWishlist} />
+              </div>
+
+              <img
+                ref={defaultImageRef}
+                src={firstImage.url}
+                alt={firstImage.altText || product.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <img
+                ref={hoverImageRef}
+                src={secondImage?.url || firstImage.url}
+                alt={`${product.title} Detail`}
+                className="absolute inset-0 w-full h-full object-cover opacity-0 scale-[1.15]"
+              />
+            </>
+          ) : (
+            <div className="absolute inset-0 w-full h-full bg-neutral-100 flex items-center justify-center">
+              <span className="text-neutral-400 text-sm tracking-wide">No image</span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 space-y-2">
+          <h3
+            ref={titleRef}
+            className="text-sm font-light uppercase tracking-[0.2em] text-black"
+          >
+            {product.title}
+          </h3>
+
+          {product.description && (
+            <p className="text-xs text-neutral-500 line-clamp-2 leading-relaxed">
+              {product.description}
+            </p>
+          )}
+
+          {price && (
+            <p className="text-sm font-light text-neutral-600 tracking-wider">
+              {price.amount} {price.currencyCode}
+            </p>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
 }
 
 export default function ProductsGridClient({ products, defaultCols = 4 }) {
   const [cols, setCols] = useState(defaultCols);
-
-  // Keep wishlisted product IDs in a Set for quick checks
-  const [wishSet, setWishSet] = useState(() => new Set());
-
-  // Load wishlist once on mount
-  useEffect(() => {
-    const items = readWishlist();
-    setWishSet(new Set(items.map((i) => i.id)));
-  }, []);
-
-  const isWishlisted = useCallback(
-    (productId) => wishSet.has(productId),
-    [wishSet]
-  );
-
-  const toggleWishlist = useCallback((product) => {
-    const current = readWishlist();
-
-    const exists = current.some((i) => i.id === product.id);
-    let next;
-
-    if (exists) {
-      next = current.filter((i) => i.id !== product.id);
-    } else {
-      const firstImage = product.images?.[0]?.url;
-      const secondImage = product.images?.[1]?.url;
-      const priceObj = product.variants?.[0]?.price;
-
-      next = [
-        ...current,
-        {
-          id: product.id,
-          handle: product.handle,
-          title: product.title,
-          price: priceObj ? `${priceObj.amount} ${priceObj.currencyCode}` : null,
-          defaultImage: firstImage || null,
-          hoverImage: secondImage || null,
-        },
-      ];
-    }
-
-    writeWishlist(next);
-    setWishSet(new Set(next.map((i) => i.id)));
-  }, []);
 
   // Tailwind-safe (strings are explicit so they won't get purged)
   const gridColsClass = useMemo(() => {
@@ -86,92 +150,15 @@ export default function ProductsGridClient({ products, defaultCols = 4 }) {
   return (
     <div>
       {/* Grid Controls */}
-      <div className="mb-8 flex justify-end">
+      <div className="mb-10 flex justify-end">
         <GridSlider cols={cols} setCols={setCols} />
       </div>
 
       {/* Products Grid */}
-      <div className={`grid grid-cols-1 gap-8 ${gridColsClass}`}>
-        {products.map((product) => {
-          const firstImage = product.images?.[0];
-          const secondImage = product.images?.[1];
-          const price = product.variants?.[0]?.price;
-
-          const wished = isWishlisted(product.id);
-
-          return (
-            <Link
-              key={product.id}
-              href={`/product/${product.handle}`}
-              className="group"
-            >
-              <div className="relative overflow-hidden bg-zinc-100">
-                {firstImage ? (
-                  <>
-                    {/* Wishlist button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleWishlist(product);
-                      }}
-                      className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-300"
-                      aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-                    >
-                      <Heart
-                        className={`w-5 h-5 transition-all duration-300 ${
-                          wished
-                            ? "fill-red-500 stroke-red-500"
-                            : "stroke-zinc-700 hover:stroke-red-500"
-                        }`}
-                      />
-                    </button>
-
-                    <img
-                      src={firstImage.url}
-                      alt={firstImage.altText || product.title}
-                      width={500}
-                      height={500}
-                      className="h-96 w-full object-cover transition-all duration-700 ease-out group-hover:opacity-0 group-hover:scale-110"
-                    />
-                    {secondImage && (
-                      <img
-                        src={secondImage.url}
-                        alt={secondImage.altText || product.title}
-                        width={500}
-                        height={500}
-                        className="absolute inset-0 h-96 w-full object-cover opacity-0 scale-110 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-105"
-                      />
-                    )}
-                  </>
-                ) : (
-                  <div className="h-96 w-full bg-zinc-200 flex items-center justify-center">
-                    <span className="text-zinc-400 text-sm">No image</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 space-y-2">
-                <h3 className="text-sm font-light uppercase tracking-[0.2em] text-black transition-colors duration-300 group-hover:text-neutral-500">
-                  {product.title}
-                </h3>
-
-                {product.description && (
-                  <p className="text-xs text-zinc-600 line-clamp-2">
-                    {product.description}
-                  </p>
-                )}
-
-                {price && (
-                  <p className="text-sm font-light text-zinc-800">
-                    {price.amount} {price.currencyCode}
-                  </p>
-                )}
-              </div>
-            </Link>
-          );
-        })}
+      <div className={`grid grid-cols-1 gap-x-8 gap-y-12 ${gridColsClass}`}>
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
       </div>
     </div>
   );

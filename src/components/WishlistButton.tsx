@@ -1,34 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useStore } from '../store';
 
-type WishlistItem = {
-  id: string;
-  handle: string;
-  name: string;
-  price: string;
-  defaultImage: string;
-  hoverImage?: string;
-  variantId?: string; // ✅ OPTIONAL
-};
-
-function readWishlist(): WishlistItem[] {
-  try {
-    const raw = localStorage.getItem('wishlist');
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeWishlist(items: WishlistItem[]) {
-  localStorage.setItem('wishlist', JSON.stringify(items));
-  window.dispatchEvent(new Event('wishlist:changed'));
+// Helper to normalize product ID for comparison
+function normalizeId(id: string): string {
+  if (!id) return '';
+  const match = id.match(/\/(\d+)$/);
+  return match ? match[1] : id;
 }
 
 export default function WishlistButton({ product }: { product: any }) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const wishlist = useStore((state) => state.wishlist);
+  const toggleWishlist = useStore((state) => state.toggleWishlist);
+  const hasHydrated = useStore((state) => state._hasHydrated);
+
+  // Ensure component re-renders after hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const productId = product?.id ?? product?.handle;
   const handle = product.handle;
@@ -36,47 +27,32 @@ export default function WishlistButton({ product }: { product: any }) {
   const defaultImage = product.featuredImage?.url || '';
   const hoverImage = product.images?.[1]?.url || product.images?.[0]?.url || defaultImage;
 
-  // pick a variant id (first variant)
   const variantId = product.variants?.[0]?.id;
 
-  // format price from priceRange (or variant price)
   const currency = product.priceRange?.maxVariantPrice?.currencyCode;
   const amount = product.priceRange?.maxVariantPrice?.amount;
   const price = currency && amount ? `${currency} ${amount}` : '';
 
-  useEffect(() => {
-    const wishlist = readWishlist();
-   setIsWishlisted(wishlist.some((x) => x.id === productId));
-  }, [productId]);
+  // Check if wishlisted using normalized ID and handle
+  const normalizedProductId = normalizeId(productId);
+  const isWishlisted = mounted && hasHydrated && wishlist.some((x) => 
+    normalizeId(x.id) === normalizedProductId || x.handle === handle
+  );
 
   const toggle = () => {
-  const wishlist = readWishlist();
-  const exists = wishlist.some((x) => x.id === productId);
-
-  if (exists) {
-    const next = wishlist.filter((x) => x.id !== productId);
-    writeWishlist(next);
-    setIsWishlisted(false);
-    return;
-  }
-
-  const item = {
-    id: productId,
-  handle: product.handle,
-  name: product.title,
-    price, 
-    defaultImage,
-    hoverImage,
-    ...(variantId ? { variantId } : {}) // ✅ optional
+    toggleWishlist({
+      id: productId,
+      handle,
+      name: product.title,
+      price,
+      defaultImage,
+      hoverImage,
+      ...(variantId ? { variantId } : {}),
+    });
   };
-
-  writeWishlist([...wishlist, item]);
-  setIsWishlisted(true);
-};
 
   return (
     <button type="button" onClick={toggle} aria-label="Toggle wishlist" className="text-xl">
-      
       <svg
         className={`w-5 h-5 transition-colors ${
           isWishlisted ? 'fill-red-500 stroke-red-500' : 'fill-none stroke-zinc-700 hover:stroke-red-500'
@@ -93,4 +69,3 @@ export default function WishlistButton({ product }: { product: any }) {
     </button>
   );
 }
-

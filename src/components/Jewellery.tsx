@@ -73,8 +73,14 @@ const JewelryItem = ({ item }: { item: any }) => {
         onMouseLeave={handleMouseLeave}
       >
         <div className="relative w-full aspect-3/4 overflow-hidden">
-          {/* ✅ WishlistButton (same position) */}
-          <div className="absolute top-4 right-4 z-10">
+          {/* Wishlist button */}
+          <div 
+            className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-white transition-all duration-300"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
             <WishlistButton product={productForWishlist} />
           </div>
 

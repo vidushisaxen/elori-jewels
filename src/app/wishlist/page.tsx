@@ -1,20 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useTransition, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Heart, X, ShoppingCart } from "lucide-react";
-import Image from "next/image";
-import { useActionState } from "react";
-import { useCart } from "../../components/cart/cart-context";
-import { addItem } from "../../components/cart/actions";
-import { useTransition, useRef } from "react";
+import { Heart, X } from "lucide-react";
+import { useStore, WishlistItem } from "../../store";
 
 export default function WishlistPage() {
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const [hoveredItem, setHoveredItem] = useState(null);
-  const { addCartItem } = useCart();
-  const [message, formAction] = useActionState(addItem, null);
-  const [addingId, setAddingId] = useState<string | null>(null);
+  const wishlistItems = useStore((state) => state.wishlist);
+  const removeFromWishlist = useStore((state) => state.removeFromWishlist);
+  const addCartItem = useStore((state) => state.addCartItem);
+
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isAddingId, setIsAddingId] = useState<string | null>(null);
   const [toastOpen, setToastOpen] = useState(false);
@@ -33,57 +29,6 @@ export default function WishlistPage() {
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
   }, []);
-
-  const handleAddToCart = (e: React.MouseEvent, item: any) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // ✅ you MUST have a variantId stored in wishlist item
-    const selectedVariantId = item.variantId;
-    if (!selectedVariantId) {
-      showToast("No variant selected for this item.");
-      return;
-    }
-
-    setIsAddingId(item.id);
-
-    // ✅ optimistic update (same as product page)
-    // addCartItem expects (variant, product)
-    // If you don't have full product/variant objects in wishlist,
-    // you should store them or fetch them. If your cart-context can accept minimal info, use that.
-    if (item.variant && item.product) {
-      addCartItem(item.variant, item.product);
-    }
-
-    startTransition(async () => {
-      const err = await formAction(selectedVariantId);
-
-      setIsAddingId(null);
-
-      // if (!err) showToast(`Added to cart: ${item.name}`);
-      // else showToast("Could not add to cart. Please try again.");
-    });
-  };
-
-  useEffect(() => {
-    // Load wishlist from localStorage
-    const savedWishlist = localStorage.getItem("wishlist");
-    if (savedWishlist) {
-      setWishlistItems(JSON.parse(savedWishlist));
-    }
-  }, []);
-
-  const removeFromWishlist = (productId) => {
-    const updatedWishlist = wishlistItems.filter(
-      (item) => item.id !== productId
-    );
-    setWishlistItems(updatedWishlist);
-    localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
-  };
-
-  const clearWishlist = () => {
-    setWishlistItems([]);
-  };
 
   if (wishlistItems.length === 0) {
     return (
@@ -128,20 +73,13 @@ export default function WishlistPage() {
               {wishlistItems.length === 1 ? "item" : "items"}
             </p>
           </div>
-
-          {/* <button
-            onClick={clearWishlist}
-            className="text-sm uppercase tracking-wider text-zinc-600 hover:text-black border-b border-zinc-600 hover:border-black pb-1 transition-colors"
-          >
-            Clear All
-          </button> */}
         </div>
 
         {/* Wishlist Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {wishlistItems.map((item) => (
+          {wishlistItems.map((item: WishlistItem) => (
             <div
-              key={item.name}
+              key={item.id}
               className="group relative"
               onMouseEnter={() => setHoveredItem(item.id)}
               onMouseLeave={() => setHoveredItem(null)}
@@ -184,32 +122,7 @@ export default function WishlistPage() {
 
                   {/* Add to Cart Overlay */}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {/* <button
-  onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!item.variantId) {
-      showToast('Missing variant. Please re-add this item to wishlist.');
-      return;
-    }
-
-    setAddingId(item.id);
-
-    startTransition(async () => {
-      const err = await formAction(item.variantId);
-      setAddingId(null);
-
-      if (!err) showToast(`Added to cart: ${item.name}`);
-      else showToast('Could not add to cart. Please try again.');
-    });
-  }}
-  disabled={isPending || addingId === item.id}
-  className="w-full bg-white text-black py-3 px-4 text-sm uppercase tracking-wider hover:bg-zinc-100 transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
->
-  <ShoppingCart className="w-4 h-4" />
-  {addingId === item.id ? 'Adding…' : 'Add to Cart'}
-</button> */}
+                    {/* Cart button can be added here if needed */}
                   </div>
                 </div>
 
@@ -237,6 +150,7 @@ export default function WishlistPage() {
         </div>
       </div>
 
+      {/* Toast */}
       <div
         className={[
           "fixed bottom-6 right-6 z-[9999] w-[320px] max-w-[90vw]",
@@ -282,10 +196,6 @@ export default function WishlistPage() {
             </button>
           </div>
         </div>
-
-        <p aria-live="polite" className="sr-only" role="status">
-          {message}
-        </p>
       </div>
     </div>
   );

@@ -14,26 +14,32 @@ export default function RelatedProductsGrid({ products }: { products: any[] }) {
           className="group block"
         >
           <div className="relative overflow-hidden bg-zinc-100 aspect-square mb-4">
-            {/* ✅ Wishlist button */}
-            <div className="absolute top-3 right-3 z-30 pointer-events-auto">
-             <WishlistButton
-  product={{
-    id: product.id,
-    handle: product.handle,
-    title: product.title,
-    variants: product.variants,
-    priceRange: product.priceRange,
-    images: (product.images?.length
-      ? product.images
-      : product.featuredImage
-        ? [product.featuredImage]
-        : []
-    ).map((img: any) => ({
-      url: img.url,
-      altText: img.altText ?? product.title
-    }))
-  } as any}
-/>
+            {/* Wishlist button */}
+            <div 
+              className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-white transition-all duration-300"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              <WishlistButton
+                product={{
+                  id: product.id,
+                  handle: product.handle,
+                  title: product.title,
+                  variants: product.variants,
+                  priceRange: product.priceRange,
+                  images: (product.images?.length
+                    ? product.images
+                    : product.featuredImage
+                      ? [product.featuredImage]
+                      : []
+                  ).map((img: any) => ({
+                    url: img.url,
+                    altText: img.altText ?? product.title
+                  }))
+                } as any}
+              />
             </div>
 
             {product.featuredImage?.url ? (

@@ -1,15 +1,14 @@
-// components/cart/add-to-cart.tsx
 'use client';
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { useCart } from './cart-context';
+import { useStore } from '../../store';
 import { useProduct } from '../product/product-context';
 import type { Product, ProductVariant } from '../../app/lib/shopify/types';
 
 export function AddToCart({ product }: { product: Product }) {
   const { variants, availableForSale } = product;
-  const { addCartItem } = useCart();
+  const addCartItem = useStore((state) => state.addCartItem);
   const { state } = useProduct();
 
   const [toastOpen, setToastOpen] = useState(false);
@@ -51,20 +50,10 @@ export function AddToCart({ product }: { product: Product }) {
 
     startTransition(async () => {
       try {
-        console.log('🛍️ Starting add to cart...', {
-          variantId: finalVariant.id,
-          productTitle: product.title
-        });
-        
-        // Call addCartItem which handles both optimistic update AND API call
         await addCartItem(finalVariant, product);
-        
-        console.log('✅ Add to cart successful');
         showToast(`Added to cart: ${product.title}`);
       } catch (error) {
-        console.error('❌ Add to cart failed:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('Error details:', errorMessage);
         showToast(`Failed: ${errorMessage}`);
       }
     });

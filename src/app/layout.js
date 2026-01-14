@@ -38,11 +38,11 @@ export default function RootLayout({ children }) {
       <body className={`${BSTSpyre.variable} ${Calibre.variable} antialiased`}>
         <CartProvider>
           <LenisSmoothScroll>
-            <Header/>
+            <Header />
             <Suspense fallback={<div>Loading...</div>}>
               {children}
             </Suspense>
-            <Footer/>
+            <Footer />
           </LenisSmoothScroll>
         </CartProvider>
       </body>

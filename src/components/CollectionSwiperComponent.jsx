@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useRef, useState ,useEffect} from 'react';
+import React, { useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { Navigation, Autoplay } from 'swiper/modules';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import WishlistButton from './WishlistButton';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -16,84 +17,27 @@ const ProductItemInCollection = ({ product }) => {
   const hoverImageRef = useRef(null);
   const nameRef = useRef(null);
 
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
   const defaultImage = product.images?.[0]?.url || '/placeholder.jpg';
   const hoverImage = product.images?.[1]?.url || defaultImage;
   const price = product.variants?.[0]?.price;
 
-  const readWishlist = () => {
-    try {
-      const raw = localStorage.getItem('wishlist');
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  };
-
-  const writeWishlist = (items) => {
-    localStorage.setItem('wishlist', JSON.stringify(items));
-    // ✅ update header + any other listeners instantly
-    window.dispatchEvent(new Event('wishlist:changed'));
-  };
-
-  // ✅ hydrate heart state from localStorage (so it stays filled after reload)
-  useEffect(() => {
-    const wishlist = readWishlist();
-    setIsWishlisted(wishlist.some((item) => item.id === product.id));
-  }, [product.id]);
-
-  // ✅ also keep in sync if wishlist changes elsewhere
-  useEffect(() => {
-    const sync = () => {
-      const wishlist = readWishlist();
-      setIsWishlisted(wishlist.some((item) => item.id === product.id));
-    };
-
-    const onStorage = (e) => {
-      if (e.key === 'wishlist') sync();
-    };
-
-    window.addEventListener('wishlist:changed', sync);
-    window.addEventListener('storage', onStorage);
-
-    return () => {
-      window.removeEventListener('wishlist:changed', sync);
-      window.removeEventListener('storage', onStorage);
-    };
-  }, [product.id]);
-
-  const handleWishlistClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const wishlist = readWishlist();
-    const exists = wishlist.some((item) => item.id === product.id);
-
-    if (exists) {
-      // ✅ remove
-      const updated = wishlist.filter((item) => item.id !== product.id);
-      writeWishlist(updated);
-      setIsWishlisted(false);
-      return;
-    }
-
-    // ✅ add (NO DUPLICATES)
-    const newItem = {
-      id: product.id,
-      handle: product.handle,
-      name: product.title,
-      // store price in the same format your wishlist page uses
-      price: price ? `${price.amount} ${price.currencyCode}` : '',
-      defaultImage,
-      hoverImage,
-      // strongly recommended for "add to cart from wishlist"
-      variantId: product.variants?.[0]?.id
-    };
-
-    writeWishlist([...wishlist, newItem]);
-    setIsWishlisted(true);
+  // Map product to the shape WishlistButton expects
+  const productForWishlist = {
+    id: product.id ?? product.handle,
+    handle: product.handle,
+    title: product.title,
+    featuredImage: { url: defaultImage },
+    images: [
+      { url: defaultImage },
+      { url: hoverImage }
+    ],
+    priceRange: price ? {
+      maxVariantPrice: {
+        amount: price.amount,
+        currencyCode: price.currencyCode
+      }
+    } : undefined,
+    variants: product.variants
   };
 
   const handleMouseEnter = () => {
@@ -139,20 +83,16 @@ const ProductItemInCollection = ({ product }) => {
         onMouseLeave={handleMouseLeave}
       >
         <div className="relative w-full aspect-3/4 overflow-hidden">
-          <button
-            type="button"
-            onClick={handleWishlistClick}
-            className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-300"
-            aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          {/* Wishlist button */}
+          <div 
+            className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-white transition-all duration-300"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
-            <Heart
-              className={`w-5 h-5 transition-all duration-300 ${
-                isWishlisted
-                  ? 'fill-red-500 stroke-red-500'
-                  : 'stroke-zinc-700 hover:stroke-red-500'
-              }`}
-            />
-          </button>
+            <WishlistButton product={productForWishlist} />
+          </div>
 
           <img
             ref={defaultImageRef}
@@ -185,16 +125,12 @@ const ProductItemInCollection = ({ product }) => {
   );
 };
 
-
-
 export default function CollectionSwiperComponent({ products }) {
   const prevRef = useRef(null);
   const nextRef = useRef(null);
 
   return (
     <div className="relative">
-      
-
       <Swiper
         modules={[Navigation, Autoplay]}
         spaceBetween={48}
@@ -209,10 +145,6 @@ export default function CollectionSwiperComponent({ products }) {
           swiper.params.navigation.prevEl = prevRef.current;
           swiper.params.navigation.nextEl = nextRef.current;
         }}
-        // pagination={{
-        //   clickable: true,
-        //   dynamicBullets: false,
-        // }}
         autoplay={{
           delay: 4000,
           disableOnInteraction: false,
