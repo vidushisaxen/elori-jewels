@@ -1,15 +1,10 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Autoplay } from 'swiper/modules';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import WishlistButton from '../components/WishlistButton'
-
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import WishlistButton from '../components/WishlistButton';
+import SmoothySlider, { Slide, SmoothySliderRef } from './SmoothySlider';
 
 const JewelryItem = ({ item }: { item: any }) => {
   const itemRef = useRef<HTMLDivElement | null>(null);
@@ -51,28 +46,32 @@ const JewelryItem = ({ item }: { item: any }) => {
     }
   };
 
-  // ✅ Map your `item` to the shape WishlistButton expects
-  // (Your WishlistButton should store id/handle/title/images/price/variantId etc.)
   const productForWishlist = {
-  id: item.id ?? item.handle,   // ✅ fallback
-  handle: item.handle,
-  title: item.name,
-  featuredImage: { url: item.defaultImage },
-  images: [
-    { url: item.defaultImage },
-    { url: item.hoverImage || item.defaultImage }
-  ],
-  variants: item.variantId ? [{ id: item.variantId }] : undefined
-};
+    id: item.id ?? item.handle,
+    handle: item.handle,
+    title: item.name,
+    featuredImage: { url: item.defaultImage },
+    images: [
+      { url: item.defaultImage },
+      { url: item.hoverImage || item.defaultImage }
+    ],
+    variants: item.variantId ? [{ id: item.variantId }] : undefined
+  };
+
   return (
-    <Link href={`/product/${item.handle}`} className="cursor-pointer block">
+    <Link 
+      href={`/product/${item.handle}`} 
+      className="cursor-pointer block select-none"
+      draggable={false}
+    >
       <div
         ref={itemRef}
-        className="cursor-pointer relative"
+        className="cursor-pointer relative select-none"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onDragStart={(e) => e.preventDefault()}
       >
-        <div className="relative w-full aspect-3/4 overflow-hidden">
+        <div className="relative w-full aspect-square overflow-hidden">
           {/* Wishlist button */}
           <div 
             className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-white transition-all duration-300"
@@ -88,23 +87,25 @@ const JewelryItem = ({ item }: { item: any }) => {
             ref={defaultImageRef}
             src={item.defaultImage}
             alt={item.name}
-            className="absolute inset-0 w-full h-full object-cover"
+            draggable={false}
+            className="absolute pointer-events-none inset-0 w-full h-full object-cover select-none"
           />
           <img
             ref={hoverImageRef}
             src={item.hoverImage || item.defaultImage}
             alt={`${item.name} Detail`}
-            className="absolute inset-0 w-full h-full object-cover opacity-0 scale-[1.2]"
+            draggable={false}
+            className="absolute inset-0 pointer-events-none w-full h-full object-cover opacity-0 scale-[1.2] select-none"
           />
         </div>
 
         <h3
           ref={nameRef}
-          className="mt-6 text-lg font-light uppercase text-neutral-500"
+          className="mt-6 text-lg pointer-events-none font-light uppercase text-neutral-500 select-none"
         >
           {item.name}
         </h3>
-        <p className="mt-2 text-sm text-neutral-600 tracking-wider">
+        <p className="mt-2 text-sm pointer-events-none text-neutral-600 tracking-wider select-none">
           {item.price}
         </p>
       </div>
@@ -113,51 +114,46 @@ const JewelryItem = ({ item }: { item: any }) => {
 };
 
 export default function JewelryItemClient({ items }: { items: any[] }) {
-  const prevRef = useRef<HTMLButtonElement | null>(null);
-  const nextRef = useRef<HTMLButtonElement | null>(null);
+  const sliderRef = useRef<SmoothySliderRef>(null);
+
+  const handlePrev = () => {
+    sliderRef.current?.goToPrev();
+  };
+
+  const handleNext = () => {
+    sliderRef.current?.goToNext();
+  };
 
   return (
     <div className="relative">
-      <Swiper
-        modules={[Navigation, Autoplay]}
-        spaceBetween={48}
-        slidesPerView={1}
-        loop={true}
-        speed={800}
-        navigation={{
-          prevEl: prevRef.current,
-          nextEl: nextRef.current
-        }}
-        onBeforeInit={(swiper) => {
-          // @ts-ignore
-          swiper.params.navigation.prevEl = prevRef.current;
-          // @ts-ignore
-          swiper.params.navigation.nextEl = nextRef.current;
-        }}
-        autoplay={{ delay: 4000, disableOnInteraction: false }}
-        breakpoints={{
-          640: { slidesPerView: 2, spaceBetween: 48 },
-          1024: { slidesPerView: 3, spaceBetween: 48 }
-        }}
-        className="pb-16"
+      <SmoothySlider
+        ref={sliderRef}
+        className="py-4 md:px-0 w-screen  cursor-grab active:cursor-grabbing"
+        config={{ infinite: true, snap: false }}
       >
         {items.map((item, index) => (
-          <SwiperSlide key={item.id || index}>
+          <Slide
+            key={item.id || index}
+            className="w-[80vw] md:w-[30vw] px-3 "
+          >
             <JewelryItem item={item} />
-          </SwiperSlide>
+          </Slide>
         ))}
-      </Swiper>
+      </SmoothySlider>
 
+      {/* Navigation buttons */}
       <button
-        ref={prevRef}
-        className="absolute left-[-5%] top-1/2  translate-y-[-50%] w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 opacity-100 hover:bg-white/20 z-10"
+        onClick={handlePrev}
+        className="absolute left-2 md:left-[5%] cursor-pointer top-1/2 z-999 -translate-y-1/2 w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-black/20 "
+        aria-label="Previous slide"
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
 
       <button
-        ref={nextRef}
-        className="absolute right-[-5%] top-1/2  translate-y-[-50%] cursor-pointer w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 opacity-100 hover:bg-white/20 z-10"
+        onClick={handleNext}
+        className="absolute right-2 md:right-[5%] cursor-pointer top-1/2 z-999 -translate-y-1/2 w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-black/20 "
+        aria-label="Next slide"
       >
         <ChevronRight className="w-6 h-6" />
       </button>
