@@ -7,6 +7,7 @@ import { SearchModal } from "./SeachModal";
 import { useLenis } from 'lenis/react';
 import { useStore } from '../store';
 import Image from "next/image";
+import LinkButton from "./Buttons/LinkButton";
 
 export default function Header() {
   const [hovered, setHovered] = useState(null);
@@ -20,7 +21,7 @@ export default function Header() {
   const cart = useStore((state) => state.cart);
   const wishlist = useStore((state) => state.wishlist);
   const hasHydrated = useStore((state) => state._hasHydrated);
-  
+
   // Only show counts after hydration to prevent flicker
   const wishlistCount = hasHydrated ? wishlist.length : 0;
   const cartCount = hasHydrated ? (cart?.totalQuantity || 0) : 0;
@@ -364,16 +365,11 @@ export default function Header() {
 
                 {/* Featured Link */}
                 {link.megaMenu.featured && link.megaMenu.featured.length > 0 && (
-                  <div className="space-y-2 border-t pt-4">
+                  <div className="space-y-2 border-t">
                     {link.megaMenu.featured.map((featuredLink, idx) => (
-                      <Link
-                        key={idx}
-                        href={featuredLink.href}
-                        className="block text-sm cursor-pointer font-medium text-gray-900 hover:text-black transition-colors uppercase"
-                        onClick={closeMenu}
-                      >
-                        {featuredLink.label} →
-                      </Link>
+                      <div onClick={closeMenu} key={idx} className="w-fit cursor-pointer">
+                        <LinkButton href={featuredLink.href} text={"View All"} />
+                      </div>
                     ))}
                   </div>
                 )}

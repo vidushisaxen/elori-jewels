@@ -3,12 +3,12 @@ import React from 'react'
 import { ArrowRight } from "lucide-react";
 
 
-const PrimaryButton = ({href, text}) => {
+const PrimaryButton = ({href, text ,border}) => {
   return (
     <div>
         <Link
           href={href} 
-          className="mt-8 flex items-center min-w-[10vw] justify-between gap-3 px-2 py-2 rounded-full bg-white text-[#111111] text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-[#111111] hover:text-white group"
+          className={`mt-8 flex items-center min-w-[10vw] justify-between gap-3 px-2 py-2 rounded-full bg-white text-[#111111] text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-[#111111] hover:text-white group ${border ? 'border border-black' : ' border-none'} `}
         >
           <div className="flex pl-[1vw] flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
             <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full">{text}</span>

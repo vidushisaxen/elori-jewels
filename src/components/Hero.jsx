@@ -30,7 +30,7 @@ export default function Hero() {
           Your Signature Ear Starts Here
         </p>
 
-        <PrimaryButton text={"Shop Now"} href={"/collections/earrings"}/>
+        <PrimaryButton text={"Shop Now"} href={"/collections/earrings"} border={false}/>
       </div>
     </section>
   );

@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { getCollectionProducts } from '../app/lib/shopify';
 import JewelryItemClient from './Jewellery';
+import LinkButton from './Buttons/LinkButton';
 
 async function JewelrySectionContent() {
   let jewelryItems = [];
@@ -44,23 +45,7 @@ async function JewelrySectionContent() {
         </h1>
         
         <JewelryItemClient items={jewelryItems} />
-
-        <div className="text-center mt-12 flex items-center justify-center">
-        <div className="text-center mt-12 flex items-center justify-center">
-          <Link
-            href="/collection/rings"
-            className="cursor-pointer h-fit group space-y-1 relative w-fit"
-          >
-            <div className="uppercase overflow-hidden relative z-10 text-xs w-20 tracking-widest ">
-              <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300 ">Shop Now</p>
-              <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300 ">Shop Now</span>
-            </div>
-            <span className="w-full rounded-full relative block h-[2px] bg-black/20 ">
-              <span className="w-0 h-full bg-black absolute left-0 top-0 transition-all duration-300 ease-in-out group-hover:w-full"></span>
-            </span>
-          </Link>
-        </div>
-        </div>
+        <LinkButton href={"/collection/rings"} text={"Shop Now"}/>
       </div>
     </div>
   );

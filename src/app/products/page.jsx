@@ -1,6 +1,7 @@
 import Link from "next/link";
 import CollectionSwiperComponent from "../../components/CollectionSwiperComponent";
 import { getAllCollections, getCollectionProducts } from "../lib/shopify";
+import LinkButton from "../../components/Buttons/LinkButton";
 
 export const metadata = {
   title: "Products · Elori Jewels",
@@ -53,13 +54,8 @@ export default async function ProductsPage() {
       )}
 
       {/* View All Button */}
-      <div className="mt-6">
-        <Link
-          href={`/collection/${collection.handle}`}
-          className="inline-block cursor-pointer text-sm uppercase tracking-wider text-neutral-700 hover:text-black transition-colors border-b border-neutral-400 hover:border-black"
-        >
-          View all
-        </Link>
+      <div className="w-full">
+      <LinkButton href={`/collection/${collection.handle}`} text={"View All"}/>
       </div>
     </div>
 

@@ -301,6 +301,7 @@ const Journey = ({ collections }) => {
             <PrimaryButton 
               text="Explore Collections" 
               href={`/collection/${currentCollection?.handle}` || "#"} 
+              border={false}
             />
           </div>
         </div>

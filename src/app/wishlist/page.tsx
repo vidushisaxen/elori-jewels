@@ -142,7 +142,7 @@ export default function WishlistPage() {
             >
               Continue Shopping
             </Link> */}
-            <PrimaryButton text={"Continue Shopping"} href={"/products"}/>
+            <PrimaryButton text={"Continue Shopping"} href={"/products"} border={true}/>
           </div>
         </div>
       </div>
@@ -245,7 +245,7 @@ export default function WishlistPage() {
             </div>
           ))}
         </div>
-        <PrimaryButton text={"Continue Shopping"} href={"/products"}/>
+        <PrimaryButton text={"Continue Shopping"} href={"/products"} border={false}/>
 
         {/* Continue Shopping */}
         {/* <div className="mt-16 text-center border-t border-zinc-200 pt-12">

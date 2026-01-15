@@ -11,6 +11,7 @@ import {
 import { useStore } from "../../store";
 import type { Cart } from "../lib/shopify/types";
 import { useEffect } from "react";
+import PrimaryButton from "../../components/Buttons/PrimaryButton";
 
 export default function CartPageClient({
   cart: initialCart,
@@ -35,7 +36,7 @@ export default function CartPageClient({
 
   const handleCheckout = () => {
     if (cart?.checkoutUrl) {
-      window.open(cart.checkoutUrl, '_blank');
+      window.open(cart.checkoutUrl, "_blank");
     }
   };
 
@@ -46,12 +47,9 @@ export default function CartPageClient({
           My Cart
         </h1>
         <p className="text-zinc-600 mb-8">Your cart is empty.</p>
-        <Link
-          href="/products"
-          className="inline-block bg-black text-white px-8 py-3 text-sm uppercase tracking-widest"
-        >
-          Continue Shopping
-        </Link>
+         <div onClick={handleDeleteAll} className="w-fit mt-0 text-center inline-block">
+            <PrimaryButton text={"Continue Shopping"} href={"/products"} border={true} />
+          </div>
       </div>
     );
   }
@@ -66,14 +64,12 @@ export default function CartPageClient({
             </h1>
             <p className="text-zinc-600 text-sm">{cart.totalQuantity} items</p>
           </div>
-          <div className="mt-0 text-center border-zinc-200 cursor-pointer">
-            <p
-              className="inline-block bg-black text-white px-8 py-3 text-sm uppercase tracking-widest hover:bg-zinc-800 transition-colors"
-              onClick={handleDeleteAll}
-            >
-              Delete All
-            </p>
+
+           <div onClick={handleDeleteAll} className="w-fit mt-0 text-center">
+            <PrimaryButton text={"Delete All"} href={"#"} border={true} />
           </div>
+          
+       
         </div>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -90,13 +86,9 @@ export default function CartPageClient({
               {cart.cost.totalAmount.amount}
             </div>
           </div>
-
-          <button
-            onClick={handleCheckout}
-            className="bg-black text-white px-10 py-4 text-sm uppercase tracking-widest hover:bg-zinc-800"
-          >
-            Checkout
-          </button>
+          <div onClick={handleCheckout} className="w-fit">
+            <PrimaryButton text={"Checkout"} href={"#"} border={true} />
+          </div>
         </div>
       </div>
     </div>

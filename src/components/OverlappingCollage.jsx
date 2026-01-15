@@ -66,7 +66,7 @@ const Advantage = () => {
             </p>
           </div>
           <div className="w-fit">
-         <PrimaryButton text={"Shop Now"} href={"/collection/earrings"}/>
+         <PrimaryButton text={"Shop Now"} href={"/collection/earrings"} border={false}/>
          </div>
         </div>
 
@@ -136,7 +136,7 @@ const Diversify = () => {
             </p>
           </div>
          <div className="w-fit">
-         <PrimaryButton text={"Shop Now"} href={"/collection/earrings"}/>
+         <PrimaryButton text={"Shop Now"} href={"/collection/earrings"} border={false}/>
          </div>
         </div>
       </div>
