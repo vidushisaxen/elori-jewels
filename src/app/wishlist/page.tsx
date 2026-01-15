@@ -123,7 +123,7 @@ export default function WishlistPage() {
   if (wishlistItems.length === 0) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-16">
+        <div className="mx-auto max-w-7xl px-4 py-35">
           <h1 className="text-4xl font-light uppercase tracking-wide mb-8 text-center">
             My Wishlist
           </h1>

@@ -12,6 +12,7 @@ import { useStore } from "../../store";
 import type { Cart } from "../lib/shopify/types";
 import { useEffect } from "react";
 import PrimaryButton from "../../components/Buttons/PrimaryButton";
+import { ShoppingCartIcon } from "lucide-react";
 
 export default function CartPageClient({
   cart: initialCart,
@@ -42,14 +43,24 @@ export default function CartPageClient({
 
   if (!cart || cart.lines.length === 0) {
     return (
-      <div className="min-h-screen bg-white px-4 py-16 text-center ">
+      <div className="min-h-screen bg-white px-4 py-35 text-center ">
         <h1 className="text-4xl font-light uppercase tracking-wide mb-6">
           My Cart
         </h1>
+        <div className="flex flex-col items-center justify-center py-20">
+          <ShoppingCartIcon className="w-24 h-24 text-zinc-300 mb-6" />
+        </div>
         <p className="text-zinc-600 mb-8">Your cart is empty.</p>
-         <div onClick={handleDeleteAll} className="w-fit mt-0 text-center inline-block">
-            <PrimaryButton text={"Continue Shopping"} href={"/products"} border={true} />
-          </div>
+        <div
+          onClick={handleDeleteAll}
+          className="w-fit mt-0 text-center inline-block"
+        >
+          <PrimaryButton
+            text={"Continue Shopping"}
+            href={"/products"}
+            border={true}
+          />
+        </div>
       </div>
     );
   }
@@ -65,11 +76,9 @@ export default function CartPageClient({
             <p className="text-zinc-600 text-sm">{cart.totalQuantity} items</p>
           </div>
 
-           <div onClick={handleDeleteAll} className="w-fit mt-0 text-center">
+          <div onClick={handleDeleteAll} className="w-fit mt-0 text-center">
             <PrimaryButton text={"Delete All"} href={"#"} border={true} />
           </div>
-          
-       
         </div>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

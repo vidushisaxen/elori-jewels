@@ -1,10 +1,18 @@
 "use client";
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useLayoutEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import WishlistButton from "./WishlistButton";
 import Image from "next/image";
+import { gsap } from "gsap";
+import { Flip } from "gsap/Flip";
+import { GridIcon } from "lucide-react";
+
+// Register GSAP Flip plugin
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(Flip);
+}
 
 // Product card component with smooth hover animations (matching Jewellery.tsx)
 function ProductCard({ product }) {
@@ -141,6 +149,7 @@ function ProductCard({ product }) {
 
 export default function ProductsGridClient({ products, defaultCols = 4 }) {
   const [cols, setCols] = useState(defaultCols);
+  const gridRef = useRef(null);
 
   // Tailwind-safe (strings are explicit so they won't get purged)
   const gridColsClass = useMemo(() => {
@@ -152,6 +161,24 @@ export default function ProductsGridClient({ products, defaultCols = 4 }) {
     }[cols];
   }, [cols]);
 
+  // Use GSAP Flip to animate grid layout changes
+  useLayoutEffect(() => {
+    if (!gridRef.current) return;
+
+    const state = Flip.getState(gridRef.current.children);
+    
+    // After the DOM updates with new grid class
+    requestAnimationFrame(() => {
+      Flip.from(state, {
+        duration: 0.6,
+        ease: "power2.inOut",
+        scale: true,
+        simple: true,
+        stagger: 0.02,
+      });
+    });
+  }, [cols]);
+
   return (
     <div>
       {/* Grid Controls */}
@@ -160,7 +187,7 @@ export default function ProductsGridClient({ products, defaultCols = 4 }) {
       </div>
 
       {/* Products Grid */}
-      <div className={`grid grid-cols-1 gap-x-8 gap-y-12 ${gridColsClass}`}>
+      <div ref={gridRef} className={`grid grid-cols-1 gap-x-8 gap-y-12 ${gridColsClass}`}>
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
@@ -177,13 +204,8 @@ function GridSlider({ cols, setCols }) {
   return (
     <div className="flex items-center gap-3">
       {/* Grid icon */}
-      <div className="h-9 w-9 grid place-items-center border border-neutral-200 bg-white">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <rect x="1" y="1" width="6" height="6" stroke="currentColor" />
-          <rect x="9" y="1" width="6" height="6" stroke="currentColor" />
-          <rect x="1" y="9" width="6" height="6" stroke="currentColor" />
-          <rect x="9" y="9" width="6" height="6" stroke="currentColor" />
-        </svg>
+      <div className="h-9 w-9 grid place-items-center  bg-white">
+       <GridIcon />
       </div>
 
       {/* Slider */}

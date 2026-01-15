@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AnnouncementBar from "./AnnouncementsBar";
 import { SearchModal } from "./SeachModal";
 import { useLenis } from "lenis/react";
@@ -15,10 +15,12 @@ import {
   SearchIcon,
   ShoppingBag,
   ShoppingBagIcon,
+  ShoppingCartIcon,
   User2,
 } from "lucide-react";
 import WishlistButton from "./WishlistButton";
 import PrimaryButton from "./Buttons/PrimaryButton";
+import gsap from "gsap";
 
 export default function Header() {
   const [hovered, setHovered] = useState(null);
@@ -27,6 +29,10 @@ export default function Header() {
   const [products, setProducts] = useState([]);
   const [collections, setCollections] = useState([]);
   const [leftLinks, setLeftLinks] = useState([]);
+
+  // Refs for GSAP animations
+  const megaMenuRefs = useRef({});
+  const overlayRef = useRef(null);
 
   // Zustand store
   const cart = useStore((state) => state.cart);
@@ -66,6 +72,52 @@ export default function Header() {
       window.lenis?.start();
     }
   }, [isSearchOpen]);
+
+  // GSAP animation for mega menu
+  useEffect(() => {
+    if (megaMenuOpen) {
+      const menuElement = megaMenuRefs.current[megaMenuOpen];
+
+      if (menuElement) {
+        gsap.killTweensOf(menuElement);
+        gsap.to(menuElement, {
+          x: 0,
+          duration: 0.6,
+          ease: "power3.out",
+        });
+      }
+
+      if (overlayRef.current) {
+        gsap.killTweensOf(overlayRef.current);
+        gsap.to(overlayRef.current, {
+          opacity: 1,
+          duration: 0.4,
+          ease: "power2.out",
+        });
+      }
+    } else {
+      // Close all menus
+      Object.values(megaMenuRefs.current).forEach((menuElement) => {
+        if (menuElement) {
+          gsap.killTweensOf(menuElement);
+          gsap.to(menuElement, {
+            x: "-100%",
+            duration: 0.5,
+            ease: "power3.in",
+          });
+        }
+      });
+
+      if (overlayRef.current) {
+        gsap.killTweensOf(overlayRef.current);
+        gsap.to(overlayRef.current, {
+          opacity: 0,
+          duration: 0.3,
+          ease: "power2.in",
+        });
+      }
+    }
+  }, [megaMenuOpen]);
 
   const fetchShopifyData = async () => {
     try {
@@ -317,18 +369,30 @@ export default function Header() {
 
         <div className="w-fit px-[2vw] bg-black  absolute right-[1.2vw] rounded-full flex items-center justify-between gap-5 py-[1vw] text-white">
           <div
-            className="w-4 h-4 cursor-pointer flex items-center justify-center"
+            className="w-4 h-4 cursor-pointer flex items-center justify-center group relative"
             onClick={() => setIsSearchOpen(true)}
           >
-            <SearchIcon />
+            <SearchIcon className="group-hover:scale-110 transition-transform duration-200 ease-out" />
           </div>
           <div className="w-px h-5 bg-white"></div>
           <Link
             href="/cart"
-            className="w-4 h-4 cursor-pointer flex items-center justify-center relative"
+            className="w-5 h-5 cursor-pointer flex items-center justify-center relative group"
+          >
+            <ShoppingCartIcon strokeWidth={1.4} className="group-hover:scale-110 transition-transform duration-200 ease-out" />
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-white text-black text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </Link>
+          <div className="w-px h-5 bg-white"></div>
+          <Link
+            href="/wishlist"
+            className="w-5 h-5 cursor-pointer flex items-center justify-center relative group"
           >
             <svg
-              className="icon-cart"
+              className="icon-cart group-hover:scale-110 transition-transform duration-200 ease-out"
               width="15"
               height="18"
               viewBox="0 0 15 18"
@@ -348,18 +412,6 @@ export default function Header() {
                 strokeLinecap="round"
               ></path>
             </svg>
-            {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-white text-black text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
-                {cartCount}
-              </span>
-            )}
-          </Link>
-          <div className="w-px h-5 bg-white"></div>
-          <Link
-            href="/wishlist"
-            className="w-4 h-4 cursor-pointer flex items-center justify-center relative"
-          >
-            <HeartIcon />
             {wishlistCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-white text-black text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
                 {wishlistCount}
@@ -371,14 +423,9 @@ export default function Header() {
 
       {/* MEGA MENU OVERLAY */}
       <div
-        className={`
-            fixed inset-0 top-[4.5rem] bg-black/40 transition-opacity duration-500 z-30
-            ${
-              megaMenuOpen
-                ? "opacity-100 visible"
-                : "opacity-0 invisible pointer-events-none"
-            }
-          `}
+        ref={overlayRef}
+        className="fixed inset-0 top-[4.5rem] bg-black/40 z-30 opacity-0 pointer-events-none"
+        style={{ pointerEvents: megaMenuOpen ? "auto" : "none" }}
         onClick={closeMenu}
       />
 
@@ -386,11 +433,11 @@ export default function Header() {
       {leftLinks.map((link) => {
         if (!link.megaMenu) return null;
         const id = `left-${link.label}`;
-        const isOpen = megaMenuOpen === id;
 
         return (
           <div
             key={id}
+            ref={(el) => (megaMenuRefs.current[id] = el)}
             onMouseEnter={() => {
               setHovered(id);
               setMegaMenuOpen(id);
@@ -399,12 +446,10 @@ export default function Header() {
               setHovered(null);
               setMegaMenuOpen(null);
             }}
-            className={`
-                fixed left-0 top-[4.5rem] w-1/2 bg-white shadow-md stransition-transform duration-500 z-40
-                ${isOpen ? "translate-x-0" : "-translate-x-full"}
-              `}
+            className="fixed left-0 top-[4.5rem] w-1/2 bg-white shadow-md z-40"
             style={{
               height: "calc(100vh - 4.5rem)",
+              transform: "translateX(-100%)",
             }}
           >
             <div className="h-full flex">
@@ -423,26 +468,37 @@ export default function Header() {
                         Featured Products
                       </h3>
                       <div className="flex flex-wrap w-[80%] mt-[2vw] gap-x-4 gap-y-2">
-                        {link.megaMenu.products.map((product, idx) => (
-                          <Link
-                            key={idx}
-                            href={`/product/${product.handle}`}
-                            className="cursor-pointer h-fit group space-y-1 relative w-fit"
-                            onClick={closeMenu}
-                          >
-                            <div className=" overflow-hidden relative z-10 text-sm tracking-widest">
-                              <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                                {product.title}
-                              </p>
-                              <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                                {product.title}
-                              </span>
-                            </div>
-                          </Link>
-                        )).reduce((acc, curr, idx) => {
-                          if (idx === 0) return [curr];
-                          return [...acc, <span key={`sep-${idx}`} className="text-gray-300 select-none">|</span>, curr];
-                        }, [])}
+                        {link.megaMenu.products
+                          .map((product, idx) => (
+                            <Link
+                              key={idx}
+                              href={`/product/${product.handle}`}
+                              className="cursor-pointer h-fit group space-y-1 relative w-fit"
+                              onClick={closeMenu}
+                            >
+                              <div className=" overflow-hidden relative z-10 text-sm tracking-widest">
+                                <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
+                                  {product.title}
+                                </p>
+                                <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
+                                  {product.title}
+                                </span>
+                              </div>
+                            </Link>
+                          ))
+                          .reduce((acc, curr, idx) => {
+                            if (idx === 0) return [curr];
+                            return [
+                              ...acc,
+                              <span
+                                key={`sep-${idx}`}
+                                className="text-gray-300 select-none"
+                              >
+                                |
+                              </span>,
+                              curr,
+                            ];
+                          }, [])}
                       </div>
                     </div>
                   )}
@@ -458,7 +514,7 @@ export default function Header() {
                           className="w-fit cursor-pointer transform hover:scale-105 transition-transform duration-200"
                         >
                           <PrimaryButton
-                          border={true}
+                            border={true}
                             href={featuredLink.href}
                             text={"View All"}
                           />
