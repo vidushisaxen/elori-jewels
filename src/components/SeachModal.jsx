@@ -141,7 +141,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
           </button>
 
           {/* Brand Name */}
-          <div className="text-2xl font-serif tracking-wider text-center mb-12">
+          <div className="text-2xl  tracking-wider text-center mb-12 font-calibre!">
             ELORI JEWELS
           </div>
 
@@ -161,7 +161,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
           {/* Suggested Terms - Only show when not searching */}
           {!searchTerm && (
             <div className="mb-12">
-              <div className="text-xs text-stone-500 tracking-wider mb-4">SUGGESTED TERMS:</div>
+              <div className="text-xs text-stone-500 tracking-wider mb-4 font-calibre!">SUGGESTED TERMS:</div>
               <div className="flex flex-wrap gap-4">
                 {suggestedTerms.map((term) => (
                   <button
@@ -178,8 +178,8 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
 
           {/* Featured Collections - Only show when not searching */}
           {!searchTerm && collections && collections.length > 0 && (
-            <div>
-              <h2 className="text-3xl font-serif mb-8 text-center">
+            <div> 
+              <h2 className="text-3xl  mb-8 text-center font-calibre!">
                 Looking for something more...
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -202,7 +202,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
                         </div>
                       )}
                     </div>
-                    <h3 className="font-serif text-xl text-center">{collection.title}</h3>
+                    <h3 className="font-calibre text-xl text-center">{collection.title}</h3>
                   </Link>
                 ))}
               </div>
