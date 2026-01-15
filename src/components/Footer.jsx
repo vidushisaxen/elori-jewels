@@ -2,6 +2,44 @@
 import Link from "next/link";
 import { getShopPolicies } from "../app/lib/shopify/policies";
 
+
+const brandProfile = [
+  {
+    text:"Stores",
+    link:"#"
+  },
+  {
+    text:"Philanthropy",
+    link:"#"
+  },
+  {
+    text:"Recycling",
+    link:"#"
+  },
+  {
+    text:"Care Guide",
+    link:"#"
+  },
+  {
+    text:"Careers",
+    link:"#"
+  },
+
+]
+const social=[
+  {
+    text:"Instagram",
+    link:"#"
+  },
+  {
+    text:"Facebook",
+    link:"#"
+  },
+  {
+    text:"Pinterest",
+    link:"#"
+  },
+]
 export default async function Footer() {
   const policies = await getShopPolicies();
 
@@ -78,122 +116,45 @@ export default async function Footer() {
         <div className="flex flex-col gap-3 text-xs uppercase tracking-widest">
           <h4 className="font-semibold mb-2">Brand Profile</h4>
 
-          <Link
-            href="/brand-profile"
+          {brandProfile.map((item,index)=>(
+            
+             <Link key={index}
+            href={item.link}
             className="cursor-pointer h-fit group space-y-1 relative w-fit"
           >
             <div className="uppercase overflow-hidden relative z-10 text-xs tracking-widest">
               <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                Stores
+                {item.text}
               </p>
               <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                Stores
+               {item.text}
               </span>
             </div>
           </Link>
-          <Link
-            href="/philanthropy"
-            className="cursor-pointer h-fit group space-y-1 relative w-fit"
-          >
-            <div className="uppercase overflow-hidden relative z-10 text-xs tracking-widest">
-              <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                Philanthropy
-              </p>
-              <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                Philanthropy
-              </span>
-            </div>
-          </Link>
-          <Link
-            href="/recycling"
-            className="cursor-pointer h-fit group space-y-1 relative w-fit"
-          >
-            <div className="uppercase overflow-hidden relative z-10 text-xs tracking-widest">
-              <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                Recycling
-              </p>
-              <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                Recycling
-              </span>
-            </div>
-          </Link>
-          <Link
-            href="/care-guide"
-            className="cursor-pointer h-fit group space-y-1 relative w-fit"
-          >
-            <div className="uppercase overflow-hidden relative z-10 text-xs tracking-widest">
-              <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                Care Guide
-              </p>
-              <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                Care Guide
-              </span>
-            </div>
-          </Link>
-          <Link
-            href="/careers"
-            className="cursor-pointer h-fit group space-y-1 relative w-fit"
-          >
-            <div className="uppercase overflow-hidden relative z-10 text-xs tracking-widest">
-              <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                Careers
-              </p>
-              <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                Careers
-              </span>
-            </div>
-          </Link>
+          ))}
         </div>
 
         {/* COLUMN 3 */}
         <div className="flex flex-col gap-3 text-xs uppercase tracking-widest">
           <h4 className="font-semibold mb-2">Social</h4>
 
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
+
+          {social.map((item,index)=>(
+            
+             <Link key={index}
+            href={item.link}
             className="cursor-pointer h-fit group space-y-1 relative w-fit"
           >
             <div className="uppercase overflow-hidden relative z-10 text-xs tracking-widest">
               <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                Instagram
+                {item.text}
               </p>
               <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                Instagram
+               {item.text}
               </span>
             </div>
-          </a>
-          <a
-            href="https://facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cursor-pointer h-fit group space-y-1 relative w-fit"
-          >
-            <div className="uppercase overflow-hidden relative z-10 text-xs tracking-widest">
-              <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                Facebook
-              </p>
-              <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                Facebook
-              </span>
-            </div>
-          </a>
-          <a
-            href="https://pinterest.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cursor-pointer h-fit group space-y-1 relative w-fit"
-          >
-            <div className="uppercase overflow-hidden relative z-10 text-xs tracking-widest">
-              <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                Pinterest
-              </p>
-              <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                Pinterest
-              </span>
-            </div>
-          </a>
+          </Link>
+          ))}
         </div>
 
         {/* COLUMN 4 – JOIN THE LIST */}
@@ -221,6 +182,8 @@ export default async function Footer() {
               <span className="w-0 h-full bg-black absolute left-0 top-0 transition-all duration-300 ease-in-out group-hover:w-full"></span>
             </span>
           </div>
+
+          {/* <NewsletterSignup/> */}
 
           <p className="text-sm opacity-80 mt-6 leading-snug">
             ELORI JEWELS is an ethically crafted conceptual fine jewellery
