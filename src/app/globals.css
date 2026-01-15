@@ -41,3 +41,64 @@ body {
 ::-webkit-scrollbar-thumb {
   background: black;
 }
+
+
+
+
+  
+
+
+  .policyContent {
+    width: 100%;
+    padding-left: 5%;
+  }
+  
+  .policyContent h2 {
+    font-size: 1.8vw;
+    font-weight: 500;
+    font-family: var(--font-calibre);
+    scroll-behavior: smooth;
+    scroll-margin-top: 7vw;
+  }
+  
+  .policyContent p {
+    font-size: 1.2vw;
+    text-rendering: geometricPrecision;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.5px;
+    margin: 2% 0 2%;
+  }
+
+  .policyContent.mb-0 {
+    margin-bottom: 0;
+  }
+
+  .policyContent p:first-child {
+    margin-top: 0;
+  }
+
+  .policyContent ul,
+  .policyContent ol {
+    margin-left: 1.5vw;
+    margin-top: 1%;
+    padding-bottom: 1.5%;
+  }
+  .policyContent li {
+    text-rendering: geometricPrecision;
+    font-weight: 400;
+    font-size: 1.2vw;
+    letter-spacing: 0.5px;
+    line-height: 1.5;
+    color: var(--text-body);
+    margin-bottom: 0.4%;
+  }
+  .policyContent li:last-child {
+    margin-bottom: 0;
+  }
+  .policyContent ol li {
+    list-style: auto;
+  }
+  .policyContent ul li {
+    list-style: disc;
+  }
