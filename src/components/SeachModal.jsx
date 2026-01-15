@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Search, X } from 'lucide-react';
-import { useLenis } from 'lenis/react'
+import { useLenis } from 'lenis/react';
+import gsap from 'gsap';
 import Image from 'next/image';
 
 
@@ -9,22 +10,26 @@ import Image from 'next/image';
 export const SearchModal = ({ isOpen, onClose, products, collections }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
-const lenis = useLenis();
+  const lenis = useLenis();
   
-    useEffect(() => {
-      if (!lenis) return;
+  const modalRef = useRef(null);
+  const backdropRef = useRef(null);
+  const contentRef = useRef(null);
   
-      if (isOpen) {
-        lenis.stop();   
-      } else {
-        lenis.start(); 
-      }
-  
-      return () => {
-        
-        lenis.start();
-      };
-    }, [isOpen, lenis]);
+  useEffect(() => {
+    if (!lenis) return;
+
+    if (isOpen) {
+      lenis.stop();   
+    } else {
+      lenis.start(); 
+    }
+
+    return () => {
+      lenis.start();
+    };
+  }, [isOpen, lenis]);
+
   useEffect(() => {
     if (searchTerm.trim()) {
       const filtered = products.filter(product => {
@@ -52,6 +57,48 @@ const lenis = useLenis();
     }
   }, [searchTerm, products]);
 
+  // GSAP Animation for opening/closing modal
+  useEffect(() => {
+    if (isOpen) {
+      // Opening animation
+      const tl = gsap.timeline();
+      
+      tl.set(modalRef.current, { display: 'block' })
+        .to(backdropRef.current, {
+          opacity: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        })
+        .fromTo(contentRef.current, 
+          { y: '-100%' },
+          { 
+            y: '0%',
+            duration: 0.6,
+            ease: 'power3.out'
+          },
+          '-=0.2'
+        );
+    } else {
+      // Closing animation
+      const tl = gsap.timeline({
+        onComplete: () => {
+          gsap.set(modalRef.current, { display: 'none' });
+        }
+      });
+      
+      tl.to(contentRef.current, {
+        y: '-100%',
+        duration: 0.5,
+        ease: 'power3.in'
+      })
+        .to(backdropRef.current, {
+          opacity: 0,
+          duration: 0.3,
+          ease: 'power2.in'
+        }, '-=0.3');
+    }
+  }, [isOpen]);
+
   const handleSuggestedClick = (term) => {
     setSearchTerm(term);
   };
@@ -66,21 +113,23 @@ const lenis = useLenis();
 
   return (
     <div
-      className={`fixed inset-0 z-[999] transition-all duration-500 min-h-screen ${
-        isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-      }`}
+      ref={modalRef}
+      className="fixed inset-0 z-[999] min-h-screen"
+      style={{ display: 'none' }}
     >
       {/* Backdrop */}
       <div
+        ref={backdropRef}
         className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+        style={{ opacity: 0 }}
         onClick={handleClose}
       />
 
       {/* Modal Content */}
       <div
-        className={`absolute top-0 left-0 right-0 bg-stone-50 transition-transform duration-500 ${
-          isOpen ? 'translate-y-0' : '-translate-y-full'
-        }`}
+        ref={contentRef}
+        className="absolute top-0 left-0 right-0 bg-stone-50"
+        style={{ transform: 'translateY(-100%)' }}
       >
         <div className="max-w-6xl mx-auto px-6 py-12">
           {/* Close Button */}

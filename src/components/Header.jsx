@@ -25,7 +25,7 @@ export default function Header() {
   // Only show counts after hydration to prevent flicker
   const wishlistCount = hasHydrated ? wishlist.length : 0;
   const cartCount = hasHydrated ? (cart?.totalQuantity || 0) : 0;
-
+  
   const lenis = useLenis();
 
   useEffect(() => {

@@ -2,12 +2,11 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { Observer } from "gsap/Observer";
-import { Draggable } from "gsap/Draggable";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import PrimaryButton from "./Buttons/PrimaryButton";
 
-gsap.registerPlugin(Observer, Draggable);
+gsap.registerPlugin(Observer);
 
 const NEXT = 1;
 const PREV = -1;
@@ -16,12 +15,15 @@ const Journey = ({ collections }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [current, setCurrent] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [direction, setDirection] = useState(NEXT);
   const slidesRef = useRef([]);
   const slidesInnerRef = useRef([]);
   const isAnimatingRef = useRef(false);
   const currentRef = useRef(0);
   const autoplayTimerRef = useRef(null);
   const containerRef = useRef(null);
+  const touchStartRef = useRef(null);
+  const touchEndRef = useRef(null);
 
   const slidesTotal = collections?.length || 0;
 
@@ -53,7 +55,7 @@ const Journey = ({ collections }) => {
   }, [collections]);
 
   const navigate = useCallback(
-    (direction) => {
+    (dir) => {
       if (isAnimatingRef.current || !collections || collections.length === 0)
         return false;
 
@@ -62,12 +64,13 @@ const Journey = ({ collections }) => {
         clearTimeout(autoplayTimerRef.current);
       }
 
+      setDirection(dir);
       setIsAnimating(true);
       isAnimatingRef.current = true;
 
       const previous = currentRef.current;
       const newCurrent =
-        direction === 1
+        dir === 1
           ? previous < slidesTotal - 1
             ? previous + 1
             : 0
@@ -86,83 +89,56 @@ const Journey = ({ collections }) => {
         return;
       }
 
-      gsap
-        .timeline({
-          onStart: () => {
-            gsap.set(upcomingSlide, { zIndex: 99 });
-            setCurrent(newCurrent);
-            currentRef.current = newCurrent;
-          },
-          onComplete: () => {
-            gsap.set(upcomingSlide, { zIndex: 1 });
-            setIsAnimating(false);
-            isAnimatingRef.current = false;
+      // Update the DOM
+      gsap.set(upcomingSlide, { zIndex: 99, autoAlpha: 1 });
+      setCurrent(newCurrent);
+      currentRef.current = newCurrent;
 
-            startAutoplay();
-          },
-        })
-        .addLabel("start", 0)
-        .fromTo(
-          upcomingSlide,
-          {
-            autoAlpha: 1,
-            scale: 0.1,
-            xPercent: direction * 100,
-          },
-          {
-            duration: 0.7,
-            ease: "expo",
-            scale: 0.4,
-            xPercent: 0,
-          },
-          "start"
-        )
+      // Enhanced animation with clip-path
+      const tl = gsap.timeline({
+        onComplete: () => {
+          gsap.set(upcomingSlide, { zIndex: 1 });
+          gsap.set(currentSlide, { autoAlpha: 0 });
+          setIsAnimating(false);
+          isAnimatingRef.current = false;
+          startAutoplay();
+        },
+      });
+
+      // Clip-path animation
+      const clipPathStart = dir === NEXT 
+        ? "polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%)"
+        : "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)";
+      const clipPathEnd = "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)";
+
+      tl.fromTo(
+        upcomingSlide,
+        {
+          clipPath: clipPathStart,
+          autoAlpha: 1,
+        },
+        {
+          duration: 1.4,
+          clipPath: clipPathEnd,
+          ease: "power3.inOut",
+        },
+        0
+      )
         .fromTo(
           upcomingInner,
           {
-            filter: "contrast(100%) saturate(100%)",
-            transformOrigin: "100% 50%",
-            scaleX: 4,
+            scale: 1.3,
+            filter: "brightness(0.5)",
           },
           {
-            duration: 0.7,
-            ease: "expo",
-            scaleX: 1,
-          },
-          "start"
-        )
-        .fromTo(
-          currentInner,
-          {
-            filter: "contrast(100%) saturate(100%)",
-          },
-          {
-            duration: 0.7,
-            ease: "expo",
-            filter: "contrast(120%) saturate(140%)",
-          },
-          "start"
-        )
-        .addLabel("middle", "start+=0.6")
-        .to(
-          upcomingSlide,
-          {
-            duration: 1,
-            ease: "power4.inOut",
+            duration: 1.4,
             scale: 1,
+            filter: "brightness(1)",
+            ease: "power3.out",
           },
-          "middle"
+          0
         )
-        .to(
-          currentSlide,
-          {
-            duration: 1,
-            ease: "power4.inOut",
-            scale: 0.98,
-            autoAlpha: 0,
-          },
-          "middle"
-        );
+     
     },
     [collections, slidesTotal]
   );
@@ -175,7 +151,7 @@ const Journey = ({ collections }) => {
 
     autoplayTimerRef.current = setTimeout(() => {
       navigate(NEXT);
-    }, 3000); // Change slide every 3 seconds
+    }, 5000); // Change slide every 5 seconds
   }, [navigate]);
 
   // Initialize autoplay
@@ -191,40 +167,46 @@ const Journey = ({ collections }) => {
     };
   }, [isLoading, startAutoplay]);
 
-  // Drag functionality
+  // Touch/Swipe handlers
+  const handleTouchStart = (e) => {
+    touchStartRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartRef.current || !touchEndRef.current) return;
+
+    const distance = touchStartRef.current - touchEndRef.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(distance) > minSwipeDistance) {
+      if (distance > 0) {
+        navigate(NEXT);
+      } else {
+        navigate(PREV);
+      }
+    }
+
+    touchStartRef.current = null;
+    touchEndRef.current = null;
+  };
+
+  // Keyboard navigation
   useEffect(() => {
-    if (isLoading || !containerRef.current) return;
-
-    const draggable = Draggable.create(containerRef.current, {
-      type: "x",
-      trigger: containerRef.current,
-      onDragEnd: function () {
-        const dragDistance = this.x;
-        const threshold = 50; // minimum drag distance to trigger navigation
-
-        if (Math.abs(dragDistance) > threshold) {
-          if (dragDistance < 0) {
-            // Dragged left, go next
-            navigate(NEXT);
-          } else {
-            // Dragged right, go previous
-            navigate(PREV);
-          }
-        }
-
-        // Reset position
-        gsap.to(containerRef.current, {
-          x: 0,
-          duration: 0.3,
-          ease: "power2.out",
-        });
-      },
-    });
-
-    return () => {
-      draggable[0].kill();
+    const handleKeyDown = (e) => {
+      if (e.key === "ArrowLeft") {
+        navigate(PREV);
+      } else if (e.key === "ArrowRight") {
+        navigate(NEXT);
+      }
     };
-  }, [isLoading, navigate]);
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigate]);
 
   if (!collections || collections.length === 0) {
     return (
@@ -239,7 +221,10 @@ const Journey = ({ collections }) => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[95vh] overflow-hidden cursor-grab active:cursor-grabbing"
+      className="relative w-full h-[95vh] overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Loading overlay */}
       {isLoading && (
@@ -248,23 +233,33 @@ const Journey = ({ collections }) => {
         </div>
       )}
 
-      {/* Navigation Buttons */}
-      <nav className="absolute bottom-8 left-8 z-20 flex gap-4">
+      {/* Navigation Buttons - Enhanced styling */}
+      <nav className="absolute bottom-8 left-8 z-20 flex gap-3">
         <button
           onClick={() => navigate(PREV)}
           disabled={isAnimating}
-          className="w-12 h-12 bg-black/20 backdrop-blur-sm text-white rounded-full hover:bg-black/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-xl cursor-pointer"
+          className="group w-14 h-14 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-white/20 overflow-hidden"
           aria-label="Previous slide"
         >
-          ←
+          <div className="translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
+            <ChevronLeft color="black" className="w-6 h-6" />
+          </div>
+          <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:-translate-x-[250%] transition-transform duration-300">
+            <ChevronLeft color="white" className="w-6 h-6" />
+          </div>
         </button>
         <button
           onClick={() => navigate(NEXT)}
           disabled={isAnimating}
-          className="w-12 h-12 bg-black/20 backdrop-blur-sm text-white rounded-full hover:bg-black/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-xl cursor-pointer"
+          className="group w-14 h-14 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-white/20 overflow-hidden"
           aria-label="Next slide"
         >
-          →
+          <div className="-translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
+            <ChevronRight color="black" className="w-6 h-6" />
+          </div>
+          <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:translate-x-[250%] transition-transform duration-300">
+            <ChevronRight color="white" className="w-6 h-6" />
+          </div>
         </button>
       </nav>
 
@@ -288,13 +283,15 @@ const Journey = ({ collections }) => {
                 backgroundImage: `url(${
                   collection.image?.url || collection.image?.src || ""
                 })`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
               }}
             />
           </div>
         ))}
       </div>
 
-      {/* Collection Info Overlay - Single button that updates based on current slide */}
+      {/* Collection Info Overlay */}
       <div className="absolute inset-x-0 bottom-24 z-20 text-center px-6">
         <div className="max-w-2xl flex items-center justify-center mx-auto">
           <div className="w-fit">
@@ -307,18 +304,39 @@ const Journey = ({ collections }) => {
         </div>
       </div>
 
-      {/* Slide counter */}
-      <div className="absolute bottom-8 right-8 z-20 text-black text-sm font-light">
-        <span className="text-2xl font-bold">
-          {String(current + 1).padStart(2, "0")}
-        </span>
-        <span className="mx-2 opacity-60">/</span>
-        <span className="opacity-60">
-          {String(slidesTotal).padStart(2, "0")}
-        </span>
+      {/* Slide counter with progress bar */}
+      <div className="absolute bottom-8 right-8 z-20 flex flex-col items-end gap-3">
+        <div className="mix-blend-difference text-white text-sm font-light">
+          <span className="text-2xl font-bold">
+            {String(current + 1).padStart(2, "0")}
+          </span>
+          <span className="mx-2 opacity-60">/</span>
+          <span className="opacity-60">
+            {String(slidesTotal).padStart(2, "0")}
+          </span>
+        </div>
+        {/* Progress indicators */}
+        <div className="flex gap-2">
+          {collections.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                if (index !== current) {
+                  navigate(index > current ? NEXT : PREV);
+                }
+              }}
+              className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
+                index === current
+                  ? "w-8 bg-white"
+                  : "w-4 bg-white/40 hover:bg-white/60"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="size-full z-10 bg-black/20 inset-0 absolute"></div>
+      <div className="size-full z-10 bg-black/30 inset-0 absolute pointer-events-none"></div>
     </div>
   );
 };

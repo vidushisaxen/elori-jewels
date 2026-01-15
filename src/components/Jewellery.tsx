@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useRef } from 'react';
-import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import WishlistButton from '../components/WishlistButton';
-import SmoothySlider, { Slide, SmoothySliderRef } from './SmoothySlider';
+import React, { useRef } from "react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import WishlistButton from "../components/WishlistButton";
+import SmoothySlider, { Slide, SmoothySliderRef } from "./SmoothySlider";
 import Image from 'next/image';
 
 const JewelryItem = ({ item }: { item: any }) => {
@@ -16,34 +16,34 @@ const JewelryItem = ({ item }: { item: any }) => {
   const handleMouseEnter = () => {
     if (!defaultImageRef.current || !hoverImageRef.current) return;
 
-    defaultImageRef.current.style.transform = 'scale(1.2)';
-    defaultImageRef.current.style.opacity = '0';
+    defaultImageRef.current.style.transform = "scale(1.2)";
+    defaultImageRef.current.style.opacity = "0";
     defaultImageRef.current.style.transition =
-      'all 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
+      "all 0.8s cubic-bezier(0.22, 1, 0.36, 1)";
 
-    hoverImageRef.current.style.transform = 'scale(1.15)';
-    hoverImageRef.current.style.opacity = '1';
+    hoverImageRef.current.style.transform = "scale(1.15)";
+    hoverImageRef.current.style.opacity = "1";
     hoverImageRef.current.style.transition =
-      'all 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
+      "all 0.8s cubic-bezier(0.22, 1, 0.36, 1)";
 
     if (nameRef.current) {
-      nameRef.current.style.color = '#888888';
+      nameRef.current.style.color = "#888888";
       nameRef.current.style.transition =
-        'color 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+        "color 0.4s cubic-bezier(0.22, 1, 0.36, 1)";
     }
   };
 
   const handleMouseLeave = () => {
     if (!defaultImageRef.current || !hoverImageRef.current) return;
 
-    defaultImageRef.current.style.transform = 'scale(1)';
-    defaultImageRef.current.style.opacity = '1';
+    defaultImageRef.current.style.transform = "scale(1)";
+    defaultImageRef.current.style.opacity = "1";
 
-    hoverImageRef.current.style.transform = 'scale(1.2)';
-    hoverImageRef.current.style.opacity = '0';
+    hoverImageRef.current.style.transform = "scale(1.2)";
+    hoverImageRef.current.style.opacity = "0";
 
     if (nameRef.current) {
-      nameRef.current.style.color = '#888888';
+      nameRef.current.style.color = "#888888";
     }
   };
 
@@ -54,14 +54,14 @@ const JewelryItem = ({ item }: { item: any }) => {
     featuredImage: { url: item.defaultImage },
     images: [
       { url: item.defaultImage },
-      { url: item.hoverImage || item.defaultImage }
+      { url: item.hoverImage || item.defaultImage },
     ],
-    variants: item.variantId ? [{ id: item.variantId }] : undefined
+    variants: item.variantId ? [{ id: item.variantId }] : undefined,
   };
 
   return (
-    <Link 
-      href={`/product/${item.handle}`} 
+    <Link
+      href={`/product/${item.handle}`}
       className="cursor-pointer block select-none"
       draggable={false}
     >
@@ -74,7 +74,7 @@ const JewelryItem = ({ item }: { item: any }) => {
       >
         <div className="relative w-full aspect-square overflow-hidden">
           {/* Wishlist button */}
-          <div 
+          <div
             className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-white transition-all duration-300"
             onClick={(e) => {
               e.preventDefault();
@@ -137,10 +137,7 @@ export default function JewelryItemClient({ items }: { items: any[] }) {
         config={{ infinite: true, snap: false }}
       >
         {items.map((item, index) => (
-          <Slide
-            key={item.id || index}
-            className="w-[80vw] md:w-[30vw] px-3 "
-          >
+          <Slide key={item.id || index} className="w-[80vw] md:w-[30vw] px-3 ">
             <JewelryItem item={item} />
           </Slide>
         ))}
@@ -149,18 +146,28 @@ export default function JewelryItemClient({ items }: { items: any[] }) {
       {/* Navigation buttons */}
       <button
         onClick={handlePrev}
-        className="absolute left-2 md:left-[5%] cursor-pointer top-1/2 z-999 -translate-y-1/2 w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-black/20 "
+        className="group absolute left-2 md:left-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all  duration-300  hover:bg-white overflow-hidden"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <div className="translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
+          <ChevronLeft color="black" className="w-6 h-6" />
+        </div>
+        <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:-translate-x-[250%] transition-transform duration-300">
+          <ChevronLeft color="white" className="w-6 h-6" />
+        </div>
       </button>
 
       <button
         onClick={handleNext}
-        className="absolute right-2 md:right-[5%] cursor-pointer top-1/2 z-999 -translate-y-1/2 w-12 h-12 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-black/20 "
+        className="group absolute right-2 md:right-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white overflow-hidden"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-6 h-6" />
+        <div className="-translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
+          <ChevronRight color="black" className="w-6 h-6" />
+        </div>
+        <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:translate-x-[250%] transition-transform duration-300">
+          <ChevronRight color="white" className="w-6 h-6" />
+        </div>
       </button>
     </div>
   );

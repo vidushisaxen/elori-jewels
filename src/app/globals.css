@@ -28,20 +28,16 @@ body {
   pointer-events: auto;
 }
 ::-webkit-scrollbar {
-  width: 4px;
-  padding-left: 5vw;
+  width: 5px;
   height: 3px;
 }
 
+
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #010101;
 }
 
+
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    to bottom,
-    #111111,
-    #e17100
-  ); /* gradient from top to bottom */
-  border-radius: 8px;
+  background: black;
 }
