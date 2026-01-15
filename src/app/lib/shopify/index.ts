@@ -67,59 +67,6 @@ type ExtractVariables<T> = T extends { variables: object }
   ? T['variables']
   : never;
 
-// export async function shopifyFetch<T>({
-//   headers,
-//   query,
-//   variables
-// }: {
-//   headers?: HeadersInit;
-//   query: string;
-//   variables?: ExtractVariables<T>;
-// }): Promise<{ status: number; body: T } | never> {
-//   try {
-//     if (!endpoint) {
-//       throw new Error('SHOPIFY_STORE_DOMAIN environment variable is not set');
-//     }
-
-//     const result = await fetch(endpoint, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'X-Shopify-Storefront-Access-Token': key,
-//         ...headers
-//       },
-//       body: JSON.stringify({
-//         ...(query && { query }),
-//         ...(variables && { variables })
-//       })
-//     });
-
-//     const body = await result.json();
-
-//     if (body.errors) {
-//       throw body.errors[0];
-//     }
-
-//     return {
-//       status: result.status,
-//       body
-//     };
-//   } catch (e) {
-//     if (isShopifyError(e)) {
-//       throw {
-//         cause: e.cause?.toString() || 'unknown',
-//         status: e.status || 500,
-//         message: e.message,
-//         query
-//       };
-//     }
-
-//     throw {
-//       error: e,
-//       query
-//     };
-//   }
-// }
 export async function shopifyFetch<T>({
   headers,
   query,
@@ -353,61 +300,6 @@ export async function getCart(): Promise<Cart | undefined> {
   return reshapeCart(res.body.data.cart);
 }
 
-
-// export async function getCollection(
-//   handle: string
-// ): Promise<Collection | undefined> {
-//   'use cache';
-//   cacheTag(TAGS.collections);
-//   cacheLife('days');
-
-//   const res = await shopifyFetch<ShopifyCollectionOperation>({
-//     query: getCollectionQuery,
-//     variables: {
-//       handle
-//     }
-//   });
-
-//   return reshapeCollection(res.body.data.collection);
-// }
-
-// export async function getCollectionProducts({
-//   collection,
-//   reverse,
-//   sortKey
-// }: {
-//   collection: string;
-//   reverse?: boolean;
-//   sortKey?: string;
-// }): Promise<Product[]> {
-//   'use cache';
-//   cacheTag(TAGS.collections, TAGS.products);
-//   cacheLife('days');
-
-//   if (!endpoint) {
-//     console.log(`Skipping getCollectionProducts for '${collection}' - Shopify not configured`);
-//     return [];
-//   }
-
-//   const res = await shopifyFetch<ShopifyCollectionProductsOperation>({
-//     query: getCollectionProductsQuery,
-//     variables: {
-//       handle: collection,
-//       reverse,
-//       sortKey: sortKey === 'CREATED_AT' ? 'CREATED' : sortKey
-//     }
-//   });
-
-//   if (!res.body.data.collection) {
-//     console.log(`No collection found for \`${collection}\``);
-//     return [];
-//   }
-
-//   return reshapeProducts(
-//     removeEdgesAndNodes(res.body.data.collection.products)
-//   );
-// }
-
 export async function getCollections(): Promise<Collection[]> {
   'use cache';
   cacheTag(TAGS.collections);
@@ -604,34 +496,7 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
 }
-// export async function getCollection(handle:string) {
-//   try {
-//     const res = await shopifyFetch({
-//       query: getCollectionQuery,
-//      variables: {
-//     handle,
-//   } as { handle: string },
-//     });
 
-//     if (!res.body?.data?.collection) {
-//       console.log(`Collection '${handle}' not found`);
-//       return null;
-//     }
-
-//     return {
-//       id: res.body.data.collection.id,
-//       title: res.body.data.collection.title,
-//       handle: res.body.data.collection.handle,
-//       description: res.body.data.collection.description,
-//       image: res.body.data.collection.image,
-//       seo: res.body.data.collection.seo,
-//       updatedAt: res.body.data.collection.updatedAt,
-//     };
-//   } catch (error) {
-//     console.error('Error in getCollection:', error);
-//     return null;
-//   }
-// }
 type CollectionResponse = {
   data: {
     collection: {
@@ -680,57 +545,6 @@ export async function getCollection(handle: string) {
     return null;
   }
 }
-
-// export async function getAllCollections() {
-//   const res = await shopifyFetch({
-//     query: getCollectionsQuery,
-//   });
-
-//   return res.body.data.collections.edges.map((edge) => ({
-//     id: edge.node.id,
-//     title: edge.node.title,
-//     handle: edge.node.handle,
-//     description: edge.node.description,
-//     image: edge.node.image,
-//     seo: edge.node.seo,
-//     updatedAt: edge.node.updatedAt,
-//   }));
-// }
-
-// export async function getCollectionProducts(handle) {
-//   const res = await shopifyFetch({
-//     query: getCollectionProductsQuery,
-//     variables: {
-//       handle,
-//       sortKey: 'COLLECTION_DEFAULT',
-//       reverse: false,
-//     },
-//   });
-
-//   if (!res.body.data.collection) {
-//     return [];
-//   }
-
-//   return res.body.data.collection.products.edges.map((edge) => ({
-//     id: edge.node.id,
-//     title: edge.node.title,
-//     handle: edge.node.handle,
-//     description: edge.node.description,
-//     images: edge.node.images.edges.map((img) => ({
-//       url: img.node.url,
-//       altText: img.node.altText,
-//     })),
-//     variants: edge.node.variants.edges.map((variant) => ({
-//       id: variant.node.id,
-//       title: variant.node.title,
-//       price: variant.node.price,
-//     })),
-//     priceRange: edge.node.priceRange,
-//     tags: edge.node.tags,
-//     seo: edge.node.seo,
-//   }));
-// }
-
 
 type CollectionsResponse = {
   data: {
@@ -808,25 +622,10 @@ type CollectionProductsResponse = {
   };
 };
 
-// export async function getAllCollections() {
-//   const res = (await shopifyFetch({
-//     query: getCollectionsQuery,
-//   } as any)) as { status: number; body: CollectionsResponse };
-
-//   return res.body.data.collections.edges.map((edge) => ({
-//     id: edge.node.id,
-//     title: edge.node.title,
-//     handle: edge.node.handle,
-//     description: edge.node.description,
-//     image: edge.node.image,
-//     seo: edge.node.seo,
-//     updatedAt: edge.node.updatedAt,
-//   }));
-// }
 export async function getAllCollections() {
   const res = (await shopifyFetch({
     query: getCollectionsQuery,
-    cache: 'force-cache', // Cache the collections data
+    cache: 'force-cache',
     tags: ['collections'] // Tag for revalidation if needed
   } as any)) as { status: number; body: CollectionsResponse };
 
@@ -875,5 +674,44 @@ export async function getCollectionProducts(handle: string) {
   }));
 }
 
+
+export async function subscribeToNewsletter(email) {
+  const query = `
+    mutation customerCreate($input: CustomerCreateInput!) {
+      customerCreate(input: $input) {
+        customer {
+          id
+          email
+        }
+        customerUserErrors {
+          code
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const variables = {
+    input: {
+      email: email,
+      acceptsMarketing: true
+    }
+  };
+
+  const response = await fetch(
+    `https://${domain}/api/2024-01/graphql.json`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': key,
+      },
+      body: JSON.stringify({ query, variables }),
+    }
+  );
+
+  return response.json();
+}
 
 

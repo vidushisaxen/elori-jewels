@@ -60,9 +60,7 @@ export default async function CollectionPage({ params }) {
               {collection.description}
             </p>
           )}
-          {/* <div className="mt-2 text-xs text-neutral-400 tracking-wider">
-            {products.length} {products.length === 1 ? 'Product' : 'Products'}
-          </div> */}
+         
         </div>
 
         {/* Products Grid */}
