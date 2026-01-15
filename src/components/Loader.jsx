@@ -54,7 +54,7 @@ export default function Loader() {
     tl.to([loaderRef.current, '#backside-loader'], {
       y: "-100%",
       duration: 1,
-      stagger: 0.08,
+      stagger: .2,
       ease: "power2.inOut",
       onComplete: () => {
         // Start Lenis scroll after loader finishes
@@ -76,19 +76,19 @@ export default function Loader() {
      ref={loaderRef}
      className='h-screen w-screen flex fixed top-0 bg-white text-black left-0 flex-col z-9999 items-center justify-center gap-4'
    > 
-     {/* Spinner */}
      <div 
        ref={spinnerRef}
        className='w-6 h-6 border-2 border-gray-200 border-t-black rounded-full'
      />
      
-     {/* Random changing caption */}
      <div ref={textRef} className='relative'>
        <p className='uppercase text-xs text-black tracking-widest font-light text-center'>
          {currentCaption}
        </p>
      </div>
    </div>
-   <div id='backside-loader' className='h-screen w-screen fixed top-0 bg-black z-9998 left-0 flex-col items-center justify-center gap-4' />
+   <div id='backside-loader' className='h-screen w-screen fixed top-0 bg-black z-9998 left-0 flex flex-col items-center pb-[1vw] justify-end gap-4 p-8'>
+    <p className='text-white/30 text-[12vw] font-thin uppercase font-calibre'>ELORI JEWELS</p>
+   </div>
   </>
 )}
