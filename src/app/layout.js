@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Suspense } from "react";
+import ScrollToTopOnReload from "../components/RelaodToTop";
 
 const BSTSpyre = localFont({
   src: [
@@ -37,12 +38,17 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${BSTSpyre.variable} ${Calibre.variable} antialiased`}>
         <CartProvider>
+
           <LenisSmoothScroll>
+            <ScrollToTopOnReload>
+
             <Header />
+            
             <Suspense fallback={<div>Loading...</div>}>
               {children}
             </Suspense>
             <Footer />
+            </ScrollToTopOnReload>
           </LenisSmoothScroll>
         </CartProvider>
       </body>

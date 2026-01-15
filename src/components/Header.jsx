@@ -335,7 +335,7 @@ export default function Header() {
         key={id}
         onMouseEnter={() => handleLinkHover(link, id)}
         className={`
-            transition-colors duration-300 uppercase cursor-pointer relative inline-block
+            transition-colors duration-50 uppercase cursor-pointer relative inline-block group
             ${
               hovered === id
                 ? "text-black"
@@ -350,7 +350,14 @@ export default function Header() {
           onClick={closeMenu}
           className="relative inline-block cursor-pointer"
         >
-          {link.label}
+          <div className="overflow-hidden relative z-10">
+            <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
+              {link.label}
+            </p>
+            <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
+              {link.label}
+            </span>
+          </div>
           {showBadge && count > 0 && (
             <span className="absolute -top-2 -right-2  text-[10px] font-medium rounded-full flex items-center justify-center z-10">
               {count}
@@ -366,17 +373,7 @@ export default function Header() {
       {/* <AnnouncementBar /> */}
       <nav className="grid grid-cols-3 items-center px-6 py-6 shadow-sm relative z-50  bg-white">
         {/* LEFT MENU */}
-        <div 
-          ref={leftLinksWrapperRef}
-          onMouseEnter={handleWrapperEnter}
-          onMouseLeave={handleWrapperLeave}
-          className="flex items-center h-full font-light tracking-wide gap-6 text-xs"
-        >
-          {leftLinks.map((link) => renderLink(link, "left"))}
-        </div>
-
-        {/* CENTER LOGO */}
-        <div className="flex justify-center">
+        <div className="flex justify-start">
           <Link
             href="/"
             className="text-xl font-medium uppercase"
@@ -385,6 +382,17 @@ export default function Header() {
             ELORI JEWELS
           </Link>
         </div>
+        <div 
+          ref={leftLinksWrapperRef}
+          onMouseEnter={handleWrapperEnter}
+          onMouseLeave={handleWrapperLeave}
+          className="flex items-center h-full font-light tracking-wide gap-6 text-[.7vw] justify-center"
+        >
+          {leftLinks.map((link) => renderLink(link, "left"))}
+        </div>
+
+        {/* CENTER LOGO */}
+       
 
         <div className="w-fit px-[2vw] bg-black  absolute right-[1.2vw] rounded-full flex items-center justify-between gap-5 py-[1vw] text-white">
           <div
@@ -451,7 +459,7 @@ export default function Header() {
       {/* SINGLE MEGA MENU */}
       <div
         ref={megaMenuRef}
-        onMouseEnter={() => setMegaMenuOpen(true)}
+        // onMouseEnter={() => setMegaMenuOpen(true)}
         onMouseLeave={closeMenu}
         className="fixed left-0 top-[4.5rem] w-1/2 bg-white shadow-md z-40"
         style={{

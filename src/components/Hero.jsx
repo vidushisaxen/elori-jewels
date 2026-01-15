@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import PrimaryButton from "./Buttons/PrimaryButton";
+import { UseScrollToTopOnReload } from "./RelaodToTop";
 
 export default function Hero() {
   return (
