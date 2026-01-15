@@ -22,7 +22,7 @@ export default function Hero() {
 
       {/* Center Content */}
       <div className="relative z-10 w-full h-full flex flex-col items-center justify-center text-white gap-4 px-4 text-center">
-        <h1 className="text-9xl  font-medium! font-bold uppercase">
+        <h1 className="text-9xl  font-medium!  uppercase">
           EAR ALCHEMY
         </h1>
 
@@ -30,7 +30,7 @@ export default function Hero() {
           Your Signature Ear Starts Here
         </p>
 
-        <PrimaryButton text={"Shop Now"} href={"/collections/earrings"} border={false}/>
+        <PrimaryButton text={"Shop Now"} href={"/products"} border={false}/>
       </div>
     </section>
   );
