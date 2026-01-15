@@ -24,15 +24,18 @@ import gsap from "gsap";
 
 export default function Header() {
   const [hovered, setHovered] = useState(null);
-  const [megaMenuOpen, setMegaMenuOpen] = useState(null);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [activeLink, setActiveLink] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [collections, setCollections] = useState([]);
   const [leftLinks, setLeftLinks] = useState([]);
 
   // Refs for GSAP animations
-  const megaMenuRefs = useRef({});
+  const megaMenuRef = useRef(null);
   const overlayRef = useRef(null);
+  const contentRef = useRef(null);
+  const leftLinksWrapperRef = useRef(null);
 
   // Zustand store
   const cart = useStore((state) => state.cart);
@@ -75,17 +78,13 @@ export default function Header() {
 
   // GSAP animation for mega menu
   useEffect(() => {
-    if (megaMenuOpen) {
-      const menuElement = megaMenuRefs.current[megaMenuOpen];
-
-      if (menuElement) {
-        gsap.killTweensOf(menuElement);
-        gsap.to(menuElement, {
-          x: 0,
-          duration: 0.6,
-          ease: "power3.out",
-        });
-      }
+    if (megaMenuOpen && megaMenuRef.current) {
+      gsap.killTweensOf(megaMenuRef.current);
+      gsap.to(megaMenuRef.current, {
+        x: 0,
+        duration: 0.6,
+        ease: "power3.out",
+      });
 
       if (overlayRef.current) {
         gsap.killTweensOf(overlayRef.current);
@@ -95,17 +94,12 @@ export default function Header() {
           ease: "power2.out",
         });
       }
-    } else {
-      // Close all menus
-      Object.values(megaMenuRefs.current).forEach((menuElement) => {
-        if (menuElement) {
-          gsap.killTweensOf(menuElement);
-          gsap.to(menuElement, {
-            x: "-100%",
-            duration: 0.5,
-            ease: "power3.in",
-          });
-        }
+    } else if (megaMenuRef.current) {
+      gsap.killTweensOf(megaMenuRef.current);
+      gsap.to(megaMenuRef.current, {
+        x: "-100%",
+        duration: 0.5,
+        ease: "power3.in",
       });
 
       if (overlayRef.current) {
@@ -118,6 +112,17 @@ export default function Header() {
       }
     }
   }, [megaMenuOpen]);
+
+  // Animate content change
+  useEffect(() => {
+    if (contentRef.current && activeLink) {
+      gsap.fromTo(
+        contentRef.current,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
+      );
+    }
+  }, [activeLink]);
 
   const fetchShopifyData = async () => {
     try {
@@ -294,7 +299,25 @@ export default function Header() {
 
   const closeMenu = () => {
     setHovered(null);
-    setMegaMenuOpen(null);
+    setMegaMenuOpen(false);
+    setActiveLink(null);
+  };
+
+  const handleLinkHover = (link, id) => {
+    setHovered(id);
+    if (link.megaMenu) {
+      setActiveLink(link);
+    }
+  };
+
+  const handleWrapperEnter = () => {
+    setMegaMenuOpen(true);
+  };
+
+  const handleWrapperLeave = () => {
+    setMegaMenuOpen(false);
+    setHovered(null);
+    setActiveLink(null);
   };
 
   const renderLink = (link, position) => {
@@ -310,16 +333,7 @@ export default function Header() {
     return (
       <span
         key={id}
-        onMouseEnter={() => {
-          setHovered(id);
-          if (link.megaMenu) {
-            setMegaMenuOpen(id);
-          }
-        }}
-        onMouseLeave={() => {
-          setHovered(null);
-          setMegaMenuOpen(null);
-        }}
+        onMouseEnter={() => handleLinkHover(link, id)}
         className={`
             transition-colors duration-300 uppercase cursor-pointer relative inline-block
             ${
@@ -352,7 +366,12 @@ export default function Header() {
       {/* <AnnouncementBar /> */}
       <nav className="grid grid-cols-3 items-center px-6 py-6 shadow-sm relative z-50  bg-white">
         {/* LEFT MENU */}
-        <div className="flex items-center font-light tracking-wide gap-6 text-xs">
+        <div 
+          ref={leftLinksWrapperRef}
+          onMouseEnter={handleWrapperEnter}
+          onMouseLeave={handleWrapperLeave}
+          className="flex items-center h-full font-light tracking-wide gap-6 text-xs"
+        >
           {leftLinks.map((link) => renderLink(link, "left"))}
         </div>
 
@@ -429,46 +448,36 @@ export default function Header() {
         onClick={closeMenu}
       />
 
-      {/* MEGA MENU */}
-      {leftLinks.map((link) => {
-        if (!link.megaMenu) return null;
-        const id = `left-${link.label}`;
-
-        return (
-          <div
-            key={id}
-            ref={(el) => (megaMenuRefs.current[id] = el)}
-            onMouseEnter={() => {
-              setHovered(id);
-              setMegaMenuOpen(id);
-            }}
-            onMouseLeave={() => {
-              setHovered(null);
-              setMegaMenuOpen(null);
-            }}
-            className="fixed left-0 top-[4.5rem] w-1/2 bg-white shadow-md z-40"
-            style={{
-              height: "calc(100vh - 4.5rem)",
-              transform: "translateX(-100%)",
-            }}
-          >
-            <div className="h-full flex">
-              {/* LEFT SIDE - CONTENT */}
-              <div className="w-full px-12 pt-16 pb-8 flex flex-col overflow-y-auto">
+      {/* SINGLE MEGA MENU */}
+      <div
+        ref={megaMenuRef}
+        onMouseEnter={() => setMegaMenuOpen(true)}
+        onMouseLeave={closeMenu}
+        className="fixed left-0 top-[4.5rem] w-1/2 bg-white shadow-md z-40"
+        style={{
+          height: "calc(100vh - 4.5rem)",
+          transform: "translateX(-100%)",
+        }}
+      >
+        <div className="h-full flex">
+          {/* CONTENT */}
+          <div ref={contentRef} className="w-full px-12 pt-16 pb-8 flex flex-col overflow-y-auto">
+            {activeLink && (
+              <>
                 {/* Collection Title */}
                 <h2 className="text-4xl font-light text-gray-900 uppercase tracking-wider mb-0 pb-2">
-                  {link.label}
+                  {activeLink.label}
                 </h2>
 
                 {/* Top 5 Products */}
-                {link.megaMenu.products &&
-                  link.megaMenu.products.length > 0 && (
+                {activeLink.megaMenu.products &&
+                  activeLink.megaMenu.products.length > 0 && (
                     <div className="mb-8">
                       <h3 className="text-xs font-thin text-black uppercase tracking-wider mb-4">
                         Featured Products
                       </h3>
                       <div className="flex flex-wrap w-[80%] mt-[2vw] gap-x-4 gap-y-2">
-                        {link.megaMenu.products
+                        {activeLink.megaMenu.products
                           .map((product, idx) => (
                             <Link
                               key={idx}
@@ -504,10 +513,10 @@ export default function Header() {
                   )}
 
                 {/* Featured Link */}
-                {link.megaMenu.featured &&
-                  link.megaMenu.featured.length > 0 && (
+                {activeLink.megaMenu.featured &&
+                  activeLink.megaMenu.featured.length > 0 && (
                     <div className="space-y-3  border-t border-gray-200">
-                      {link.megaMenu.featured.map((featuredLink, idx) => (
+                      {activeLink.megaMenu.featured.map((featuredLink, idx) => (
                         <div
                           onClick={closeMenu}
                           key={idx}
@@ -524,16 +533,16 @@ export default function Header() {
                   )}
 
                 {/* Description if available */}
-                {link.description && (
+                {activeLink.description && (
                   <p className="mt-6 text-sm  text-gray-600 leading-relaxed w-[80%]">
-                    {link.description}
+                    {activeLink.description}
                   </p>
                 )}
-              </div>
-            </div>
+              </>
+            )}
           </div>
-        );
-      })}
+        </div>
+      </div>
 
       {/* SEARCH MODAL */}
       <SearchModal
