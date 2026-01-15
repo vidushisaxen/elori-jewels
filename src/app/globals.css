@@ -23,8 +23,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: "BST Spyre", sans-serif;
-  -webkit-user-drag: none; /* Safari / Chrome */
-  user-select: none; /* Prevent selection highlight */
+  -webkit-user-drag: none; 
+  /* user-select: none;  */
   pointer-events: auto;
 }
 ::-webkit-scrollbar {

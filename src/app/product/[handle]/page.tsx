@@ -136,10 +136,8 @@ async function ProductPageContent({ handle }: { handle: string }) {
               {/* Tabs */}
               <div className="border-t border-zinc-200 pt-8">
                 <div className="flex gap-8 mb-6 text-sm uppercase tracking-wider overflow-x-auto">
-                  <button className="border-b-2 border-black pb-2 whitespace-nowrap">Description</button>
-                  <button className="text-zinc-400 pb-2 hover:text-black transition-colors whitespace-nowrap">Details</button>
-                  <button className="text-zinc-400 pb-2 hover:text-black transition-colors whitespace-nowrap">Materials & Care</button>
-                  <button className="text-zinc-400 pb-2 hover:text-black transition-colors whitespace-nowrap">Packaging</button>
+                  <div className="border-b-2 border-black pb-2 whitespace-nowrap">Description</div>
+                 
                 </div>
 
                 {/* Description Content */}

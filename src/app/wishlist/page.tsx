@@ -167,11 +167,6 @@ export default function WishlistPage() {
            <div className="w-fit flex items-end justify-end ml-auto" onClick={handleDeleteAll}>
         <PrimaryButton text={"Delete All"} href={"#"} border={true}/>
         </div>
-            {/* <div className="mt-0 text-center border-zinc-200 cursor-pointer">
-              <p className="inline-block bg-black text-white px-8 py-3 text-sm uppercase tracking-widest hover:bg-zinc-800 transition-colors" >
-                Delete All
-              </p>
-            </div> */}
           </div>
 
         {/* Wishlist Grid */}

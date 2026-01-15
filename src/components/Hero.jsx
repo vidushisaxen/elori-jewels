@@ -13,9 +13,10 @@ export default function Hero() {
         muted
         playsInline
         className="absolute top-0 left-0 w-full h-full object-cover"
-      >
-        <source src="/assets/videos/hero-video.mp4" type="video/mp4" />
-      </video>
+        poster="/assets/images/hero-video-poster.png"
+        src={"/assets/videos/hero-video.mp4"}
+      /> 
+      
 
       {/* Overlay (to make text readable) */}
       <div className="absolute inset-0 bg-black/40"></div>
