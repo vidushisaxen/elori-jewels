@@ -10,6 +10,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import Link from 'next/link';
 import WishlistButton from './WishlistButton';
+import Image from 'next/image';
 
 const JewelryItem = ({ item }) => {
   const itemRef = useRef(null);
@@ -91,13 +92,17 @@ const JewelryItem = ({ item }) => {
             />
           </div>
 
-          <img
+          <Image
+          height={500}
+          width={500}
             ref={defaultImageRef}
             src={item.defaultImage}
             alt={item.name}
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <img
+          <Image
+          height={500}
+          width={500}
             ref={hoverImageRef}
             src={item.hoverImage}
             alt={`${item.name} Detail`}

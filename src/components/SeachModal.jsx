@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, X } from 'lucide-react';
 import { useLenis } from 'lenis/react'
+import Image from 'next/image';
 
 
 // SearchModal Component - Export this to use in your Header
@@ -85,9 +86,9 @@ const lenis = useLenis();
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute cursor-pointer top-6 right-6 text-stone-600 hover:text-stone-900 transition-colors"
+            className="absolute cursor-pointer top-6 right-6 text-stone-600 hover:text-stone-900 transition-colors group"
           >
-            <X size={24} />
+            <X size={24} className='group-hover:rotate-180 duration-300 transition-all ease-in-out'/>
           </button>
 
           {/* Brand Name */}
@@ -142,11 +143,10 @@ const lenis = useLenis();
                   >
                     <div className="aspect-square bg-stone-200 overflow-hidden mb-4">
                       {collection.image ? (
-                        <img
-                          src={collection.image.url || collection.image.src || collection.image}
+                        <Image height={500} width={500} src={collection.image.url || collection.image.src || collection.image}
                           alt={collection.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+                       
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-stone-400">
                           <span className="text-sm">No image</span>
@@ -162,7 +162,7 @@ const lenis = useLenis();
 
           {/* Search Results - Only show when searching */}
           {searchTerm && (
-            <div>
+            <div data-lenis-prevent>
               {filteredProducts.length > 0 ? (
                 <>
                   <h2 className="text-2xl font-serif mb-6">
@@ -191,11 +191,11 @@ const lenis = useLenis();
                         >
                           <div className="aspect-square bg-stone-200 overflow-hidden mb-3">
                             {imageUrl ? (
-                              <img
-                                src={imageUrl}
+                              <Image height={500} width={500} src={imageUrl}
                                 alt={product.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
+                             
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-stone-400 text-xs">
                                 No image

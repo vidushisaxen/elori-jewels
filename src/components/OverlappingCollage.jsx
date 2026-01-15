@@ -5,6 +5,7 @@ import ScrollTrigger from "gsap/dist/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import PrimaryButton from "./Buttons/PrimaryButton";
+import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -72,7 +73,9 @@ const Advantage = () => {
 
         {/* Right - Image */}
         <div className="w-1/2 h-full overflow-hidden">
-          <img
+          <Image
+          height={800}
+          width={800}
             ref={imageRef}
             className="object-cover w-full h-full"
             src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&q=80"
@@ -117,7 +120,9 @@ const Diversify = () => {
       <div className="flex items-center h-full">
         {/* Left - Image */}
         <div className="w-1/2 h-full overflow-hidden">
-          <img
+          <Image
+          height={800}
+          width={800}
             ref={imageRef}
             className="object-cover w-full h-full"
             src="https://images.unsplash.com/photo-1611955167811-4711904bb9f8?w=800&q=80"

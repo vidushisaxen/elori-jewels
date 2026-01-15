@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heart, X } from "lucide-react";
 import { useStore, WishlistItem } from "../../store";
 import PrimaryButton from '../../components/Buttons/PrimaryButton'
+import Image from "next/image";
 
 export default function WishlistPage() {
   const wishlistItems = useStore((state) => state.wishlist);
@@ -194,7 +195,9 @@ export default function WishlistPage() {
                   </button>
 
                   {/* Product Images */}
-                  <img
+                  <Image
+                  height={500}
+                  width={500}
                     src={item.defaultImage}
                     alt={item.name}
                     className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out"
@@ -204,7 +207,9 @@ export default function WishlistPage() {
                         hoveredItem === item.id ? "scale(1.2)" : "scale(1)",
                     }}
                   />
-                  <img
+                  <Image
+                  height={500}
+                  width={500}
                     src={item.hoverImage || item.defaultImage}
                     alt={`${item.name} Detail`}
                     className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out"

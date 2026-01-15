@@ -4,6 +4,7 @@ import { useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import WishlistButton from "./WishlistButton";
+import Image from "next/image";
 
 // Product card component with smooth hover animations (matching Jewellery.tsx)
 function ProductCard({ product }) {
@@ -89,13 +90,17 @@ function ProductCard({ product }) {
                 <WishlistButton product={productForWishlist} />
               </div>
 
-              <img
+              <Image
+              height={500}
+              width={500}
                 ref={defaultImageRef}
                 src={firstImage.url}
                 alt={firstImage.altText || product.title}
                 className="absolute inset-0 w-full h-full object-cover"
               />
-              <img
+              <Image
+              height={500}
+              width={500}
                 ref={hoverImageRef}
                 src={secondImage?.url || firstImage.url}
                 alt={`${product.title} Detail`}

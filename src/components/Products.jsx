@@ -1,4 +1,5 @@
 // app/page.jsx  (or app/shop/page.jsx)
+import Image from "next/image";
 import Link from "next/link";
 
 export const revalidate = 60; 
@@ -36,7 +37,9 @@ export default async function Products() {
                   <div className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/70">
                     {image && (
                       <div className="aspect-4/5 w-full overflow-hidden">
-                        <img
+                        <Image
+                        height={500}
+                        width={500}
                           src={image.url}
                           alt={image.altText || product.title}
                           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import WishlistButton from '../components/WishlistButton';
 import SmoothySlider, { Slide, SmoothySliderRef } from './SmoothySlider';
+import Image from 'next/image';
 
 const JewelryItem = ({ item }: { item: any }) => {
   const itemRef = useRef<HTMLDivElement | null>(null);
@@ -83,14 +84,18 @@ const JewelryItem = ({ item }: { item: any }) => {
             <WishlistButton product={productForWishlist} />
           </div>
 
-          <img
+          <Image
+          height={500}
+          width={500}
             ref={defaultImageRef}
             src={item.defaultImage}
             alt={item.name}
             draggable={false}
             className="absolute pointer-events-none inset-0 w-full h-full object-cover select-none"
           />
-          <img
+          <Image
+          height={500}
+          width={500}
             ref={hoverImageRef}
             src={item.hoverImage || item.defaultImage}
             alt={`${item.name} Detail`}

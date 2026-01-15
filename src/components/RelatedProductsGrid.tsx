@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import WishlistButton from './WishlistButton';
+import Image from 'next/image';
 
 
 export default function RelatedProductsGrid({ products }: { products: any[] }) {
@@ -43,11 +44,11 @@ export default function RelatedProductsGrid({ products }: { products: any[] }) {
             </div>
 
             {product.featuredImage?.url ? (
-              <img
-                src={product.featuredImage.url}
+              <Image height={500} width={500} src={product.featuredImage.url}
                 alt={product.title}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
+              
             ) : (
               <div className="h-full w-full bg-zinc-200 flex items-center justify-center">
                 <span className="text-zinc-400 text-sm">No image</span>
