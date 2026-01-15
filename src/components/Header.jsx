@@ -218,8 +218,7 @@ export default function Header() {
 
   const rightLinks = [
     { href: "/wishlist", label: "Wishlist" },
-    { href: "/cart", label: "Cart" },
-    { href: "/account", label: "Account" },
+    { href: "/cart", label: "Cart" }
   ];
 
   const closeMenu = () => {

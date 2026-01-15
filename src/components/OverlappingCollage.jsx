@@ -4,6 +4,7 @@ import gsap from "gsap";
 import ScrollTrigger from "gsap/dist/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import PrimaryButton from "./Buttons/PrimaryButton";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -64,30 +65,9 @@ const Advantage = () => {
               dainty to layer with other necklaces.
             </p>
           </div>
-          <Link
-            href="/collections/earrings"
-            className=" flex items-center w-[20vw] justify-between gap-3 px-2 py-2 rounded-full bg-white text-black text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-gray-100 group"
-          >
-            <div className="flex pl-[1vw] flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
-              <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full">
-                Shop Now
-              </span>
-              <span className="font-medium absolute top-full left-[1vw] transition-transform duration-300 group-hover:-translate-y-full">
-                Shop Now
-              </span>
-            </div>
-
-            <div className="size-[2vw] p-2 rounded-full  overflow-hidden bg-[#3b3b3b]">
-              <span className="size-full  relative flex items-center justify-center">
-                <div className="size-full -rotate-45  group-hover:translate-x-[150%] group-hover:translate-y-[-150%] transition-all duration-300 flex items-center justify-center">
-                  <ArrowRight color="white" />
-                </div>
-                <div className="size-full -rotate-45 absolute top-0 duration-300 translate-x-[-150%] translate-y-[150%] left-0 flex items-center justify-center group-hover:translate-x-[0%] group-hover:translate-y-[0%]">
-                  <ArrowRight color="white" />
-                </div>
-              </span>
-            </div>
-          </Link>
+          <div className="w-fit">
+         <PrimaryButton text={"Shop Now"} href={"/collection/earrings"}/>
+         </div>
         </div>
 
         {/* Right - Image */}
@@ -155,30 +135,9 @@ const Diversify = () => {
               dainty to layer with other necklaces.
             </p>
           </div>
-          <Link
-            href="/collections/earrings"
-            className=" flex items-center w-[20vw] justify-between gap-3 px-2 py-2 rounded-full bg-white text-black text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-gray-100 group"
-          >
-            <div className="flex pl-[1vw] flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
-              <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full">
-                Shop Now
-              </span>
-              <span className="font-medium absolute top-full left-[1vw] transition-transform duration-300 group-hover:-translate-y-full">
-                Shop Now
-              </span>
-            </div>
-
-            <div className="size-[2vw] p-2 rounded-full  overflow-hidden bg-[#3b3b3b]">
-              <span className="size-full  relative flex items-center justify-center">
-                <div className="size-full -rotate-45  group-hover:translate-x-[150%] group-hover:translate-y-[-150%] transition-all duration-300 flex items-center justify-center">
-                  <ArrowRight color="white" />
-                </div>
-                <div className="size-full -rotate-45 absolute top-0 duration-300 translate-x-[-150%] translate-y-[150%] left-0 flex items-center justify-center group-hover:translate-x-[0%] group-hover:translate-y-[0%]">
-                  <ArrowRight color="white" />
-                </div>
-              </span>
-            </div>
-          </Link>
+         <div className="w-fit">
+         <PrimaryButton text={"Shop Now"} href={"/collection/earrings"}/>
+         </div>
         </div>
       </div>
     </section>

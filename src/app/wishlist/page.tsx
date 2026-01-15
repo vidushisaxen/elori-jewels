@@ -4,6 +4,7 @@ import React, { useState, useTransition, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Heart, X } from "lucide-react";
 import { useStore, WishlistItem } from "../../store";
+import PrimaryButton from '../../components/Buttons/PrimaryButton'
 
 export default function WishlistPage() {
   const wishlistItems = useStore((state) => state.wishlist);
@@ -135,12 +136,13 @@ export default function WishlistPage() {
               Save your favorite items to your wishlist and come back to them
               later.
             </p>
-            <Link
+            {/* <Link
               href="/products"
               className="bg-black text-white px-8 py-3 text-sm uppercase tracking-widest hover:bg-zinc-800 transition-colors"
             >
               Continue Shopping
-            </Link>
+            </Link> */}
+            <PrimaryButton text={"Continue Shopping"} href={"/products"}/>
           </div>
         </div>
       </div>
@@ -243,16 +245,19 @@ export default function WishlistPage() {
             </div>
           ))}
         </div>
+        <PrimaryButton text={"Continue Shopping"} href={"/products"}/>
 
         {/* Continue Shopping */}
-        <div className="mt-16 text-center border-t border-zinc-200 pt-12">
+        {/* <div className="mt-16 text-center border-t border-zinc-200 pt-12">
+          
+
           <Link
             href="/products"
             className="inline-block bg-black text-white px-8 py-3 text-sm uppercase tracking-widest hover:bg-zinc-800 transition-colors"
           >
             Continue Shopping
           </Link>
-        </div>
+        </div> */}
       </div>
 
       {/* Toast */}

@@ -5,6 +5,7 @@ import { Observer } from "gsap/Observer";
 import { Draggable } from "gsap/Draggable";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import PrimaryButton from "./Buttons/PrimaryButton";
 
 gsap.registerPlugin(Observer, Draggable);
 
@@ -174,7 +175,7 @@ const Journey = ({ collections }) => {
 
     autoplayTimerRef.current = setTimeout(() => {
       navigate(NEXT);
-    }, 3000); // Change slide every 5 seconds
+    }, 3000); // Change slide every 3 seconds
   }, [navigate]);
 
   // Initialize autoplay
@@ -225,25 +226,6 @@ const Journey = ({ collections }) => {
     };
   }, [isLoading, navigate]);
 
-  // SCROLL/WHEEL NAVIGATION - COMMENTED OUT
-  // Uncomment the code below to enable scroll/wheel navigation
-  /*
-  useEffect(() => {
-    if (isLoading) return;
-
-    // Initialize GSAP Observer
-    const observer = Observer.create({
-      type: 'wheel,touch,pointer',
-      onDown: () => navigate(PREV),
-      onUp: () => navigate(NEXT),
-      wheelSpeed: -1,
-      tolerance: 10,
-    });
-
-    return () => observer.kill();
-  }, [isLoading, navigate]);
-  */
-
   if (!collections || collections.length === 0) {
     return (
       <div className="w-full h-[95vh] bg-black flex items-center justify-center">
@@ -257,7 +239,7 @@ const Journey = ({ collections }) => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[95vh]  overflow-hidden  cursor-grab active:cursor-grabbing"
+      className="relative w-full h-[95vh] overflow-hidden cursor-grab active:cursor-grabbing"
     >
       {/* Loading overlay */}
       {isLoading && (
@@ -287,7 +269,7 @@ const Journey = ({ collections }) => {
       </nav>
 
       {/* Slides Container */}
-      <div className="absolute  inset-0">
+      <div className="absolute inset-0">
         {collections.map((collection, index) => (
           <div
             key={collection.id}
@@ -310,36 +292,17 @@ const Journey = ({ collections }) => {
             />
           </div>
         ))}
-
       </div>
 
-      {/* Collection Info Overlay */}
+      {/* Collection Info Overlay - Single button that updates based on current slide */}
       <div className="absolute inset-x-0 bottom-24 z-20 text-center px-6">
         <div className="max-w-2xl flex items-center justify-center mx-auto">
-          <Link
-            href="/collections/earrings"
-            className=" flex items-center w-[20vw] justify-between gap-3 px-2 py-2 rounded-full bg-white text-black text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-gray-100 group"
-          >
-            <div className="flex pl-[1vw] flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
-              <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full">
-                Explore Collection
-              </span>
-              <span className="font-medium absolute top-full left-[1vw] transition-transform duration-300 group-hover:-translate-y-full">
-                Explore Collection
-              </span>
-            </div>
-
-            <div className="size-[2vw] p-2 rounded-full  overflow-hidden bg-[#3b3b3b]">
-              <span className="size-full  relative flex items-center justify-center">
-                <div className="size-full -rotate-45  group-hover:translate-x-[150%] group-hover:translate-y-[-150%] transition-all duration-300 flex items-center justify-center">
-                  <ArrowRight color="white" />
-                </div>
-                <div className="size-full -rotate-45 absolute top-0 duration-300 translate-x-[-150%] translate-y-[150%] left-0 flex items-center justify-center group-hover:translate-x-[0%] group-hover:translate-y-[0%]">
-                  <ArrowRight color="white" />
-                </div>
-              </span>
-            </div>
-          </Link>
+          <div className="w-fit">
+            <PrimaryButton 
+              text="Explore Collections" 
+              href={`/collection/${currentCollection?.handle}` || "#"} 
+            />
+          </div>
         </div>
       </div>
 
@@ -354,27 +317,7 @@ const Journey = ({ collections }) => {
         </span>
       </div>
 
-      {/* Autoplay indicator dots
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {collections.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              if (index !== current) {
-                navigate(index > current ? NEXT : PREV);
-              }
-            }}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === current 
-                ? 'bg-white w-8' 
-                : 'bg-white/40 hover:bg-white/60'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div> */}
-            <div className="size-full z-10 bg-black/20 inset-0 absolute"></div>
-
+      <div className="size-full z-10 bg-black/20 inset-0 absolute"></div>
     </div>
   );
 };
