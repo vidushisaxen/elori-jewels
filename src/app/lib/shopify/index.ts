@@ -625,7 +625,8 @@ type CollectionProductsResponse = {
 export async function getAllCollections() {
   const res = (await shopifyFetch({
     query: getCollectionsQuery,
-    cache: 'force-cache',
+    next: { revalidate: 3600 },
+    cache: 'no-store',
     tags: ['collections'] // Tag for revalidation if needed
   } as any)) as { status: number; body: CollectionsResponse };
 
