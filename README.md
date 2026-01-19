@@ -54,19 +54,20 @@ This project is built with **Next.js** and was bootstrapped using `create-next-a
 
 ```bash
 npm install
-# or
+ or
 yarn install
-# or
+ or
 pnpm install
+```
 
 
-Start Development Server
+### Start Development Server
 npm run dev
-# or
+ or
 yarn dev
-# or
+ or
 pnpm dev
-# or
+ or
 bun dev
 
 
