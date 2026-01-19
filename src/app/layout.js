@@ -40,11 +40,8 @@ export default function RootLayout({ children }) {
         <CartProvider>
 
           <LenisSmoothScroll>
-            <ScrollToTopOnReload>
-
-           
-            
-            <Suspense fallback={<div>Loading...</div>}>
+            <ScrollToTopOnReload>            
+            <Suspense fallback={null}>
              <Header />
               {children}
               <Footer />
