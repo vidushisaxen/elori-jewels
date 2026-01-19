@@ -186,10 +186,7 @@ export default async function Footer() {
           {/* <NewsletterSignup/> */}
 
           <p className="text-sm opacity-80 mt-6 leading-snug">
-            ELORI JEWELS is an ethically crafted conceptual fine jewellery
-            studio. Explore ethically sourced natural diamonds and gemstones,
-            bespoke engagement & bridal pieces and more. Shop online or visit us
-            in-store.
+           Elori Jewels brings together timeless elegance and modern sophistication in every piece. Our curated collections celebrate individuality and craftsmanship, offering jewelry that resonates with your personal style and elevates every moment. 
           </p>
         </div>
       </div>

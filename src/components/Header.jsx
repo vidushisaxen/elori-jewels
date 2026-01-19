@@ -2,23 +2,11 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import AnnouncementBar from "./AnnouncementsBar";
+import { usePathname } from "next/navigation";
 import { SearchModal } from "./SeachModal";
 import { useLenis } from "lenis/react";
 import { useStore } from "../store";
-import Image from "next/image";
-import LinkButton from "./Buttons/LinkButton";
-import {
-  HeartCrack,
-  HeartIcon,
-  ListCheckIcon,
-  SearchIcon,
-  ShoppingBag,
-  ShoppingBagIcon,
-  ShoppingCartIcon,
-  User2,
-} from "lucide-react";
-import WishlistButton from "./WishlistButton";
+import {SearchIcon,ShoppingCartIcon} from "lucide-react";
 import PrimaryButton from "./Buttons/PrimaryButton";
 import gsap from "gsap";
 
@@ -30,12 +18,17 @@ export default function Header() {
   const [products, setProducts] = useState([]);
   const [collections, setCollections] = useState([]);
   const [leftLinks, setLeftLinks] = useState([]);
+  const [hidden, setHidden] = useState(false);
 
   // Refs for GSAP animations
   const megaMenuRef = useRef(null);
   const overlayRef = useRef(null);
   const contentRef = useRef(null);
-  const leftLinksWrapperRef = useRef(null);
+  const navRef = useRef(null);
+  const prevScrollY = useRef(0);
+
+  // Get current pathname to detect navigation
+  const pathname = usePathname();
 
   // Zustand store
   const cart = useStore((state) => state.cart);
@@ -47,6 +40,30 @@ export default function Header() {
   const cartCount = hasHydrated ? cart?.totalQuantity || 0 : 0;
 
   const lenis = useLenis();
+
+  // Close menu when pathname changes (page navigation)
+  useEffect(() => {
+    setMegaMenuOpen(false);
+    setHovered(null);
+    setActiveLink(null);
+  }, [pathname]);
+
+  // Hide/show header on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (megaMenuOpen) return;
+      const currentY = window.pageYOffset;
+      const scrollDelta = currentY - prevScrollY.current;
+      if (scrollDelta > 0 && currentY > 100) {
+        setHidden(true);
+      } else if (scrollDelta < -10) {
+        setHidden(false);
+      }
+      prevScrollY.current = currentY;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [megaMenuOpen]);
 
   useEffect(() => {
     if (!lenis) return;
@@ -81,9 +98,17 @@ export default function Header() {
     if (megaMenuOpen && megaMenuRef.current) {
       gsap.killTweensOf(megaMenuRef.current);
       gsap.to(megaMenuRef.current, {
-        x: 0,
-        duration: 0.6,
-        ease: "power3.out",
+        opacity: 1,
+        height: "auto",
+        paddingTop: "2vw",
+        paddingBottom: "2vw",
+        duration: 0.4,
+        ease: "power2.out",
+        onStart: () => {
+          if (megaMenuRef.current) {
+            megaMenuRef.current.style.visibility = "visible";
+          }
+        }
       });
 
       if (overlayRef.current) {
@@ -97,9 +122,17 @@ export default function Header() {
     } else if (megaMenuRef.current) {
       gsap.killTweensOf(megaMenuRef.current);
       gsap.to(megaMenuRef.current, {
-        x: "-100%",
-        duration: 0.5,
-        ease: "power3.in",
+        opacity: 0,
+        height: "0",
+        paddingTop: "0",
+        paddingBottom: "0",
+        duration: 0.3,
+        ease: "power2.in",
+        onComplete: () => {
+          if (megaMenuRef.current) {
+            megaMenuRef.current.style.visibility = "hidden";
+          }
+        }
       });
 
       if (overlayRef.current) {
@@ -115,14 +148,64 @@ export default function Header() {
 
   // Animate content change
   useEffect(() => {
-    if (contentRef.current && activeLink) {
-      gsap.fromTo(
-        contentRef.current,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
+    if (contentRef.current && activeLink && megaMenuOpen) {
+      // Reset all animations first
+      gsap.set(contentRef.current.querySelector('.fadeup-content'), { opacity: 0, y: 10 });
+      gsap.set(contentRef.current.querySelectorAll('.product-link'), { opacity: 0, y: 10 });
+      gsap.set(contentRef.current.querySelector('.collection-image'), { opacity: 0, scale: 0.95 });
+      gsap.set(contentRef.current.querySelector('.view-all-btn'), { opacity: 0, y: 10 });
+      
+      // Create timeline for smooth sequential animation
+      const tl = gsap.timeline();
+      
+      // First fade in the container
+      tl.to(
+        contentRef.current.querySelector('.fadeup-content'),
+        { 
+          opacity: 1,
+          y: 0,
+          duration: 0.2, 
+          delay: 0.1,
+          ease: "power2.out",
+        }
+      )
+      // Then fade in individual links faster
+      .to(
+        contentRef.current.querySelectorAll('.product-link'),
+        { 
+          opacity: 1, 
+          y: 0,
+          duration: 0.2, 
+          stagger: 0.03, 
+          ease: "power2.out" 
+        },
+        "-=0.05"
+      )
+      // Fade in image
+      .to(
+        contentRef.current.querySelector('.collection-image'),
+        { 
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.25, 
+          ease: "power2.out" 
+        },
+        "-=0.05"
+      )
+      // Fade in the button last
+      .to(
+        contentRef.current.querySelector('.view-all-btn'),
+        { 
+          opacity: 1,
+          y: 0,
+          duration: 0.25, 
+          ease: "power2.out" 
+        },
+        "-=0.1"
       );
     }
-  }, [activeLink]);
+  }, [activeLink, megaMenuOpen]);
 
   const fetchShopifyData = async () => {
     try {
@@ -276,7 +359,7 @@ export default function Header() {
       label: collection.title,
       description: collection.description,
       megaMenu: {
-        products: collection.products, // Top 5 products in this collection
+        products: collection.products,
         featured: [
           {
             label: `SHOP ALL ${collection.title.toUpperCase()}`,
@@ -292,11 +375,6 @@ export default function Header() {
     setLeftLinks(navigationLinks);
   };
 
-  const rightLinks = [
-    { href: "/wishlist", label: "Wishlist" },
-    { href: "/cart", label: "Cart" },
-  ];
-
   const closeMenu = () => {
     setHovered(null);
     setMegaMenuOpen(false);
@@ -307,32 +385,31 @@ export default function Header() {
     setHovered(id);
     if (link.megaMenu) {
       setActiveLink(link);
+      setMegaMenuOpen(true);
     }
   };
 
-  const handleWrapperEnter = () => {
-    setMegaMenuOpen(true);
-  };
-
-  const handleWrapperLeave = () => {
-    setMegaMenuOpen(false);
-    setHovered(null);
-    setActiveLink(null);
+  const handleNavLeave = () => {
+    // Reset to active link when leaving entire nav area
+    const activeEl = navRef.current?.querySelector('a[data-active="true"]');
+    if (activeEl) {
+      const id = activeEl.getAttribute('data-id');
+      setHovered(id);
+    } else {
+      setHovered(null);
+    }
+    closeMenu();
   };
 
   const renderLink = (link, position) => {
     const id = `${position}-${link.label}`;
-    const showBadge = link.label === "Cart" || link.label === "Wishlist";
-    const count =
-      link.label === "Cart"
-        ? cartCount
-        : link.label === "Wishlist"
-        ? wishlistCount
-        : 0;
+    const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
 
     return (
       <span
         key={id}
+        data-id={id}
+        data-active={isActive ? "true" : "false"}
         onMouseEnter={() => handleLinkHover(link, id)}
         className={`
             transition-colors duration-50 uppercase cursor-pointer relative inline-block group
@@ -358,20 +435,16 @@ export default function Header() {
               {link.label}
             </span>
           </div>
-          {showBadge && count > 0 && (
-            <span className="absolute -top-2 -right-2  text-[10px] font-medium rounded-full flex items-center justify-center z-10">
-              {count}
-            </span>
-          )}
         </Link>
       </span>
     );
   };
 
   return (
-    <header className="w-full fixed  top-0 left-0 z-9999">
-      {/* <AnnouncementBar /> */}
-      <nav className="grid grid-cols-3 items-center px-6 py-6 shadow-sm relative z-50  bg-white">
+    <header className={`w-full fixed top-0 left-0 z-[999] transform transition-transform duration-300 ${
+      hidden ? "-translate-y-full" : "translate-y-0"
+    }`}>
+      <nav className="grid grid-cols-3 items-center px-6 py-6 shadow-sm relative z-50 bg-white">
         {/* LEFT MENU */}
         <div className="flex justify-start">
           <Link
@@ -382,19 +455,117 @@ export default function Header() {
             ELORI JEWELS
           </Link>
         </div>
+        
+        {/* CENTER NAVIGATION */}
         <div 
-          ref={leftLinksWrapperRef}
-          onMouseEnter={handleWrapperEnter}
-          onMouseLeave={handleWrapperLeave}
-          className="flex items-center h-full font-light tracking-wide gap-6 text-[.7vw] justify-center"
+          ref={navRef}
+          onMouseLeave={handleNavLeave}
+          className="flex items-center h-full font-light tracking-wide gap-6 text-[.7vw] justify-center relative w-fit"
+          onMouseEnter={() => {
+            // Keep menu open when hovering nav area
+            if (activeLink) {
+              setMegaMenuOpen(true);
+            }
+          }}
         >
+          <span className=" h-10 w-120 absolute top-5 -left-15 bg-transparent pointer-events-auto"/>
           {leftLinks.map((link) => renderLink(link, "left"))}
+          
+          {/* MEGA MENU DROPDOWN - Width constrained to nav links */}
+          <div
+            className="absolute top-[120%] left-1/2 -translate-x-1/2 z-[52]"
+            style={{ width: `${leftLinks.length * 8}vw` }}
+            onMouseEnter={() => setMegaMenuOpen(true)}
+            onMouseLeave={() => {
+              setMegaMenuOpen(false);
+              handleNavLeave();
+            }}
+          >
+            <div
+              ref={megaMenuRef}
+              className="w-full rounded-[1vw] bg-white border border-black/10 overflow-hidden mt-6"
+              style={{ height: "0", paddingTop: "0", paddingBottom: "0", opacity: 0, visibility: "hidden" }}
+            >
+              <div ref={contentRef} className="w-full px-12 flex flex-col">
+                {/* Top Section: Products and Image in Flex */}
+                {activeLink && (
+                  <div className="flex gap-8 mb-6">
+                    {/* Left side: Products */}
+                    <div className="flex-1 flex flex-col">
+                      {/* Top 5 Products */}
+                      {activeLink.megaMenu.products &&
+                        activeLink.megaMenu.products.length > 0 && (
+                          <div className="fadeup-content">
+                            <h3 className="text-xs font-thin text-black uppercase tracking-wider mb-4">
+                              Featured Products
+                            </h3>
+                            <ul className="flex flex-col w-full gap-y-3">
+                              {activeLink.megaMenu.products.map((product, idx) => (
+                                <li key={idx} className="flex items-center gap-3 overflow-hidden product-link" style={{ opacity: 0 }}>
+                                  <span className="text-gray-400 text-xs rotate-45">◆</span>
+                                  <Link
+                                    href={`/product/${product.handle}`}
+                                    className="cursor-pointer group relative w-fit overflow-hidden"
+                                    onClick={closeMenu}
+                                  >
+                                    <div className="overflow-hidden relative z-10 text-sm tracking-widest">
+                                      <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
+                                        {product.title}
+                                      </p>
+                                      <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
+                                        {product.title}
+                                      </span>
+                                    </div>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                    </div>
+
+                    {/* Right side: Collection Image */}
+                    {activeLink.megaMenu.image && (
+                      <div className="w-[200px] flex flex-col collection-image" style={{ opacity: 0 }}>
+                        <div className="relative w-full h-[180px] rounded-lg overflow-hidden">
+                          <img
+                            src={activeLink.megaMenu.image}
+                            alt={activeLink.label}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* View All Button - Full Width at Bottom */}
+                {activeLink && activeLink.megaMenu.featured &&
+                  activeLink.megaMenu.featured.length > 0 && (
+                    <div className="w-full border-t border-gray-200  mt-4 view-all-btn" style={{ opacity: 0 }}>
+                      {activeLink.megaMenu.featured.map((featuredLink, idx) => (
+                        <div
+                          onClick={closeMenu}
+                          key={idx}
+                          className="w-fit cursor-pointer transform hover:scale-105 transition-transform duration-200"
+                        >
+                          <PrimaryButton
+                            border={true}
+                            href={featuredLink.href}
+                            text={"View All"}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* CENTER LOGO */}
-       
-
-        <div className="w-fit px-[2vw] bg-black  absolute right-[1.2vw] rounded-full flex items-center justify-between gap-5 py-[1vw] text-white">
+        {/* RIGHT ACTIONS */}
+        <div className="w-fit px-[2vw] bg-black absolute right-[1.2vw] rounded-full flex items-center justify-between gap-5 py-[1vw] text-white">
           <div
             className="w-4 h-4 cursor-pointer flex items-center justify-center group relative"
             onClick={() => setIsSearchOpen(true)}
@@ -425,7 +596,6 @@ export default function Header() {
               viewBox="0 0 15 18"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              data-v-f756b3ad=""
             >
               <path
                 d="M1.19891 5.8049C1.2448 5.02484 1.89076 4.41576 2.67216 4.41576H12.0298C12.8112 4.41576 13.4572 5.02485 13.5031 5.8049L14.0884 15.7547C14.1382 16.6023 13.4643 17.3171 12.6151 17.3171H2.08688C1.23775 17.3171 0.563767 16.6023 0.61363 15.7547L1.19891 5.8049Z"
@@ -448,109 +618,16 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* MEGA MENU OVERLAY */}
+      {/* FULL SCREEN OVERLAY */}
       <div
         ref={overlayRef}
-        className="fixed inset-0 top-[4.5rem] bg-black/40 z-30 opacity-0 pointer-events-none"
-        style={{ pointerEvents: megaMenuOpen ? "auto" : "none" }}
+        className="fixed inset-0 bg-black/40 z-[10] opacity-0 h-screen w-screen"
+        style={{ 
+          pointerEvents: megaMenuOpen ? "auto" : "none",
+          visibility: megaMenuOpen ? "visible" : "hidden"
+        }}
         onClick={closeMenu}
       />
-
-      {/* SINGLE MEGA MENU */}
-      <div
-        ref={megaMenuRef}
-        // onMouseEnter={() => setMegaMenuOpen(true)}
-        onMouseLeave={closeMenu}
-        className="fixed left-0 top-[4.5rem] w-1/2 bg-white shadow-md z-40"
-        style={{
-          height: "calc(100vh - 4.5rem)",
-          transform: "translateX(-100%)",
-        }}
-      >
-        <div className="h-full flex">
-          {/* CONTENT */}
-          <div ref={contentRef} className="w-full px-12 pt-16 pb-8 flex flex-col overflow-y-auto">
-            {activeLink && (
-              <>
-                {/* Collection Title */}
-                <h2 className="text-4xl font-light text-gray-900 uppercase tracking-wider mb-0 pb-2">
-                  {activeLink.label}
-                </h2>
-
-                {/* Top 5 Products */}
-                {activeLink.megaMenu.products &&
-                  activeLink.megaMenu.products.length > 0 && (
-                    <div className="mb-8">
-                      <h3 className="text-xs font-thin text-black uppercase tracking-wider mb-4">
-                        Featured Products
-                      </h3>
-                      <div className="flex flex-wrap w-[80%] mt-[2vw] gap-x-4 gap-y-2">
-                        {activeLink.megaMenu.products
-                          .map((product, idx) => (
-                            <Link
-                              key={idx}
-                              href={`/product/${product.handle}`}
-                              className="cursor-pointer h-fit group space-y-1 relative w-fit"
-                              onClick={closeMenu}
-                            >
-                              <div className=" overflow-hidden relative z-10 text-sm tracking-widest">
-                                <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                                  {product.title}
-                                </p>
-                                <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                                  {product.title}
-                                </span>
-                              </div>
-                            </Link>
-                          ))
-                          .reduce((acc, curr, idx) => {
-                            if (idx === 0) return [curr];
-                            return [
-                              ...acc,
-                              <span
-                                key={`sep-${idx}`}
-                                className="text-gray-300 select-none"
-                              >
-                                |
-                              </span>,
-                              curr,
-                            ];
-                          }, [])}
-                      </div>
-                    </div>
-                  )}
-
-                {/* Featured Link */}
-                {activeLink.megaMenu.featured &&
-                  activeLink.megaMenu.featured.length > 0 && (
-                    <div className="space-y-3  border-t border-gray-200">
-                      {activeLink.megaMenu.featured.map((featuredLink, idx) => (
-                        <div
-                          onClick={closeMenu}
-                          key={idx}
-                          className="w-fit cursor-pointer transform hover:scale-105 transition-transform duration-200"
-                        >
-                          <PrimaryButton
-                            border={true}
-                            href={featuredLink.href}
-                            text={"View All"}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                {/* Description if available */}
-                {activeLink.description && (
-                  <p className="mt-6 text-sm  text-gray-600 leading-relaxed w-[80%]">
-                    {activeLink.description}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* SEARCH MODAL */}
       <SearchModal

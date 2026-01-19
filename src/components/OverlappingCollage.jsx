@@ -54,20 +54,18 @@ const Advantage = () => {
   }, []);
 
   return (
-    <section className="bg-[#f1efea] overflow-hidden h-screen">
+    <section className="bg-[#F2F2F2] overflow-hidden h-screen">
       <div className="flex items-center h-full">
         {/* Left - Text */}
         <div className=" w-1/2 px-16 flex flex-col justify-center">
-          <h2 className="text-6xl font-light mb-8">Advantage</h2>
+          <h2 className="text-6xl font-light mb-8">Elegant by Design</h2>
           <div className="space-y-6 mb-8">
             <p className="text-lg leading-relaxed">
-              A light-catching pendant made of marquise and round diamonds. The
-              organic clustered shape features 11 white diamonds. Perfectly
-              dainty to layer with other necklaces.
+              Elori Jewels showcases a carefully crafted visual experience that mirrors the sophistication of fine jewelry. The storefront features a clean, modern aesthetic with luxurious spacing, elegant typography, and a refined color palette that lets each piece shine. Every element has been thoughtfully designed to create an immersive shopping experience that highlights the beauty and craftsmanship of each jewel.
             </p>
           </div>
           <div className="w-fit">
-         <PrimaryButton text={"Shop Now"} href={"/collection/earrings"} border={false}/>
+         <PrimaryButton text={"Shop Now"} href={"/products"} border={false}/>
          </div>
         </div>
 
@@ -116,7 +114,7 @@ const Diversify = () => {
   }, []);
 
   return (
-    <section className="bg-[#F2F2E9] overflow-hidden h-screen">
+    <section className="bg-[#F2F2F2] overflow-hidden h-screen">
       <div className="flex items-center h-full">
         {/* Left - Image */}
         <div className="w-1/2 h-full overflow-hidden">
@@ -132,16 +130,14 @@ const Diversify = () => {
 
         {/* Right - Text */}
         <div className="text-gray-900 w-1/2 px-16 flex flex-col justify-center">
-          <h3 className="text-6xl font-light mb-8 leading-tight">Diversify</h3>
+          <h3 className="text-6xl font-light mb-8 leading-tight">Curated Collections</h3>
           <div className="space-y-6 mb-8">
             <p className="text-lg leading-relaxed">
-              A light-catching pendant made of marquise and round diamonds. The
-              organic clustered shape features 11 white diamonds. Perfectly
-              dainty to layer with other necklaces.
+              The product presentation emphasizes visual storytelling, with high-quality imagery and intuitive layouts that guide customers through diverse collections. From delicate everyday pieces to statement jewelry, each category is designed to inspire and engage. The browsing experience feels personal and refined, making it effortless for customers to discover pieces that resonate with their unique style.
             </p>
           </div>
          <div className="w-fit">
-         <PrimaryButton text={"Shop Now"} href={"/collection/earrings"} border={false}/>
+         <PrimaryButton text={"View Collections"} href={"/products"} border={false}/>
          </div>
         </div>
       </div>
