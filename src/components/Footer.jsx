@@ -183,8 +183,6 @@ export default async function Footer() {
             </span>
           </div>
 
-          {/* <NewsletterSignup/> */}
-
           <p className="text-sm opacity-80 mt-6 leading-snug">
            Elori Jewels brings together timeless elegance and modern sophistication in every piece. Our curated collections celebrate individuality and craftsmanship, offering jewelry that resonates with your personal style and elevates every moment. 
           </p>
