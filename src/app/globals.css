@@ -17,6 +17,8 @@
   --color-tertiary: var(--tertiary);
   --font-heading: "BST Spyre";
   --font-calibre: "Calibre";
+  --breakpoint-md: 1025px;
+  --breakpoint-sm: 640px;
 }
 
 body {
@@ -103,3 +105,6 @@ body {
   .policyContent ul li {
     list-style: disc;
   }
+
+  /* @media (max-width: 1025px) {
+  } */

@@ -8,7 +8,7 @@ const LenisSmoothScroll = ({ children }) => {
 
   useEffect(() => {
     function update(time) {
-      lenisRef.current?.lenis?.raf(time * 500)
+      lenisRef.current?.lenis?.raf(time * 1000)
     }
 
     gsap.ticker.add(update)
@@ -16,7 +16,19 @@ const LenisSmoothScroll = ({ children }) => {
     return () => gsap.ticker.remove(update)
   }, []);
 
-  return <ReactLenis root options={{ autoRaf: false}} ref={lenisRef}>{children}</ReactLenis>
+  return (
+    <ReactLenis 
+      root 
+      options={{ 
+        autoRaf: false,
+        smoothTouch: true,
+        touchMultiplier: 2,
+      }} 
+      ref={lenisRef}
+    >
+      {children}
+    </ReactLenis>
+  )
 }
 
 export default LenisSmoothScroll;

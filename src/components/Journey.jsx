@@ -219,124 +219,146 @@ const Journey = ({ collections }) => {
   const currentCollection = collections[current];
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full h-[95vh] overflow-hidden"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* Loading overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-black z-50 flex items-center justify-center">
-          <div className="text-white text-2xl">Loading...</div>
-        </div>
-      )}
+    <div className="relative w-full">
+      <div
+        ref={containerRef}
+        className="relative w-full h-[95vh] max-sm:h-[70vh] overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Loading overlay */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-black z-50 flex items-center justify-center">
+            <div className="text-white text-2xl">Loading...</div>
+          </div>
+        )}
 
-      {/* Navigation Buttons - Enhanced styling */}
-      <nav className="absolute bottom-8 left-8 z-20 flex gap-3">
+        {/* Navigation Buttons - Desktop only */}
+        <nav className="absolute bottom-8 left-8 z-20 max-sm:hidden flex gap-3">
+          <button
+            onClick={() => navigate(PREV)}
+            disabled={isAnimating}
+            className="group w-14 h-14 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-white/20 overflow-hidden"
+            aria-label="Previous slide"
+          >
+            <div className="translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
+              <ChevronLeft color="black" className="w-6 h-6" />
+            </div>
+            <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:-translate-x-[250%] transition-transform duration-300">
+              <ChevronLeft color="white" className="w-6 h-6" />
+            </div>
+          </button>
+          <button
+            onClick={() => navigate(NEXT)}
+            disabled={isAnimating}
+            className="group w-14 h-14 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-white/20 overflow-hidden"
+            aria-label="Next slide"
+          >
+            <div className="-translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
+              <ChevronRight color="black" className="w-6 h-6" />
+            </div>
+            <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:translate-x-[250%] transition-transform duration-300">
+              <ChevronRight color="white" className="w-6 h-6" />
+            </div>
+          </button>
+        </nav>
+
+        {/* Slides Container */}
+        <div className="absolute inset-0 ">
+          {collections.map((collection, index) => (
+            <div
+              key={collection.id}
+              ref={(el) => (slidesRef.current[index] = el)}
+              className={`absolute inset-0 ${
+                index === current ? "opacity-100" : "opacity-0"
+              }`}
+              style={{
+                zIndex: index === current ? 1 : 0,
+              }}
+            >
+              <div
+                ref={(el) => (slidesInnerRef.current[index] = el)}
+                className="w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage: `url(${
+                    collection.image?.url || collection.image?.src || ""
+                  })`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Collection Info Overlay */}
+        <div className="absolute inset-x-0 max-sm:bottom-9 bottom-24 z-20 text-center px-6">
+          <div className="max-w-2xl flex items-center justify-center mx-auto">
+            <div className="w-fit">
+              <PrimaryButton 
+                text="Explore Collections" 
+                href={`/collection/${currentCollection?.handle}` || "#"} 
+                border={false}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Slide counter with progress bar */}
+        <div className="absolute bottom-8 max-sm:hidden right-8 z-20 flex flex-col items-end gap-3">
+          <div className="mix-blend-difference text-white text-sm font-light">
+            <span className="text-2xl font-bold">
+              {String(current + 1).padStart(2, "0")}
+            </span>
+            <span className="mx-2 opacity-60">/</span>
+            <span className="opacity-60">
+              {String(slidesTotal).padStart(2, "0")}
+            </span>
+          </div>
+          {/* Progress indicators */}
+          <div className="flex gap-2">
+            {collections.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  if (index !== current) {
+                    navigate(index > current ? NEXT : PREV);
+                  }
+                }}
+                className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
+                  index === current
+                    ? "w-8 bg-white"
+                    : "w-4 bg-white/40 hover:bg-white/60"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="size-full z-10 bg-black/30 inset-0 absolute pointer-events-none"></div>
+      </div>
+
+      {/* Navigation Buttons - Mobile only (below slider) */}
+      <nav className="hidden max-sm:flex justify-center gap-3 py-6">
         <button
           onClick={() => navigate(PREV)}
           disabled={isAnimating}
-          className="group w-14 h-14 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-white/20 overflow-hidden"
+          className="group w-12 h-12 bg-white/10 backdrop-blur-md text-black rounded-full hover:bg-black hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-black/20 overflow-hidden"
           aria-label="Previous slide"
         >
-          <div className="translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
-            <ChevronLeft color="black" className="w-6 h-6" />
-          </div>
-          <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:-translate-x-[250%] transition-transform duration-300">
-            <ChevronLeft color="white" className="w-6 h-6" />
-          </div>
+          <ChevronLeft className="w-6 h-6" />
         </button>
         <button
           onClick={() => navigate(NEXT)}
           disabled={isAnimating}
-          className="group w-14 h-14 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-white/20 overflow-hidden"
+          className="group w-12 h-12 bg-white/10 backdrop-blur-md text-black rounded-full hover:bg-black hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-black/20 overflow-hidden"
           aria-label="Next slide"
         >
-          <div className="-translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
-            <ChevronRight color="black" className="w-6 h-6" />
-          </div>
-          <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:translate-x-[250%] transition-transform duration-300">
-            <ChevronRight color="white" className="w-6 h-6" />
-          </div>
+          <ChevronRight className="w-6 h-6" />
         </button>
       </nav>
-
-      {/* Slides Container */}
-      <div className="absolute inset-0">
-        {collections.map((collection, index) => (
-          <div
-            key={collection.id}
-            ref={(el) => (slidesRef.current[index] = el)}
-            className={`absolute inset-0 ${
-              index === current ? "opacity-100" : "opacity-0"
-            }`}
-            style={{
-              zIndex: index === current ? 1 : 0,
-            }}
-          >
-            <div
-              ref={(el) => (slidesInnerRef.current[index] = el)}
-              className="w-full h-full bg-cover bg-center"
-              style={{
-                backgroundImage: `url(${
-                  collection.image?.url || collection.image?.src || ""
-                })`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Collection Info Overlay */}
-      <div className="absolute inset-x-0 bottom-24 z-20 text-center px-6">
-        <div className="max-w-2xl flex items-center justify-center mx-auto">
-          <div className="w-fit">
-            <PrimaryButton 
-              text="Explore Collections" 
-              href={`/collection/${currentCollection?.handle}` || "#"} 
-              border={false}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Slide counter with progress bar */}
-      <div className="absolute bottom-8 right-8 z-20 flex flex-col items-end gap-3">
-        <div className="mix-blend-difference text-white text-sm font-light">
-          <span className="text-2xl font-bold">
-            {String(current + 1).padStart(2, "0")}
-          </span>
-          <span className="mx-2 opacity-60">/</span>
-          <span className="opacity-60">
-            {String(slidesTotal).padStart(2, "0")}
-          </span>
-        </div>
-        {/* Progress indicators */}
-        <div className="flex gap-2">
-          {collections.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                if (index !== current) {
-                  navigate(index > current ? NEXT : PREV);
-                }
-              }}
-              className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
-                index === current
-                  ? "w-8 bg-white"
-                  : "w-4 bg-white/40 hover:bg-white/60"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="size-full z-10 bg-black/30 inset-0 absolute pointer-events-none"></div>
     </div>
   );
 };

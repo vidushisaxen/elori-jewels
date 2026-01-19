@@ -44,9 +44,9 @@ async function JewelrySectionContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center  bg-[#F1EFEA]  py-40">
+    <div className="min-h-screen flex max-sm:h-fit items-center justify-center  bg-[#F1EFEA]  py-40 max-sm:py-0">
       <div className="w-full">
-        <h1 className="text-xs uppercase tracking-wider text-black/60 text-center mb-10">
+        <h1 className="text-xs max-sm:text-base uppercase tracking-wider text-black/60 text-center mb-10">
           Necklace Collection
         </h1>
 
@@ -76,7 +76,7 @@ export default function Necklaces() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F1EFEA] flex items-center justify-center">
+        <div className="min-h-screen  bg-[#F1EFEA] flex items-center justify-center">
           <div className="text-lg font-light tracking-widest text-black/60">
             Loading...
           </div>

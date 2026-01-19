@@ -130,7 +130,7 @@ export default function JewelryItemClient({ items }: { items: any[] }) {
   };
 
   return (
-    <div className="relative">
+    <div className="relative ">
       <SmoothySlider
         ref={sliderRef}
         className="py-4 md:px-0 w-screen  cursor-grab active:cursor-grabbing"
@@ -146,7 +146,7 @@ export default function JewelryItemClient({ items }: { items: any[] }) {
       {/* Navigation buttons */}
       <button
         onClick={handlePrev}
-        className="group absolute left-2 md:left-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all  duration-300  hover:bg-white overflow-hidden"
+        className="group absolute left-2 md:left-[5%] max-sm:top-40  cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all  duration-300  hover:bg-white overflow-hidden"
         aria-label="Previous slide"
       >
         <div className="translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
@@ -159,7 +159,7 @@ export default function JewelryItemClient({ items }: { items: any[] }) {
 
       <button
         onClick={handleNext}
-        className="group absolute right-2 md:right-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white overflow-hidden"
+        className="group absolute right-2 md:right-[5%] cursor-pointer top-1/2 max-sm:top-40 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white overflow-hidden"
         aria-label="Next slide"
       >
         <div className="-translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">

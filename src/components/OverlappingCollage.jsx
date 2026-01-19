@@ -13,12 +13,12 @@ export default function JewelryOverlappingCollage() {
   return (
     <div className="bg-white">
       {/* First Section - Left text, Right image */}
-      <section className="min-h-screen w-full relative">
+      <section className="min-h-screen max-sm:min-h-fit w-full relative">
         <Advantage />
       </section>
 
       {/* Second Section - Left image, Right text */}
-      <section className="relative w-full min-h-screen">
+      <section className="relative w-full max-sm:min-h-fit min-h-screen">
         <Diversify />
       </section>
     </div>
@@ -29,48 +29,74 @@ const Advantage = () => {
   const imageRef = useRef(null);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        imageRef.current,
-        {
-          scale: 1.3,
-          y: -100,
-        },
-        {
-          scale: 1,
-          y: 0,
-          ease: "none",
-          scrollTrigger: {
-            trigger: imageRef.current,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1,
+    if (typeof window !== 'undefined' && window.innerWidth > 640) {
+      const ctx = gsap.context(() => {
+        gsap.fromTo(
+          imageRef.current,
+          {
+            scale: 1.3,
+            y: -100,
           },
-        }
-      );
-    });
+          {
+            scale: 1,
+            y: 0,
+            ease: "none",
+            scrollTrigger: {
+              trigger: imageRef.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          }
+        );
+      });
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }
+    else {
+      const ctx = gsap.context(() => {
+        gsap.fromTo(
+          imageRef.current,
+          {
+            scale: 1.2,
+            y: -50,
+          },
+          {
+            scale: 1,
+            y: 0,
+            ease: "none",
+            scrollTrigger: {
+              trigger: imageRef.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          }
+        );
+      });
+
+      return () => ctx.revert();
+    }
   }, []);
 
   return (
-    <section className="bg-[#F2F2F2] overflow-hidden h-screen">
-      <div className="flex items-center h-full">
+    <section className="bg-[#F2F2F2] overflow-hidden h-screen max-sm:h-fit">
+      <div className="flex items-center max-sm:flex-col h-full">
         {/* Left - Text */}
-        <div className=" w-1/2 px-16 flex flex-col justify-center">
-          <h2 className="text-6xl font-light mb-8">Elegant by Design</h2>
-          <div className="space-y-6 mb-8">
+        <div className=" w-1/2 max-sm:w-full max-sm:px-5 max-sm:py-8 px-16 flex flex-col justify-center">
+          <h2 className="text-6xl max-sm:text-4xl font-light mb-8 max-sm:mb-4">Elegant by Design</h2>
+          <div className="space-y-6 mb-8 max-sm:mb-4">
             <p className="text-lg leading-relaxed">
               Elori Jewels showcases a carefully crafted visual experience that mirrors the sophistication of fine jewelry. The storefront features a clean, modern aesthetic with luxurious spacing, elegant typography, and a refined color palette that lets each piece shine. Every element has been thoughtfully designed to create an immersive shopping experience that highlights the beauty and craftsmanship of each jewel.
             </p>
           </div>
-          <div className="w-fit">
+          <div className="w-fit max-sm:w-full flex items-center max-sm:mb-4 justify-center">
          <PrimaryButton text={"Shop Now"} href={"/products"} border={false}/>
          </div>
         </div>
 
         {/* Right - Image */}
-        <div className="w-1/2 h-full overflow-hidden">
+        <div className="w-1/2 max-sm:w-[90%] max-sm:h-[60vw] h-full overflow-hidden">
           <Image
           height={800}
           width={800}
@@ -89,35 +115,61 @@ const Diversify = () => {
   const imageRef = useRef(null);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        imageRef.current,
-        {
-          scale: 1.3,
-          y: -100,
-        },
-        {
-          scale: 1,
-          y: 0,
-          ease: "none",
-          scrollTrigger: {
-            trigger: imageRef.current,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1,
+    if (typeof window !== 'undefined' && window.innerWidth > 640) {
+      const ctx = gsap.context(() => {
+        gsap.fromTo(
+          imageRef.current,
+          {
+            scale: 1.3,
+            y: -100,
           },
-        }
-      );
-    });
+          {
+            scale: 1,
+            y: 0,
+            ease: "none",
+            scrollTrigger: {
+              trigger: imageRef.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          }
+        );
+      });
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }
+    else {
+      const ctx = gsap.context(() => {
+        gsap.fromTo(
+          imageRef.current,
+          {
+            scale: 1.1,
+            y: -50,
+          },
+          {
+            scale: 1,
+            y: 0,
+            ease: "none",
+            scrollTrigger: {
+              trigger: imageRef.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          }
+        );
+      });
+
+      return () => ctx.revert();
+    }
   }, []);
 
   return (
-    <section className="bg-[#F2F2F2] overflow-hidden h-screen">
-      <div className="flex items-center h-full">
+    <section className="bg-[#F2F2F2] overflow-hidden h-screen max-sm:h-fit">
+      <div className="flex items-center max-sm:flex-col-reverse h-full">
         {/* Left - Image */}
-        <div className="w-1/2 h-full overflow-hidden">
+        <div className="w-1/2 max-sm:w-[90%] h-full max-sm:h-[60vw] overflow-hidden">
           <Image
           height={800}
           width={800}
@@ -129,14 +181,14 @@ const Diversify = () => {
         </div>
 
         {/* Right - Text */}
-        <div className="text-gray-900 w-1/2 px-16 flex flex-col justify-center">
-          <h3 className="text-6xl font-light mb-8 leading-tight">Curated Collections</h3>
-          <div className="space-y-6 mb-8">
+        <div className="text-gray-900 w-1/2 max-sm:w-full max-sm:px-5 max-sm:py-8 px-16 flex flex-col justify-center">
+          <h3 className="text-6xl max-sm:text-4xl font-light mb-8 max-sm:mb-4 leading-tight">Curated Collections</h3>
+          <div className="space-y-6 mb-8 max-sm:mb-4">
             <p className="text-lg leading-relaxed">
               The product presentation emphasizes visual storytelling, with high-quality imagery and intuitive layouts that guide customers through diverse collections. From delicate everyday pieces to statement jewelry, each category is designed to inspire and engage. The browsing experience feels personal and refined, making it effortless for customers to discover pieces that resonate with their unique style.
             </p>
           </div>
-         <div className="w-fit">
+       <div className="w-fit max-sm:w-full flex items-center max-sm:mb-4 justify-center">
          <PrimaryButton text={"View Collections"} href={"/products"} border={false}/>
          </div>
         </div>

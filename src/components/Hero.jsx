@@ -24,11 +24,11 @@ export default function Hero() {
 
       {/* Center Content */}
       <div className="relative z-10 w-full h-full flex flex-col items-center justify-center text-white gap-4 px-4 text-center">
-        <h1 className="text-8xl  font-medium!  uppercase">
+        <h1 className="text-8xl max-sm:text-5xl font-medium!  uppercase">
          Elegance Redefined
         </h1>
 
-        <p className="text-md tracking-widest opacity-80  uppercase font-light">
+        <p className="text-md max-sm:text-xs tracking-widest max-sm:w-[70%] opacity-80  uppercase font-light">
           Modern commerce meets timeless beauty
         </p>
 

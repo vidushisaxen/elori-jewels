@@ -38,7 +38,7 @@ async function JewelrySectionContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F1EFEA] px-6 py-40">
+    <div className="min-h-screen w-screen overflow-x-hidden flex items-center justify-center bg-[#F1EFEA] px-6 py-40">
       <div className="w-full ">
         <h1 className="text-xs uppercase tracking-wider text-black/60 text-center mb-10">
           Earrings Collection
