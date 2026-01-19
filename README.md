@@ -1,10 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Shopify + Next.js POC – Elori Jewels
 
-## Getting Started
+## Overview
 
-First, run the development server:
+This repository contains a **Proof of Concept (POC)** for a headless e-commerce storefront built using **Shopify** and **Next.js** for **Elori Jewels**.
+
+The purpose of this POC is to validate the feasibility, stability, and readiness of a Shopify + Next.js architecture for a modern jewelry storefront.
+
+---
+
+## What This POC Demonstrates
+
+- Shopify Storefront API (GraphQL) integration  
+- Headless Shopify architecture with Next.js frontend  
+- Core storefront pages:
+  - Home
+  - Collection / Product Listing Page (PLP)
+  - Product Detail Page (PDP)
+- Stripe checkout integration (test mode)
+- Successful order creation in Shopify Admin
+- Inventory management via Shopify Admin
+- Stable deployment on Vercel
+
+---
+
+## Live Demo & References
+
+- **Live Demo:** https://elori-jewels.vercel.app/  
+- **Repository:** https://github.com/vidushisaxen/elori-jewels  
+- **Demo Recording (Optional):**  
+  https://res.cloudinary.com/dmc735rru/video/upload/v1768814768/elori-jewels_rcf3ef.mp4
+
+---
+
+## Tech Stack
+
+- **Next.js** (App Router)
+- **Shopify Storefront API (GraphQL)**
+- **Stripe** (Test Mode)
+- **Vercel** (Hosting & Deployment)
+
+---
+
+## Running the Project Locally
+
+This project is built with **Next.js** and was bootstrapped using `create-next-app`.
+
+### Prerequisites
+
+- Node.js 18+
+- npm / yarn / pnpm / bun
+
+### Install Dependencies
 
 ```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+
+
+Start Development Server
 npm run dev
 # or
 yarn dev
@@ -12,25 +68,14 @@ yarn dev
 pnpm dev
 # or
 bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Open http://localhost:3000
+ in your browser to view the application.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+You can edit the main page at:
 
-## Learn More
+app/page.js
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Changes will automatically reflect during development.

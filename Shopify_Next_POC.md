@@ -52,7 +52,7 @@ The POC was considered successful if:
 ## 5. Proof / References
 - Demo URL: [https://elori-jewels.vercel.app/](https://elori-jewels.vercel.app/)
 - Repository / Branch: `https://github.com/vidushisaxen/elori-jewels`
-- (Optional) Demo recording: `<add link>`
+- (Optional) Demo recording: `https://res.cloudinary.com/dmc735rru/video/upload/v1768814768/elori-jewels_rcf3ef.mp4`
 
 ---
 
