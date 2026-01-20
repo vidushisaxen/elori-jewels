@@ -8,7 +8,7 @@ import type { WebhookEvent } from "@clerk/nextjs/server";
 import {
   createShopifyCustomer,
   getShopifyCustomerByEmail,
-} from "../../../lib/shopify-admin/route"; // change if your alias/path differs
+} from "../../../lib/shopify-admin/admin"; // change if your alias/path differs
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
