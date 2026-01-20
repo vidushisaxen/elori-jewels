@@ -6,6 +6,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Suspense } from "react";
 import ScrollToTopOnReload from "../components/RelaodToTop";
+import Providers from "./providers";
+
 
 const BSTSpyre = localFont({
   src: [
@@ -33,24 +35,35 @@ export const metadata = {
   description: "Elori Jewels store - Handcrafted, minimal jewellery",
 };
 
+
 export default function RootLayout({ children }) {
+
   return (
+    
     <html lang="en">
       <body className={`${BSTSpyre.variable} ${Calibre.variable} antialiased`}>
-        <CartProvider>
+        <Suspense fallback={null}>
+        <Providers>
+          <CartProvider>
+            <LenisSmoothScroll>
+              {/* <ScrollToTopOnReload> */}
+                {/* Put suspense around the data-fetching pieces */}
+                <Suspense fallback={null}>
+                  <Header />
+                </Suspense>
 
-          <LenisSmoothScroll>
-            <ScrollToTopOnReload>            
-            <Suspense fallback={null}>
-             <Header />
-              {children}
-              <Footer />
-            </Suspense>
-            
-            </ScrollToTopOnReload>
-          </LenisSmoothScroll>
-        </CartProvider>
+                {children}
+
+                <Suspense fallback={null}>
+                  <Footer />
+                </Suspense>
+              {/* </ScrollToTopOnReload> */}
+            </LenisSmoothScroll>
+          </CartProvider>
+        </Providers>
+        </Suspense>
       </body>
     </html>
+    
   );
 }
