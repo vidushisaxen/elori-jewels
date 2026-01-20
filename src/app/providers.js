@@ -1,6 +1,7 @@
 "use client";
-import { ClerkProvider } from "@clerk/nextjs";
+
+import { ShopifyAuthProvider } from "../components/auth/ShopifyAuthContext";
 
 export default function Providers({ children }) {
-  return <ClerkProvider>{children}</ClerkProvider>;
+  return <ShopifyAuthProvider>{children}</ShopifyAuthProvider>;
 }

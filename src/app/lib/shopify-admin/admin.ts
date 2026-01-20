@@ -88,7 +88,7 @@ export async function createShopifyCustomer(
   email: string,
   firstName?: string,
   lastName?: string,
-  clerkUserId?: string
+  note?: string
 ) {
   const client = getShopifyAdminClient();
 
@@ -114,8 +114,8 @@ export async function createShopifyCustomer(
       email,
       firstName: firstName ?? "",
       lastName: lastName ?? "",
-      note: clerkUserId ? `Clerk ID: ${clerkUserId}` : "",
-      tags: ["clerk-user"],
+      note: note ?? "",
+      tags: ["storefront-user"],
     },
   };
 

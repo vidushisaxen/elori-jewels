@@ -6,16 +6,11 @@ import { usePathname } from "next/navigation";
 import { SearchModal } from "./SeachModal";
 import { useLenis } from "lenis/react";
 import { useStore } from "../store";
-import {SearchIcon,ShoppingCartIcon} from "lucide-react";
+import { SearchIcon, ShoppingCartIcon } from "lucide-react";
 import PrimaryButton from "./Buttons/PrimaryButton";
 import gsap from "gsap";
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
+import { UserMenu } from "./auth/UserMenu";
+import { AuthModal } from "./auth/AuthModal";
 
 export default function Header() {
   const [hovered, setHovered] = useState(null);
@@ -26,6 +21,10 @@ export default function Header() {
   const [collections, setCollections] = useState([]);
   const [leftLinks, setLeftLinks] = useState([]);
   const [hidden, setHidden] = useState(false);
+  
+  // Auth modal state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState("login");
 
   // Refs for GSAP animations
   const megaMenuRef = useRef(null);
@@ -99,6 +98,15 @@ export default function Header() {
       window.lenis?.start();
     }
   }, [isSearchOpen]);
+
+  // Stop Lenis when auth modal is open
+  useEffect(() => {
+    if (isAuthModalOpen) {
+      window.lenis?.stop();
+    } else {
+      window.lenis?.start();
+    }
+  }, [isAuthModalOpen]);
 
   // GSAP animation for mega menu
   useEffect(() => {
@@ -408,6 +416,11 @@ export default function Header() {
     closeMenu();
   };
 
+  const openAuthModal = (mode) => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
   const renderLink = (link, position) => {
     const id = `${position}-${link.label}`;
     const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
@@ -448,6 +461,7 @@ export default function Header() {
   };
 
   return (
+    <>
     <header className={`w-full fixed top-0 left-0 z-[999] transform transition-transform duration-300 ${
       hidden ? "-translate-y-full" : "translate-y-0"
     }`}>
@@ -622,18 +636,10 @@ export default function Header() {
               </span>
             )}
           </Link>
-
-           <SignedOut>
-              <SignInButton />
-              <SignUpButton>
-                <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-                  Sign Up
-                </button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+          <div className="w-px h-5 bg-white"></div>
+          
+          {/* Shopify Auth - User Menu */}
+          <UserMenu onOpenAuthModal={openAuthModal} />
         </div>
       </nav>
 
@@ -655,6 +661,15 @@ export default function Header() {
         products={products}
         collections={collections}
       />
+
+      {/* AUTH MODAL */}
     </header>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+      />
+    </>
   );
 }
