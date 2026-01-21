@@ -1,6 +1,8 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { useStore } from "../../store";
 
 // Types
 export interface ShopifyCustomer {
@@ -11,7 +13,7 @@ export interface ShopifyCustomer {
   phone?: string;
   acceptsMarketing?: boolean;
   defaultAddress?: {
-    id: string;
+    id?: string;
     address1?: string;
     address2?: string;
     city?: string;
@@ -21,6 +23,19 @@ export interface ShopifyCustomer {
   };
   orders?: {
     totalCount: number;
+    edges?: Array<{
+      node: {
+        id: string;
+        orderNumber: string;
+        processedAt: string;
+        financialStatus: string;
+        fulfillmentStatus: string;
+        totalPrice: {
+          amount: string;
+          currencyCode: string;
+        };
+      };
+    }>;
   };
 }
 
@@ -31,37 +46,13 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (input: RegisterInput) => Promise<{ success: boolean; error?: string }>;
+  login: (returnUrl?: string) => void;
   logout: () => Promise<void>;
   refreshCustomer: () => Promise<void>;
-  recoverPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
-  resetPassword: (resetToken: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  updateCustomer: (input: UpdateCustomerInput) => Promise<{ success: boolean; error?: string }>;
   redirectToShopifyAccount: () => void;
 }
 
-interface RegisterInput {
-  email: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-  acceptsMarketing?: boolean;
-}
-
-interface UpdateCustomerInput {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  password?: string;
-  acceptsMarketing?: boolean;
-}
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Shopify store ID extracted from the URL you provided
-const SHOPIFY_STORE_ID = "97678459179";
 
 export function ShopifyAuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -70,12 +61,13 @@ export function ShopifyAuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: false,
   });
 
-  // Check session on mount
-  useEffect(() => {
-    checkSession();
-  }, []);
+  // Get store actions
+  const fetchWishlistFromShopify = useStore((state) => state.fetchWishlistFromShopify);
+  const clearWishlistLocal = useStore((state) => state.clearWishlistLocal);
+  const associateCartWithCustomer = useStore((state) => state.associateCartWithCustomer);
+  const fetchCart = useStore((state) => state.fetchCart);
 
-  const checkSession = async () => {
+  const checkSession = useCallback(async () => {
     try {
       const response = await fetch("/api/auth/session");
       if (response.ok) {
@@ -86,6 +78,12 @@ export function ShopifyAuthProvider({ children }: { children: ReactNode }) {
             isLoading: false,
             isAuthenticated: true,
           });
+          
+          // User is logged in - sync their data
+          await associateCartWithCustomer();
+          await fetchWishlistFromShopify();
+          await fetchCart();
+          
           return;
         }
       }
@@ -93,59 +91,33 @@ export function ShopifyAuthProvider({ children }: { children: ReactNode }) {
       console.error("Session check failed:", error);
     }
     setState({ customer: null, isLoading: false, isAuthenticated: false });
-  };
+  }, [associateCartWithCustomer, fetchWishlistFromShopify, fetchCart]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+  // Check session on mount
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
 
-      const data = await response.json();
+  // ─────────────────────────────────────────────────────────────────────────────
+  // LOGIN - Headless (open our modal), NO redirects to Shopify-hosted login
+  // ─────────────────────────────────────────────────────────────────────────────
 
-      if (response.ok && data.customer) {
-        setState({
-          customer: data.customer,
-          isLoading: false,
-          isAuthenticated: true,
-        });
-        return { success: true };
-      }
-
-      return { success: false, error: data.error || "Login failed" };
-    } catch (error) {
-      console.error("Login error:", error);
-      return { success: false, error: "An unexpected error occurred" };
-    }
+  const login = useCallback((returnUrl?: string) => {
+    const url = returnUrl || window.location.pathname;
+    // Header listens for this to open AuthModal
+    window.dispatchEvent(
+      new CustomEvent("shopify-auth:open", { detail: { mode: "login", returnUrl: url } })
+    );
   }, []);
 
-  const register = useCallback(async (input: RegisterInput) => {
-    try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.customer) {
-        setState({
-          customer: data.customer,
-          isLoading: false,
-          isAuthenticated: true,
-        });
-        return { success: true };
-      }
-
-      return { success: false, error: data.error || "Registration failed" };
-    } catch (error) {
-      console.error("Register error:", error);
-      return { success: false, error: "An unexpected error occurred" };
-    }
+  const redirectToShopifyAccount = useCallback(() => {
+    // In headless mode, keep users inside our Next.js account page.
+    window.location.href = "/account";
   }, []);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // LOGOUT
+  // ─────────────────────────────────────────────────────────────────────────────
 
   const logout = useCallback(async () => {
     try {
@@ -153,97 +125,31 @@ export function ShopifyAuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Logout error:", error);
     }
+    
+    // Clear local wishlist
+    clearWishlistLocal();
+    
+    // Fetch new anonymous cart
+    await fetchCart();
+    
     setState({ customer: null, isLoading: false, isAuthenticated: false });
-  }, []);
+  }, [clearWishlistLocal, fetchCart]);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // REFRESH CUSTOMER
+  // ─────────────────────────────────────────────────────────────────────────────
 
   const refreshCustomer = useCallback(async () => {
     await checkSession();
-  }, []);
-
-  const recoverPassword = useCallback(async (email: string) => {
-    try {
-      const response = await fetch("/api/auth/recover", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        return { success: true };
-      }
-
-      return { success: false, error: data.error || "Password recovery failed" };
-    } catch (error) {
-      console.error("Password recovery error:", error);
-      return { success: false, error: "An unexpected error occurred" };
-    }
-  }, []);
-
-  const resetPassword = useCallback(async (resetToken: string, password: string) => {
-    try {
-      const response = await fetch("/api/auth/reset", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resetToken, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        return { success: true };
-      }
-
-      return { success: false, error: data.error || "Password reset failed" };
-    } catch (error) {
-      console.error("Password reset error:", error);
-      return { success: false, error: "An unexpected error occurred" };
-    }
-  }, []);
-
-  const updateCustomer = useCallback(async (input: UpdateCustomerInput) => {
-    try {
-      const response = await fetch("/api/auth/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.customer) {
-        setState((prev) => ({
-          ...prev,
-          customer: data.customer,
-        }));
-        return { success: true };
-      }
-
-      return { success: false, error: data.error || "Update failed" };
-    } catch (error) {
-      console.error("Update error:", error);
-      return { success: false, error: "An unexpected error occurred" };
-    }
-  }, []);
-
-  // Redirect to Shopify's hosted account page
-  const redirectToShopifyAccount = useCallback(() => {
-    // Using the Shopify customer account URL format
-    window.location.href = `https://shopify.com/${SHOPIFY_STORE_ID}/account`;
-  }, []);
+  }, [checkSession]);
 
   return (
     <AuthContext.Provider
       value={{
         ...state,
         login,
-        register,
         logout,
         refreshCustomer,
-        recoverPassword,
-        resetPassword,
-        updateCustomer,
         redirectToShopifyAccount,
       }}
     >
@@ -259,7 +165,6 @@ export function useAuth() {
   }
   return context;
 }
-
 // Convenience hooks
 export function useCustomer() {
   const { customer } = useAuth();
@@ -270,3 +175,4 @@ export function useIsAuthenticated() {
   const { isAuthenticated, isLoading } = useAuth();
   return { isAuthenticated, isLoading };
 }
+

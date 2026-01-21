@@ -223,8 +223,12 @@ const reshapeProducts = (products: ShopifyProduct[]) => {
 };
 
 export async function createCart(): Promise<Cart> {
+  // Check if customer is logged in to associate cart with them
+  const customerAccessToken = (await cookies()).get('shopify_customer_token')?.value;
+  
   const res = await shopifyFetch<ShopifyCreateCartOperation>({
     query: createCartMutation,
+    variables: customerAccessToken ? { buyerIdentity: { customerAccessToken } } : undefined,
     cache: 'no-store'
   });
 
@@ -234,9 +238,20 @@ export async function createCart(): Promise<Cart> {
 export async function createCartWithLines(
   lines: { merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
+  // Check if customer is logged in to associate cart with them
+  const customerAccessToken = (await cookies()).get('shopify_customer_token')?.value;
+  
+  const variables: { lineItems: typeof lines; buyerIdentity?: { customerAccessToken: string } } = {
+    lineItems: lines,
+  };
+  
+  if (customerAccessToken) {
+    variables.buyerIdentity = { customerAccessToken };
+  }
+  
   const res = await shopifyFetch<ShopifyCreateCartOperation>({
     query: createCartMutation,
-    variables: { lineItems: lines },
+    variables,
     cache: 'no-store'
   });
 

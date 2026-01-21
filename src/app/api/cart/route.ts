@@ -1,9 +1,43 @@
-// /app/api/cart/update/route.ts
+// /app/api/cart/route.ts
 import { NextResponse } from 'next/server';
 import { getCart, updateCart, removeFromCart } from '../../lib/shopify';
 
 type UpdateType = 'plus' | 'minus' | 'delete';
 
+// GET - Fetch current cart
+export async function GET() {
+  try {
+    const cart = await getCart();
+    
+    if (!cart) {
+      // Return empty cart structure if no cart exists
+      return NextResponse.json({
+        id: undefined,
+        checkoutUrl: '',
+        totalQuantity: 0,
+        lines: [],
+        cost: {
+          subtotalAmount: { amount: '0', currencyCode: 'USD' },
+          totalAmount: { amount: '0', currencyCode: 'USD' },
+          totalTaxAmount: { amount: '0', currencyCode: 'USD' },
+        },
+      });
+    }
+
+    return NextResponse.json(cart);
+  } catch (error) {
+    console.error('Error fetching cart:', error);
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch cart',
+        details: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Update cart item
 export async function POST(request: Request) {
   try {
     const { merchandiseId, updateType } = (await request.json()) as {
@@ -18,7 +52,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // ✅ getCart() reads cartId from cookies internally
     const currentCart = await getCart();
 
     if (!currentCart?.id) {
@@ -43,7 +76,6 @@ export async function POST(request: Request) {
     let updatedCart;
 
     if (updateType === 'delete') {
-      // ✅ removeFromCart() takes only lineIds and reads cartId from cookies
       updatedCart = await removeFromCart([lineItem.id]);
     } else {
       const newQuantity =
@@ -52,7 +84,6 @@ export async function POST(request: Request) {
       if (newQuantity <= 0) {
         updatedCart = await removeFromCart([lineItem.id]);
       } else {
-        // ✅ updateCart() takes only lines and reads cartId from cookies
         updatedCart = await updateCart([
           {
             id: lineItem.id,

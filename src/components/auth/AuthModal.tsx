@@ -1,43 +1,37 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "./ShopifyAuthContext";
-import { X, Eye, EyeOff, Loader2 } from "lucide-react";
+import { X, Mail } from "lucide-react";
 import gsap from "gsap";
+import { useAuth } from "./ShopifyAuthContext";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode?: "login" | "register" | "recover";
+  initialMode?: "login" | "register";
 }
 
-export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalProps) {
-  const [mode, setMode] = useState<"login" | "register" | "recover">(initialMode);
+export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+  const { refreshCustomer } = useAuth();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [isSending, setIsSending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { login, register, recoverPassword } = useAuth();
   
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMode(initialMode);
-  }, [initialMode]);
-
-  useEffect(() => {
     if (isOpen) {
-      // Reset form state when opening
       setError("");
-      setSuccess("");
+      setEmail("");
+      setCode("");
+      setStep("email");
+      setIsSending(false);
+      setIsVerifying(false);
       
-      // Animate in
       gsap.set(overlayRef.current, { opacity: 0, visibility: "visible" });
       gsap.set(modalRef.current, { opacity: 0, y: 20, scale: 0.95 });
       
@@ -51,7 +45,6 @@ export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalP
         delay: 0.1 
       });
     } else {
-      // Animate out
       gsap.to(modalRef.current, { opacity: 0, y: 20, scale: 0.95, duration: 0.2, ease: "power2.in" });
       gsap.to(overlayRef.current, { 
         opacity: 0, 
@@ -66,58 +59,73 @@ export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalP
     }
   }, [isOpen]);
 
-  const resetForm = () => {
-    setEmail("");
-    setPassword("");
-    setFirstName("");
-    setLastName("");
-    setError("");
-    setSuccess("");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setIsSubmitting(true);
-
+  const handleSendOtp = async () => {
     try {
-      if (mode === "login") {
-        const result = await login(email, password);
-        if (result.success) {
-          resetForm();
-          onClose();
-        } else {
-          setError(result.error || "Login failed");
-        }
-      } else if (mode === "register") {
-        const result = await register({ email, password, firstName, lastName });
-        if (result.success) {
-          resetForm();
-          onClose();
-        } else {
-          setError(result.error || "Registration failed");
-        }
-      } else if (mode === "recover") {
-        const result = await recoverPassword(email);
-        if (result.success) {
-          setSuccess("If an account exists with this email, you will receive a password reset link.");
-          setEmail("");
-        } else {
-          setError(result.error || "Password recovery failed");
-        }
+      setError("");
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!normalizedEmail || !normalizedEmail.includes("@")) {
+        setError("Please enter a valid email address.");
+        return;
       }
-    } catch {
-      setError("An unexpected error occurred");
+
+      setIsSending(true);
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false) {
+        setError(data?.error || "Failed to send code. Please try again.");
+        return;
+      }
+
+      setStep("code");
+    } catch (e) {
+      console.error("[AuthModal] send-otp error", e);
+      setError("Failed to send code. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setIsSending(false);
     }
   };
 
-  const switchMode = (newMode: "login" | "register" | "recover") => {
-    setMode(newMode);
-    setError("");
-    setSuccess("");
+  const handleVerifyOtp = async () => {
+    try {
+      setError("");
+      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedCode = code.trim();
+      if (!normalizedEmail || !normalizedEmail.includes("@")) {
+        setError("Please enter a valid email address.");
+        setStep("email");
+        return;
+      }
+      if (!normalizedCode) {
+        setError("Please enter the code we sent to your email.");
+        return;
+      }
+
+      setIsVerifying(true);
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, code: normalizedCode }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false) {
+        setError(data?.error || "Invalid code. Please try again.");
+        return;
+      }
+
+      await refreshCustomer();
+      onClose();
+    } catch (e) {
+      console.error("[AuthModal] verify-otp error", e);
+      setError("Failed to verify code. Please try again.");
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -125,7 +133,7 @@ export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalP
   return (
     <div 
       ref={overlayRef}
-      className="fixed inset-0 z-[99999] overflow-y-auto"
+      className="fixed inset-0 z-99999 overflow-y-auto"
       style={{ visibility: "hidden" }}
     >
       {/* Backdrop */}
@@ -135,180 +143,146 @@ export function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalP
       />
       
       {/* Centering wrapper */}
-      <div className="fixed inset-0 z-999999 flex items-center justify-center p-4 pointer-events-none">
+      <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
         {/* Modal */}
         <div 
           ref={modalRef}
           className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden pointer-events-auto"
         >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <h2 className="text-xl font-medium tracking-wide uppercase">
-            {mode === "login" && "Sign In"}
-            {mode === "register" && "Create Account"}
-            {mode === "recover" && "Reset Password"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Error Message */}
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Success Message */}
-          {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-              {success}
-            </div>
-          )}
-
-          {/* Name Fields (Register only) */}
-          {mode === "register" && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
-                  placeholder="John"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Email */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
-              placeholder="you@example.com"
-            />
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+            <h2 className="text-xl font-medium tracking-wide uppercase">
+              Sign In
+            </h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
 
-          {/* Password (Login & Register) */}
-          {mode !== "recover" && (
-            <div>
-              <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={5}
-                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+          {/* Content */}
+          <div className="p-6">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {error}
               </div>
+            )}
+
+            {/* Main Content */}
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail size={28} className="text-gray-600" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">Welcome</h3>
+              <p className="text-gray-600 text-sm">
+                Sign in to access your account, wishlist, and order history.
+              </p>
+              <p className="text-gray-500 text-xs mt-2">
+                No password needed - we&apos;ll send you a secure login code via email.
+              </p>
             </div>
-          )}
 
-          {/* Forgot Password Link (Login only) */}
-          {mode === "login" && (
-            <div className="text-right">
-              <button
-                type="button"
-                onClick={() => switchMode("recover")}
-                className="text-sm text-gray-500 hover:text-black transition-colors"
-              >
-                Forgot password?
-              </button>
+            {step === "email" ? (
+              <>
+                <div className="mb-4">
+                  <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 text-left">
+                    Email
+                  </label>
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSendOtp}
+                  disabled={isSending}
+                  className="w-full bg-black text-white py-3.5 px-6 rounded-lg font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:opacity-60"
+                >
+                  {isSending ? "Sending..." : "Send Login Code"}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 text-left">
+                    Verification code
+                  </label>
+                  <input
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="Enter code"
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 tracking-widest"
+                  />
+                  <p className="text-xs text-gray-500 mt-2 text-left">
+                    We sent a code to <span className="font-medium text-gray-700">{email.trim()}</span>.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleVerifyOtp}
+                  disabled={isVerifying}
+                  className="w-full bg-black text-white py-3.5 px-6 rounded-lg font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:opacity-60"
+                >
+                  {isVerifying ? "Verifying..." : "Verify & Sign In"}
+                </button>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError("");
+                      setStep("email");
+                      setCode("");
+                    }}
+                    className="text-xs text-gray-500 hover:text-black transition-colors"
+                  >
+                    Change email
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={isSending}
+                    className="text-xs text-gray-500 hover:text-black transition-colors disabled:opacity-60"
+                  >
+                    {isSending ? "Resending..." : "Resend code"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            <p className="text-center text-xs text-gray-400 mt-4">
+              We never redirect you to Shopify-hosted login pages. This is a headless email code sign-in.
+            </p>
+
+            {/* Benefits */}
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <p className="text-xs text-gray-500 text-center mb-3">With your account you can:</p>
+              <ul className="text-xs text-gray-600 space-y-2">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-black rounded-full"></span>
+                  Save items to your wishlist
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-black rounded-full"></span>
+                  Track your orders
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-black rounded-full"></span>
+                  Faster checkout
+                </li>
+              </ul>
             </div>
-          )}
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-black text-white py-3 px-6 rounded-lg font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isSubmitting && <Loader2 size={18} className="animate-spin" />}
-            {mode === "login" && "Sign In"}
-            {mode === "register" && "Create Account"}
-            {mode === "recover" && "Send Reset Link"}
-          </button>
-
-          {/* Switch Mode Links */}
-          <div className="text-center text-sm text-gray-500 pt-2">
-            {mode === "login" && (
-              <>
-                Don&apos;t have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => switchMode("register")}
-                  className="text-black font-medium hover:underline"
-                >
-                  Create one
-                </button>
-              </>
-            )}
-            {mode === "register" && (
-              <>
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => switchMode("login")}
-                  className="text-black font-medium hover:underline"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
-            {mode === "recover" && (
-              <>
-                Remember your password?{" "}
-                <button
-                  type="button"
-                  onClick={() => switchMode("login")}
-                  className="text-black font-medium hover:underline"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
           </div>
-        </form>
         </div>
       </div>
     </div>

@@ -421,6 +421,15 @@ export default function Header() {
     setIsAuthModalOpen(true);
   };
 
+  useEffect(() => {
+    const handler = (event) => {
+      const mode = event?.detail?.mode || "login";
+      openAuthModal(mode);
+    };
+    window.addEventListener("shopify-auth:open", handler);
+    return () => window.removeEventListener("shopify-auth:open", handler);
+  }, []);
+
   const renderLink = (link, position) => {
     const id = `${position}-${link.label}`;
     const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);

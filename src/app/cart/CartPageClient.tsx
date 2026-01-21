@@ -10,9 +10,10 @@ import {
 } from "../../components/cart/actions";
 import { useStore } from "../../store";
 import type { Cart } from "../lib/shopify/types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import PrimaryButton from "../../components/Buttons/PrimaryButton";
-import { ShoppingCartIcon } from "lucide-react";
+import { ShoppingCartIcon, Loader2 } from "lucide-react";
+import { useAuth } from "../../components/auth/ShopifyAuthContext";
 
 export default function CartPageClient({
   cart: initialCart,
@@ -23,6 +24,9 @@ export default function CartPageClient({
   const cart = useStore((state) => state.cart);
   const setCart = useStore((state) => state.setCart);
   const clearCart = useStore((state) => state.clearCart);
+  const associateCartWithCustomer = useStore((state) => state.associateCartWithCustomer);
+  const { isAuthenticated } = useAuth();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Sync initial server cart with Zustand store
   useEffect(() => {
@@ -35,9 +39,26 @@ export default function CartPageClient({
     clearCart();
   };
 
-  const handleCheckout = () => {
-    if (cart?.checkoutUrl) {
-      window.open(cart.checkoutUrl, "_blank");
+  const handleCheckout = async () => {
+    if (!cart?.checkoutUrl) return;
+    
+    setIsCheckingOut(true);
+    
+    try {
+      // If user is logged in, make sure cart is associated with customer
+      // This ensures the order will be linked to their account
+      if (isAuthenticated) {
+        await associateCartWithCustomer();
+      }
+      
+      // Redirect to Shopify checkout
+      window.location.href = cart.checkoutUrl;
+    } catch (error) {
+      console.error("Checkout error:", error);
+      // Still proceed to checkout even if association fails
+      window.location.href = cart.checkoutUrl;
+    } finally {
+      setIsCheckingOut(false);
     }
   };
 
@@ -95,9 +116,14 @@ export default function CartPageClient({
               {cart.cost.totalAmount.amount}
             </div>
           </div>
-          <div onClick={handleCheckout} className="w-fit">
-            <PrimaryButton text={"Checkout"} href={"#"} border={true} />
-          </div>
+          <button
+            onClick={handleCheckout}
+            disabled={isCheckingOut}
+            className="bg-black text-white py-3 px-8 uppercase tracking-wider text-sm hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isCheckingOut && <Loader2 size={16} className="animate-spin" />}
+            {isCheckingOut ? "Processing..." : "Checkout"}
+          </button>
         </div>
       </div>
     </div>

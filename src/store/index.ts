@@ -32,6 +32,10 @@ interface StoreState {
   toggleWishlist: (item: WishlistItem) => void;
   isInWishlist: (id: string) => boolean;
   clearWishlist: () => void;
+  clearWishlistLocal: () => void; // Clear local only (for logout)
+  setWishlist: (items: WishlistItem[]) => void;
+  syncWishlistToShopify: () => Promise<void>;
+  fetchWishlistFromShopify: () => Promise<WishlistItem[]>;
 
   // Cart
   cart: Cart | undefined;
@@ -42,7 +46,7 @@ interface StoreState {
   updateCartItem: (merchandiseId: string, updateType: UpdateType) => Promise<void>;
   fetchCart: () => Promise<void>;
   clearCart: () => Promise<void>;
-  
+  associateCartWithCustomer: () => Promise<void>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -106,8 +110,6 @@ function createOrUpdateCartItem(
   };
 }
 
-
-
 function updateCartTotals(lines: CartItem[]): Pick<Cart, 'totalQuantity' | 'cost'> {
   const totalQuantity = lines.reduce((sum, item) => sum + item.quantity, 0);
   const totalAmount = lines.reduce((sum, item) => sum + Number(item.cost.totalAmount.amount), 0);
@@ -140,8 +142,6 @@ function createEmptyCart(): Cart {
 // Helper to normalize product ID (remove gid:// prefix for comparison)
 function normalizeId(id: string): string {
   if (!id) return '';
-  // Extract the numeric part from Shopify GID format
-  // e.g., "gid://shopify/Product/123456" -> "123456"
   const match = id.match(/\/(\d+)$/);
   return match ? match[1] : id;
 }
@@ -164,6 +164,8 @@ export const useStore = create<StoreState>()(
       // ─────────────────────────────────────────────────────────────────────────
       wishlist: [],
 
+      setWishlist: (items) => set({ wishlist: items }),
+
       addToWishlist: (item) => {
         set((state) => {
           const normalizedNewId = normalizeId(item.id);
@@ -172,6 +174,8 @@ export const useStore = create<StoreState>()(
           }
           return { wishlist: [...state.wishlist, item] };
         });
+        // Sync to Shopify in background (don't await)
+        get().syncWishlistToShopify();
       },
 
       removeFromWishlist: (id) => {
@@ -179,6 +183,8 @@ export const useStore = create<StoreState>()(
         set((state) => ({
           wishlist: state.wishlist.filter((x) => normalizeId(x.id) !== normalizedId && x.handle !== id),
         }));
+        // Sync to Shopify in background
+        get().syncWishlistToShopify();
       },
 
       toggleWishlist: (item) => {
@@ -192,6 +198,8 @@ export const useStore = create<StoreState>()(
         } else {
           set({ wishlist: [...wishlist, item] });
         }
+        // Sync to Shopify in background
+        get().syncWishlistToShopify();
       },
 
       isInWishlist: (id) => {
@@ -199,8 +207,47 @@ export const useStore = create<StoreState>()(
         return get().wishlist.some((x) => normalizeId(x.id) === normalizedId || x.handle === id);
       },
 
+      // Clear wishlist and sync to Shopify (user action)
       clearWishlist: () => {
         set({ wishlist: [] });
+        get().syncWishlistToShopify();
+      },
+
+      // Clear wishlist locally only - DON'T sync to Shopify (for logout)
+      clearWishlistLocal: () => {
+        set({ wishlist: [] });
+      },
+
+      // Sync current wishlist to Shopify customer metafield
+      syncWishlistToShopify: async () => {
+        try {
+          const { wishlist } = get();
+          await fetch('/api/wishlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ wishlist }),
+          });
+        } catch (error) {
+          // Silently fail - local wishlist is still saved
+          console.error('Failed to sync wishlist to Shopify:', error);
+        }
+      },
+
+      // Fetch wishlist from Shopify customer metafield
+      fetchWishlistFromShopify: async () => {
+        try {
+          const response = await fetch('/api/wishlist');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.authenticated && Array.isArray(data.wishlist)) {
+              set({ wishlist: data.wishlist });
+              return data.wishlist;
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch wishlist from Shopify:', error);
+        }
+        return [];
       },
 
       // ─────────────────────────────────────────────────────────────────────────
@@ -224,6 +271,24 @@ export const useStore = create<StoreState>()(
         } catch (error) {
           console.error('Failed to fetch cart:', error);
           set({ isCartLoading: false });
+        }
+      },
+
+      // Associate cart with logged-in customer (cartBuyerIdentityUpdate)
+      associateCartWithCustomer: async () => {
+        try {
+          const response = await fetch('/api/cart/associate', {
+            method: 'POST',
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.cart) {
+              set({ cart: data.cart });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to associate cart with customer:', error);
         }
       },
 
@@ -261,7 +326,6 @@ export const useStore = create<StoreState>()(
             set({ cart: data });
           } else {
             console.error('API error:', data.error || data.details);
-            // Revert on error
             await get().fetchCart();
             throw new Error(data.error || 'Failed to add item');
           }
@@ -326,8 +390,6 @@ export const useStore = create<StoreState>()(
 
       clearCart: async () => {
         const emptyCart = createEmptyCart();
-
-        // Optimistic UI update
         set({ cart: emptyCart });
 
         try {
@@ -343,7 +405,6 @@ export const useStore = create<StoreState>()(
           set({ cart: clearedCart });
         } catch (error) {
           console.error("Clear cart failed:", error);
-          // Re-sync cart if something goes wrong
           await get().fetchCart();
         }
       },
@@ -351,7 +412,6 @@ export const useStore = create<StoreState>()(
     {
       name: 'elori-store',
       storage: createJSONStorage(() => localStorage),
-      // Persist wishlist and cart for immediate display on navigation
       partialize: (state) => ({ 
         wishlist: state.wishlist,
         cart: state.cart,
@@ -367,13 +427,12 @@ export const useStore = create<StoreState>()(
 // HYDRATION HELPER
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Ensure hydration happens on client mount
 if (typeof window !== 'undefined') {
   useStore.persist.rehydrate();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SELECTORS (for convenience)
+// SELECTORS
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const useWishlist = () => useStore((state) => state.wishlist);
@@ -385,6 +444,10 @@ export const useWishlistActions = () =>
     toggleWishlist: state.toggleWishlist,
     isInWishlist: state.isInWishlist,
     clearWishlist: state.clearWishlist,
+    clearWishlistLocal: state.clearWishlistLocal,
+    setWishlist: state.setWishlist,
+    syncWishlistToShopify: state.syncWishlistToShopify,
+    fetchWishlistFromShopify: state.fetchWishlistFromShopify,
   }));
 
 export const useCart = () => useStore((state) => state.cart);
@@ -395,4 +458,5 @@ export const useCartActions = () =>
     updateCartItem: state.updateCartItem,
     fetchCart: state.fetchCart,
     setCart: state.setCart,
+    associateCartWithCustomer: state.associateCartWithCustomer,
   }));
