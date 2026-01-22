@@ -121,11 +121,20 @@ export function ShopifyAuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      const data = await response.json();
+      
+      // If we got a logout URL from Shopify, redirect to it
+      // Shopify will handle logout and redirect back to post_logout_redirect_uri
+      if (data.logoutUrl) {
+        window.location.href = data.logoutUrl;
+        return; // Don't clear state yet - let Shopify handle the redirect
+      }
     } catch (error) {
       console.error("Logout error:", error);
     }
     
+    // If no logout URL (fallback), clear everything locally
     // Clear local wishlist
     clearWishlistLocal();
     

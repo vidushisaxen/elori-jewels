@@ -16,7 +16,6 @@ function sha256Base64Url(str: string) {
 
 export async function GET(req: NextRequest) {
   try {
-    // Use exact env var from .env.local
     const shopDomainRaw = process.env.SHOPIFY_STORE_DOMAIN;
     if (!shopDomainRaw) {
       return NextResponse.json(
@@ -24,11 +23,9 @@ export async function GET(req: NextRequest) {
         { status: 500 }
       );
     }
-    // Clean domain (remove protocol if present)
     const shopDomain = shopDomainRaw.replace(/^https?:\/\//, "").split("/")[0];
 
-    // Use SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID from .env.local
-    const clientId = "304443fe-ec2e-4614-8936-a222a5150f33";
+    const clientId = process.env.SHOPIFY_CLIENT_ID;
     if (!clientId) {
       return NextResponse.json(
         { ok: false, error: "Missing SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID" },
@@ -41,8 +38,14 @@ export async function GET(req: NextRequest) {
     const locale = req.nextUrl.searchParams.get("locale") || undefined;
     const loginHint = req.nextUrl.searchParams.get("login_hint") || undefined;
 
-    // IMPORTANT: Must match exactly one of the Redirect URIs configured in Shopify app settings
-    const redirectUri = `${req.nextUrl.origin}/api/auth/callback`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl) {
+      return NextResponse.json(
+        { ok: false, error: "Missing NEXT_PUBLIC_APP_URL" },
+        { status: 500 }
+      );
+    }
+    const redirectUri = new URL("/api/auth/callback", baseUrl).toString();
 
     // PKCE + CSRF
     const state = crypto.randomUUID();
@@ -50,38 +53,34 @@ export async function GET(req: NextRequest) {
     const codeVerifier = base64Url(crypto.randomBytes(32));
     const codeChallenge = sha256Base64Url(codeVerifier);
 
-    // Step 1: Fetch the OpenID configuration
-    const discoveryRes = await fetch(
+    // First, discover the authentication endpoints
+    const discoveryResponse = await fetch(
       `https://${shopDomain}/.well-known/openid-configuration`
     );
-    const discovery = await discoveryRes.json();
+    const config = await discoveryResponse.json();
 
-    // Step 2: Extract the authorization endpoint
-    const authorizationEndpoint = discovery.authorization_endpoint;
-
-    // Step 3: Redirect user to that endpoint with query params
-    const authUrl = new URL(authorizationEndpoint);
-    authUrl.searchParams.set(
+    const authorizationRequestUrl = new URL(config.authorization_endpoint);
+    authorizationRequestUrl.searchParams.append(
       "scope",
       "openid email customer-account-api:full"
     );
-    authUrl.searchParams.set("client_id", clientId);
-    authUrl.searchParams.set("response_type", "code");
-    authUrl.searchParams.set("redirect_uri", redirectUri);
-    authUrl.searchParams.set("state", state);
-    authUrl.searchParams.set("nonce", nonce);
-    authUrl.searchParams.set("code_challenge", codeChallenge);
-    authUrl.searchParams.set("code_challenge_method", "S256");
-    if (prompt) authUrl.searchParams.set("prompt", prompt);
-    if (locale) authUrl.searchParams.set("locale", locale);
-    if (loginHint) authUrl.searchParams.set("login_hint", loginHint);
+    authorizationRequestUrl.searchParams.append("client_id", clientId);
+    authorizationRequestUrl.searchParams.append("response_type", "code");
+    authorizationRequestUrl.searchParams.append("redirect_uri", redirectUri);
+    authorizationRequestUrl.searchParams.append("state", state);
+    authorizationRequestUrl.searchParams.append("nonce", nonce);
+    authorizationRequestUrl.searchParams.append("code_challenge", codeChallenge);
+    authorizationRequestUrl.searchParams.append("code_challenge_method", "S256");
+    if (prompt) authorizationRequestUrl.searchParams.append("prompt", prompt);
+    if (locale) authorizationRequestUrl.searchParams.append("locale", locale);
+    if (loginHint) authorizationRequestUrl.searchParams.append("login_hint", loginHint);
 
     const cookieStore = await cookies();
     cookieStore.set("shopify_oauth_state", state, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 10 * 60, // 10 minutes
+      maxAge: 10 * 60,
       path: "/",
     });
     cookieStore.set("shopify_oauth_nonce", nonce, {
@@ -106,10 +105,7 @@ export async function GET(req: NextRequest) {
       path: "/",
     });
 
-    console.log("[auth/start] Redirecting to:", authUrl.toString());
-    console.log("[auth/start] Redirect URI:", redirectUri);
-
-    return NextResponse.redirect(authUrl.toString());
+    return NextResponse.redirect(authorizationRequestUrl.toString());
   } catch (e) {
     console.error("[auth/start] error", e);
     return NextResponse.json(

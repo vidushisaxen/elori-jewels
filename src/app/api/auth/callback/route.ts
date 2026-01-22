@@ -29,7 +29,11 @@ type TokenResponse = {
 export async function GET(req: NextRequest) {
   const cookieStore = await cookies();
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_APP_URL not set");
+  }
   const redirectUri = new URL("/api/auth/callback", baseUrl).toString();
 
   const returnUrl = cookieStore.get("shopify_oauth_return_url")?.value || "/";

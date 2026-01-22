@@ -74,7 +74,7 @@ export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
 
   // Authenticated - show user menu
   const initials = customer
-    ? `${customer.firstName?.[0] || ""}${customer.lastName?.[0] || ""}`.toUpperCase() || customer.email[0].toUpperCase()
+    ? "USER"
     : "U";
 
   return (

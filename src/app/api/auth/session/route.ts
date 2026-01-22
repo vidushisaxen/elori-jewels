@@ -78,13 +78,31 @@ async function fetchCustomerFromAccountAPI(accessToken: string) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": accessToken,
+        "Authorization": `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ query }),
     });
 
+    if (!response.ok) {
+      // Token is invalid or expired
+      console.error("[Session] Customer Account API error:", response.status);
+      return null;
+    }
+
     const data = await response.json();
-    return data.data?.customer;
+    
+    // Check for GraphQL errors
+    if (data.errors?.length) {
+      console.error("[Session] Customer Account API GraphQL errors:", data.errors);
+      return null;
+    }
+    
+    // Only return customer if we got valid data
+    if (data.data?.customer) {
+      return data.data.customer;
+    }
+    
+    return null;
   } catch (error) {
     console.error("[Session] Error fetching from Customer Account API:", error);
     return null;
@@ -186,47 +204,29 @@ export async function GET() {
 
     }
 
-    // Try to fetch customer from Customer Account API
+    // Validate access token by fetching customer from Customer Account API
+    // Only return customer data if the API call succeeds
     let customer = null;
     
     if (session.accessToken && !session.accessToken.startsWith("mock-")) {
       customer = await fetchCustomerFromAccountAPI(session.accessToken);
-    }
-
-    // Fallback to Admin API
-    if (!customer && (session.customer?.email || customerEmail)) {
-      const email = session.customer?.email || customerEmail;
-      const adminCustomer = await fetchCustomerFromAdminAPI(email!);
       
-      if (adminCustomer) {
-        // Transform Admin API response to match expected format
-        const orders = adminCustomer.orders?.edges?.map((edge: any) => ({
-          id: edge.node.id,
-          orderNumber: edge.node.name,
-          processedAt: edge.node.createdAt,
-          financialStatus: edge.node.displayFinancialStatus,
-          fulfillmentStatus: edge.node.displayFulfillmentStatus,
-          totalPrice: edge.node.totalPriceSet?.shopMoney,
-        })) || [];
-
-        return NextResponse.json({
-          customer: {
-            id: adminCustomer.id,
-            email: adminCustomer.email,
-            firstName: adminCustomer.firstName || "",
-            lastName: adminCustomer.lastName || "",
-            phone: adminCustomer.phone,
-            defaultAddress: adminCustomer.defaultAddress,
-            orders: {
-              totalCount: adminCustomer.ordersCount || 0,
-              edges: orders.map((order: any) => ({ node: order })),
-            },
-          },
-        });
+      // If API call failed, token is invalid - clear session
+      if (!customer) {
+        console.log("[Session] Access token invalid or expired, clearing session");
+        cookieStore.delete("shopify_customer_token");
+        cookieStore.delete("customer_email");
+        return NextResponse.json({ customer: null });
       }
+    } else {
+      // No valid access token - clear session
+      console.log("[Session] No valid access token, clearing session");
+      cookieStore.delete("shopify_customer_token");
+      cookieStore.delete("customer_email");
+      return NextResponse.json({ customer: null });
     }
 
-    // If we got customer from Customer Account API
+    // If we got customer from Customer Account API, return it
     if (customer) {
       const orders = customer.orders?.edges?.map((edge: any) => ({
         id: edge.node.id,
@@ -254,19 +254,11 @@ export async function GET() {
       });
     }
 
-    // Return session customer data as fallback
-    if (session.customer) {
-      return NextResponse.json({
-        customer: {
-          id: session.customer.id,
-          email: session.customer.email,
-          firstName: session.customer.firstName || "",
-          lastName: session.customer.lastName || "",
-          orders: { totalCount: 0, edges: [] },
-        },
-      });
-    }
-
+    // Don't return stale session data - only return customer if API call succeeded
+    // If we reach here, the API call failed or returned no customer
+    // Clear invalid session
+    cookieStore.delete("shopify_customer_token");
+    cookieStore.delete("customer_email");
     return NextResponse.json({ customer: null });
   } catch (error) {
     console.error("[Session] Error:", error);
