@@ -99,7 +99,7 @@ function ProductCard({ product }) {
               </div>
 
               <Image
-              height={500}
+              height={400}
               width={500}
                 ref={defaultImageRef}
                 src={firstImage.url}
@@ -107,7 +107,7 @@ function ProductCard({ product }) {
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <Image
-              height={500}
+              height={400}
               width={500}
                 ref={hoverImageRef}
                 src={secondImage?.url || firstImage.url}
@@ -182,7 +182,7 @@ export default function ProductsGridClient({ products, defaultCols = 4 }) {
   return (
     <div>
       {/* Grid Controls */}
-      <div className="mb-10 flex justify-end">
+      <div className="mb-5 flex justify-end ">
         <GridSlider cols={cols} setCols={setCols} />
       </div>
 

@@ -61,7 +61,7 @@ export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
         >
           Sign In
         </button>
-        <span className="text-white/50">/</span>
+        <span className="text-black">/</span>
         <button
           onClick={() => onOpenAuthModal("register")}
           className="text-sm font-medium hover:opacity-80 transition-opacity"

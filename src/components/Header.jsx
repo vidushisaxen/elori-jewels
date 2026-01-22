@@ -490,7 +490,7 @@ export default function Header() {
         <div 
           ref={navRef}
           onMouseLeave={handleNavLeave}
-          className="flex items-center h-full font-light tracking-wide gap-6 text-[.7vw] justify-center relative w-fit"
+          className="flex items-center h-full font-light tracking-wide gap-6 text-[0.85vw] relative "
           onMouseEnter={() => {
             // Keep menu open when hovering nav area
             if (activeLink) {
@@ -498,18 +498,13 @@ export default function Header() {
             }
           }}
         >
-          <span className=" h-10 w-120 absolute top-5 -left-15 bg-transparent pointer-events-auto"/>
+          <span className=" h-10 w-120 absolute top-5 -left-5 bg-transparent pointer-events-auto"/>
           {leftLinks.map((link) => renderLink(link, "left"))}
           
           {/* MEGA MENU DROPDOWN - Width constrained to nav links */}
           <div
             className="absolute top-[120%] left-1/2 -translate-x-1/2 z-[52]"
             style={{ width: `${leftLinks.length * 8}vw` }}
-            onMouseEnter={() => setMegaMenuOpen(true)}
-            onMouseLeave={() => {
-              setMegaMenuOpen(false);
-              handleNavLeave();
-            }}
           >
             <div
               ref={megaMenuRef}
@@ -595,52 +590,46 @@ export default function Header() {
         </div>
 
         {/* RIGHT ACTIONS */}
-        <div className="w-fit px-[2vw] bg-black absolute right-[1.2vw] rounded-full flex items-center justify-between gap-5 py-[1vw] text-white">
+        <div className="w-fit px-[2vw] absolute right-[1.2vw] rounded-full flex items-center justify-between gap-5 py-[1vw] text-black">
           <div
             className="w-4 h-4 cursor-pointer flex items-center justify-center group relative"
             onClick={() => setIsSearchOpen(true)}
           >
             <SearchIcon className="group-hover:scale-110 transition-transform duration-200 ease-out" />
           </div>
-          <div className="w-px h-5 bg-white"></div>
+          <div className="w-px h-5 bg-black"></div>
           <Link
             href="/cart"
             className="w-5 h-5 cursor-pointer flex items-center justify-center relative group"
           >
             <ShoppingCartIcon strokeWidth={1.4} className="group-hover:scale-110 transition-transform duration-200 ease-out" />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-white text-black text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-transparent text-black text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
                 {cartCount}
               </span>
             )}
           </Link>
-          <div className="w-px h-5 bg-white"></div>
+          <div className="w-px h-5 bg-black"></div>
           <Link
             href="/wishlist"
             className="w-5 h-5 cursor-pointer flex items-center justify-center relative group"
           >
-            <svg
-              className="icon-cart group-hover:scale-110 transition-transform duration-200 ease-out"
-              width="15"
-              height="18"
-              viewBox="0 0 15 18"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1.19891 5.8049C1.2448 5.02484 1.89076 4.41576 2.67216 4.41576H12.0298C12.8112 4.41576 13.4572 5.02485 13.5031 5.8049L14.0884 15.7547C14.1382 16.6023 13.4643 17.3171 12.6151 17.3171H2.08688C1.23775 17.3171 0.563767 16.6023 0.61363 15.7547L1.19891 5.8049Z"
-                stroke="white"
-                strokeWidth="0.983866"
-              ></path>
-              <path
-                d="M11.4354 6.3737C11.4354 3.21604 9.60694 0.65625 7.35147 0.65625C5.096 0.65625 3.26758 3.21604 3.26758 6.3737"
-                stroke="white"
-                strokeWidth="0.983866"
-                strokeLinecap="round"
-              ></path>
-            </svg>
+             <svg
+        className={`icon-cart group-hover:scale-110 transition-transform duration-200 ease-out`}
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+          fill="transparent"
+          stroke="black"
+        />
+      </svg>
+            
             {wishlistCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-white text-black text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-transparent text-black text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
                 {wishlistCount}
               </span>
             )}

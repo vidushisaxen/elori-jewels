@@ -27,6 +27,23 @@ export async function generateMetadata({ params }) {
   }
 }
 
+
+
+  function truncateBySentences(text, sentenceCount = 2) {
+  if (!text) return "";
+
+  const sentences = text
+    .split('.')
+    .filter(sentence => sentence.trim().length > 0);
+
+  if (sentences.length <= sentenceCount) {
+    return text;
+  }
+
+  return sentences.slice(0, sentenceCount).join('. ') + '.';
+}
+
+
 export default async function CollectionPage({ params }) {
   const { handle } = await params;
   
@@ -47,8 +64,10 @@ export default async function CollectionPage({ params }) {
     notFound();
   }
 
+
+
   return (
-    <section className="bg-white px-8 py-16 mt-20">
+    <section className="bg-white px-8 py-16 mt-15">
       <div className="mx-auto ">
         {/* Collection Header */}
         <div className="mb-16 text-center">
@@ -56,10 +75,10 @@ export default async function CollectionPage({ params }) {
             {collection.title}
           </h1>
           {collection.description && (
-            <p className="mt-4 text-sm text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-              {collection.description}
-            </p>
-          )}
+  <p className="mt-4 text-sm text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+    {truncateBySentences(collection.description, 2)}
+  </p>
+)}
          
         </div>
 

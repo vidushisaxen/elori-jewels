@@ -67,7 +67,7 @@ export function AddToCart({ product }: { product: Product }) {
         type="button"
         onClick={handleAddToCart}
         disabled={disabled}
-        className="w-full bg-black text-white py-4 px-8 text-sm uppercase tracking-widest hover:bg-black/80 transition-colors disabled:opacity-60"
+        className="w-full border border-black text-black py-4 px-8 text-sm uppercase tracking-widest hover:bg-black/50 hover:border-transparent hover:text-white cursor-pointer transition-colors disabled:opacity-60"
       >
         {isPending ? 'Adding to Cart…' : 'Add To Cart'}
       </button>

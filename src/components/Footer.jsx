@@ -250,31 +250,10 @@ export default async function Footer() {
 
         {/* COLUMN 4 – JOIN THE LIST */}
         <div className="flex flex-col gap-4">
-          <h4 className="text-lg font-light uppercase tracking-[0.2em]">
-            Join The List
+          <h4 className="font-semibold uppercase tracking-widest text-xs">
+            About Elori Jewels
           </h4>
-
-          <p className="text-xs opacity-70 leading-relaxed">
-            Receive updates on new arrivals, exclusive events, store openings,
-            news and more.
-          </p>
-
-          <div className="group relative">
-            <div className="flex items-end  pb-2 transition-colors duration-300 ">
-              <input
-                type="email"
-                placeholder="Email address"
-                className="w-full bg-transparent text-xs outline-none group-hover:placeholder:text-black placeholder:text-zinc-400 tracking-widest transition-colors duration-500 "
-              />
-              <span className="text-zinc-400 scale-70 transition-all rounded-full duration-500 size-2 bg-zinc-400 group-hover:bg-black group-hover:scale-100 "></span>
-            </div>
-
-            <span className="w-full rounded-full relative block h-[2px] bg-black/20 ">
-              <span className="w-0 h-full bg-black absolute left-0 top-0 transition-all duration-300 ease-in-out group-hover:w-full"></span>
-            </span>
-          </div>
-
-          <p className="text-sm opacity-80 mt-6 leading-snug">
+          <p className="text-sm opacity-80  leading-snug">
            Elori Jewels brings together timeless elegance and modern sophistication in every piece. Our curated collections celebrate individuality and craftsmanship, offering jewelry that resonates with your personal style and elevates every moment. 
           </p>
         </div>

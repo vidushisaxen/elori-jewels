@@ -46,27 +46,15 @@ async function JewelrySectionContent() {
   return (
     <div className="min-h-screen flex max-sm:h-fit items-center justify-center  bg-[#F1EFEA]  py-40 max-sm:py-0">
       <div className="w-full">
-        <h1 className="text-xs max-sm:text-base uppercase tracking-wider text-black/60 text-center mb-10">
+        <h1 className="text-lg max-sm:text-base uppercase tracking-wider text-black/60 text-center mb-10">
           Necklace Collection
         </h1>
+        <div className="text-center mt-12 flex items-end justify-end pr-3 pb-5">
+          <LinkButton href={"/collection/necklaces"} text={"View All"}/>
+        </div>
 
         <JewelryItemClient items={jewelryItems} />
 
-        <div className="text-center mt-12 flex items-center justify-center">
-          <LinkButton href={"/collection/necklaces"} text={"Shop Now"}/>
-          {/* <Link
-            href="/collection/necklaces"
-            className="cursor-pointer h-fit group space-y-1 relative w-fit"
-          >
-            <div className="uppercase overflow-hidden relative z-10 text-xs w-20 tracking-widest ">
-              <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300 ">Shop Now</p>
-              <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300 ">Shop Now</span>
-            </div>
-            <span className="w-full rounded-full relative block h-[2px] bg-black/20 ">
-              <span className="w-0 h-full bg-black absolute left-0 top-0 transition-all duration-300 ease-in-out group-hover:w-full"></span>
-            </span>
-          </Link> */}
-        </div>
       </div>
     </div>
   );

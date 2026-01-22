@@ -40,12 +40,14 @@ async function JewelrySectionContent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F1EFEA] py-40">
       <div className="w-full">
-        <h1 className="text-xs uppercase tracking-wider text-black/60 text-center mb-10">
+        <h1 className="text-lg uppercase tracking-wider text-black/60 text-center mb-10">
           Rings Collection
         </h1>
+        <div className="text-center mt-12 flex items-end justify-end pr-3 pb-5">
+          <LinkButton href={"/collection/rings"} text={"View All"}/>
+        </div>
         
         <JewelryItemClient items={jewelryItems} />
-        <LinkButton href={"/collection/rings"} text={"Shop Now"}/>
       </div>
     </div>
   );

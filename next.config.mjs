@@ -5,8 +5,10 @@ const nextConfig = {
   cacheComponents: true, // Moved out of experimental
   experimental: {
     inlineCss: true,
-    useCache: true
+    useCache: true,
+    serverActions: true
   },
+  
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -42,5 +44,7 @@ const nextConfig = {
     ];
   },
 };
+
+
 
 export default nextConfig;
