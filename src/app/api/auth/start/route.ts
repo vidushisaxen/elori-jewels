@@ -42,8 +42,7 @@ export async function GET(req: NextRequest) {
     const loginHint = req.nextUrl.searchParams.get("login_hint") || undefined;
 
     // IMPORTANT: Must match exactly one of the Redirect URIs configured in Shopify app settings
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
-    const redirectUri = new URL("/api/auth/callback", baseUrl).toString();
+    const redirectUri = `http://localhost:3000/api/auth/callback`;
 
     // PKCE + CSRF
     const state = crypto.randomUUID();
@@ -51,9 +50,21 @@ export async function GET(req: NextRequest) {
     const codeVerifier = base64Url(crypto.randomBytes(32));
     const codeChallenge = sha256Base64Url(codeVerifier);
 
-    // Use direct authorization endpoint
-    const authUrl = new URL("https://accounts.shopify.com/oauth/authorize");
-    authUrl.searchParams.set("scope", "openid email customer-account-api:full");
+    // Step 1: Fetch the OpenID configuration
+    const discoveryRes = await fetch(
+      `https://${shopDomain}/.well-known/openid-configuration`
+    );
+    const discovery = await discoveryRes.json();
+
+    // Step 2: Extract the authorization endpoint
+    const authorizationEndpoint = discovery.authorization_endpoint;
+
+    // Step 3: Redirect user to that endpoint with query params
+    const authUrl = new URL(authorizationEndpoint);
+    authUrl.searchParams.set(
+      "scope",
+      "openid email customer-account-api:full"
+    );
     authUrl.searchParams.set("client_id", clientId);
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("redirect_uri", redirectUri);
@@ -94,6 +105,9 @@ export async function GET(req: NextRequest) {
       maxAge: 10 * 60,
       path: "/",
     });
+
+    console.log("[auth/start] Redirecting to:", authUrl.toString());
+    console.log("[auth/start] Redirect URI:", redirectUri);
 
     return NextResponse.redirect(authUrl.toString());
   } catch (e) {
