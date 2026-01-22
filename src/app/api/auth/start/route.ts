@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     const loginHint = req.nextUrl.searchParams.get("login_hint") || undefined;
 
     // IMPORTANT: Must match exactly one of the Redirect URIs configured in Shopify app settings
-    const redirectUri = `http://localhost:3000/api/auth/callback`;
+    const redirectUri = `${req.nextUrl.origin}/api/auth/callback`;
 
     // PKCE + CSRF
     const state = crypto.randomUUID();
