@@ -14,44 +14,24 @@ function sha256Base64Url(str: string) {
   return base64Url(crypto.createHash("sha256").update(str).digest());
 }
 
-async function discover(shopDomain: string) {
-  const res = await fetch(`https://${shopDomain}/.well-known/openid-configuration`, {
-    // discovery changes rarely; keep default caching semantics
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `OpenID discovery failed (${res.status}) ${text?.slice(0, 200)}`.trim()
-    );
-  }
-  return (await res.json()) as {
-    authorization_endpoint: string;
-    token_endpoint: string;
-    end_session_endpoint?: string;
-    jwks_uri?: string;
-    issuer?: string;
-  };
-}
-
 export async function GET(req: NextRequest) {
   try {
-    const shopDomainRaw =
-      process.env.SHOPIFY_STORE_DOMAIN || process.env.SHOPIFY_STORE_ID || "";
-    const shopDomain = shopDomainRaw.replace(/^https?:\/\//, "").split("/")[0];
-    if (!shopDomain) {
+    // Use exact env var from .env.local
+    const shopDomainRaw = process.env.SHOPIFY_STORE_DOMAIN;
+    if (!shopDomainRaw) {
       return NextResponse.json(
         { ok: false, error: "Missing SHOPIFY_STORE_DOMAIN" },
         { status: 500 }
       );
     }
+    // Clean domain (remove protocol if present)
+    const shopDomain = shopDomainRaw.replace(/^https?:\/\//, "").split("/")[0];
 
-    const clientId =
-      process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID ||
-      process.env.SHOPIFY_CLIENT_ID ||
-      "";
+    // Use SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID from .env.local
+    const clientId = "304443fe-ec2e-4614-8936-a222a5150f33";
     if (!clientId) {
       return NextResponse.json(
-        { ok: false, error: "Missing SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID (or SHOPIFY_CLIENT_ID)" },
+        { ok: false, error: "Missing SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID" },
         { status: 500 }
       );
     }
@@ -60,8 +40,6 @@ export async function GET(req: NextRequest) {
     const prompt = req.nextUrl.searchParams.get("prompt") || undefined;
     const locale = req.nextUrl.searchParams.get("locale") || undefined;
     const loginHint = req.nextUrl.searchParams.get("login_hint") || undefined;
-
-    const config = await discover(shopDomain);
 
     // IMPORTANT: Must match exactly one of the Redirect URIs configured in Shopify app settings
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
@@ -73,7 +51,8 @@ export async function GET(req: NextRequest) {
     const codeVerifier = base64Url(crypto.randomBytes(32));
     const codeChallenge = sha256Base64Url(codeVerifier);
 
-    const authUrl = new URL(config.authorization_endpoint);
+    // Use direct authorization endpoint
+    const authUrl = new URL("https://accounts.shopify.com/oauth/authorize");
     authUrl.searchParams.set("scope", "openid email customer-account-api:full");
     authUrl.searchParams.set("client_id", clientId);
     authUrl.searchParams.set("response_type", "code");

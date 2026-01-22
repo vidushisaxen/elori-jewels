@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
-const DEFAULT_CUSTOMER_ACCOUNT_API_URL = "https://shopify.com/api/customer_accounts/graphql";
+const SHOPIFY_STORE_ID = process.env.SHOPIFY_STORE_ID || "97678459179";
 
 export function getCustomerAccountApiUrl() {
-  return process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_URL || DEFAULT_CUSTOMER_ACCOUNT_API_URL;
+  return `https://shopify.com/${SHOPIFY_STORE_ID}/account/customer/api/2025-07/graphql`;
 }
 
 export type CustomerAccountGraphQLResult<TData> = {
@@ -12,6 +12,7 @@ export type CustomerAccountGraphQLResult<TData> = {
 };
 
 export async function customerAccountGraphQL<TData>(
+  
   query: string,
   variables?: Record<string, any>,
   headers?: Record<string, string>
@@ -38,4 +39,3 @@ export async function customerAccountGraphQL<TData>(
 export function jsonError(message: string, status = 400) {
   return NextResponse.json({ ok: false, error: message }, { status });
 }
-

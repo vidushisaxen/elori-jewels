@@ -65,19 +65,18 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const shopDomainRaw =
-      process.env.SHOPIFY_STORE_DOMAIN || process.env.SHOPIFY_STORE_ID || "";
-    const shopDomain = shopDomainRaw.replace(/^https?:\/\//, "").split("/")[0];
-    if (!shopDomain) {
+    // Use exact env var from .env.local
+    const shopDomainRaw = process.env.SHOPIFY_STORE_DOMAIN;
+    if (!shopDomainRaw) {
       return NextResponse.redirect(
         new URL(`/?error=${encodeURIComponent("missing_shop_domain")}`, req.nextUrl.origin)
       );
     }
+    // Clean domain (remove protocol if present)
+    const shopDomain = shopDomainRaw.replace(/^https?:\/\//, "").split("/")[0];
 
-    const clientId =
-      process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID ||
-      process.env.SHOPIFY_CLIENT_ID ||
-      "";
+    // Use SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID from .env.local
+    const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID;
     const clientSecret = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET || "";
     if (!clientId) {
       return NextResponse.redirect(
