@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Mail } from "lucide-react";
 import gsap from "gsap";
-import { useAuth } from "./ShopifyAuthContext";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,12 +11,7 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const { refreshCustomer } = useAuth();
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState<"email" | "code">("email");
-  const [isSending, setIsSending] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState("");
   
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -26,11 +20,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   useEffect(() => {
     if (isOpen) {
       setError("");
-      setEmail("");
-      setCode("");
-      setStep("email");
-      setIsSending(false);
-      setIsVerifying(false);
+      setIsRedirecting(false);
       
       gsap.set(overlayRef.current, { opacity: 0, visibility: "visible" });
       gsap.set(modalRef.current, { opacity: 0, y: 20, scale: 0.95 });
@@ -59,72 +49,16 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   }, [isOpen]);
 
-  const handleSendOtp = async () => {
+  const handleRedirectLogin = () => {
     try {
       setError("");
-      const normalizedEmail = email.trim().toLowerCase();
-      if (!normalizedEmail || !normalizedEmail.includes("@")) {
-        setError("Please enter a valid email address.");
-        return;
-      }
-
-      setIsSending(true);
-      const res = await fetch("/api/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.ok === false) {
-        setError(data?.error || "Failed to send code. Please try again.");
-        return;
-      }
-
-      setStep("code");
+      setIsRedirecting(true);
+      const returnUrl = window.location.pathname + window.location.search;
+      window.location.href = `/api/auth/start?returnUrl=${encodeURIComponent(returnUrl)}`;
     } catch (e) {
-      console.error("[AuthModal] send-otp error", e);
-      setError("Failed to send code. Please try again.");
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    try {
-      setError("");
-      const normalizedEmail = email.trim().toLowerCase();
-      const normalizedCode = code.trim();
-      if (!normalizedEmail || !normalizedEmail.includes("@")) {
-        setError("Please enter a valid email address.");
-        setStep("email");
-        return;
-      }
-      if (!normalizedCode) {
-        setError("Please enter the code we sent to your email.");
-        return;
-      }
-
-      setIsVerifying(true);
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail, code: normalizedCode }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.ok === false) {
-        setError(data?.error || "Invalid code. Please try again.");
-        return;
-      }
-
-      await refreshCustomer();
-      onClose();
-    } catch (e) {
-      console.error("[AuthModal] verify-otp error", e);
-      setError("Failed to verify code. Please try again.");
-    } finally {
-      setIsVerifying(false);
+      console.error("[AuthModal] start auth redirect error", e);
+      setError("Failed to start login. Please try again.");
+      setIsRedirecting(false);
     }
   };
 
@@ -181,87 +115,20 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 Sign in to access your account, wishlist, and order history.
               </p>
               <p className="text-gray-500 text-xs mt-2">
-                No password needed - we&apos;ll send you a secure login code via email.
+                You&apos;ll be redirected to Shopify&apos;s secure sign-in.
               </p>
             </div>
 
-            {step === "email" ? (
-              <>
-                <div className="mb-4">
-                  <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 text-left">
-                    Email
-                  </label>
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
-                  />
-                </div>
-
-                <button
-                  onClick={handleSendOtp}
-                  disabled={isSending}
-                  className="w-full bg-black text-white py-3.5 px-6 rounded-lg font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:opacity-60"
-                >
-                  {isSending ? "Sending..." : "Send Login Code"}
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="mb-4">
-                  <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 text-left">
-                    Verification code
-                  </label>
-                  <input
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    placeholder="Enter code"
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 tracking-widest"
-                  />
-                  <p className="text-xs text-gray-500 mt-2 text-left">
-                    We sent a code to <span className="font-medium text-gray-700">{email.trim()}</span>.
-                  </p>
-                </div>
-
-                <button
-                  onClick={handleVerifyOtp}
-                  disabled={isVerifying}
-                  className="w-full bg-black text-white py-3.5 px-6 rounded-lg font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:opacity-60"
-                >
-                  {isVerifying ? "Verifying..." : "Verify & Sign In"}
-                </button>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setError("");
-                      setStep("email");
-                      setCode("");
-                    }}
-                    className="text-xs text-gray-500 hover:text-black transition-colors"
-                  >
-                    Change email
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSendOtp}
-                    disabled={isSending}
-                    className="text-xs text-gray-500 hover:text-black transition-colors disabled:opacity-60"
-                  >
-                    {isSending ? "Resending..." : "Resend code"}
-                  </button>
-                </div>
-              </>
-            )}
+            <button
+              onClick={handleRedirectLogin}
+              disabled={isRedirecting}
+              className="w-full bg-black text-white py-3.5 px-6 rounded-lg font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors disabled:opacity-60"
+            >
+              {isRedirecting ? "Redirecting..." : "Continue to Shopify Login"}
+            </button>
 
             <p className="text-center text-xs text-gray-400 mt-4">
-              We never redirect you to Shopify-hosted login pages. This is a headless email code sign-in.
+              Redirect URI must be whitelisted in your Customer Account API settings.
             </p>
 
             {/* Benefits */}
