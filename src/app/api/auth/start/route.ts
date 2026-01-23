@@ -38,7 +38,8 @@ export async function GET(req: NextRequest) {
     const locale = req.nextUrl.searchParams.get("locale") || undefined;
     const loginHint = req.nextUrl.searchParams.get("login_hint") || undefined;
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    // const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const baseUrl = "https://elori-jewels.vercel.app/";
     if (!baseUrl) {
       return NextResponse.json(
         { ok: false, error: "Missing NEXT_PUBLIC_APP_URL" },
