@@ -34,7 +34,7 @@ async function fetchCustomerFromAccountAPI(accessToken: string) {
   const customerApiUrl = `https://shopify.com/${SHOPIFY_STORE_ID}/account/customer/api/2025-07/graphql`;
 
   const query = `
-    query {
+    query GetSessionCustomer {
       customer {
         id
         emailAddress {
@@ -60,8 +60,13 @@ async function fetchCustomerFromAccountAPI(accessToken: string) {
               number
               processedAt
               financialStatus
-              fulfillments {
-                status
+              fulfillments(first: 5) {
+                edges {
+                  node {
+                    id
+                    status
+                  }
+                }
               }
               totalPrice {
                 amount
@@ -79,9 +84,11 @@ async function fetchCustomerFromAccountAPI(accessToken: string) {
   const origin = baseUrl ? new URL(baseUrl).origin : undefined;
 
   try {
+    // The token already includes "shcat_" prefix, so we pass it directly
+    // Do NOT add any additional prefix
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${accessToken}`,
+      "Authorization": accessToken,
       "user-agent": "Mozilla/5.0 (compatible; Next.js)",
     };
 
@@ -280,7 +287,7 @@ export async function GET() {
         orderNumber: `#${edge.node.number}`,
         processedAt: edge.node.processedAt,
         financialStatus: edge.node.financialStatus,
-        fulfillmentStatus: edge.node.fulfillments?.[0]?.status || "UNFULFILLED",
+        fulfillmentStatus: edge.node.fulfillments?.edges?.[0]?.node?.status || "UNFULFILLED",
         totalPrice: edge.node.totalPrice,
       })) || [];
 
