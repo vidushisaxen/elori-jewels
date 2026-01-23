@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     }
     const shopDomain = shopDomainRaw.replace(/^https?:\/\//, "").split("/")[0];
 
-    const clientId = process.env.SHOPIFY_CLIENT_ID;
+    const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID;
     if (!clientId) {
       return NextResponse.json(
         { ok: false, error: "Missing SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID" },
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const loginHint = req.nextUrl.searchParams.get("login_hint") || undefined;
 
     // const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-    const baseUrl = "https://elori-jewels.vercel.app/";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!baseUrl) {
       return NextResponse.json(
         { ok: false, error: "Missing NEXT_PUBLIC_APP_URL" },
