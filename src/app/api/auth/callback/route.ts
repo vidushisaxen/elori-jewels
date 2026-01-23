@@ -29,7 +29,7 @@ type TokenResponse = {
 export async function GET(req: NextRequest) {
   const cookieStore = await cookies();
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://elori-jewels.vercel.app/";
 
   if (!baseUrl) {
     throw new Error("NEXT_PUBLIC_APP_URL not set");

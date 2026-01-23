@@ -80,7 +80,7 @@ async function fetchCustomerFromAccountAPI(accessToken: string) {
   `;
 
   // Get origin from environment variable for headers (required by Shopify)
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://elori-jewels.vercel.app/";
   const origin = baseUrl ? new URL(baseUrl).origin : undefined;
 
   try {

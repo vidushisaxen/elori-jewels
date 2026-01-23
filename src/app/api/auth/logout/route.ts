@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 const SHOPIFY_STORE_ID = process.env.SHOPIFY_STORE_ID!; // e.g. "97678459179"
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;       // e.g. "https://your-ngrok-url.ngrok-free.dev"
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://elori-jewels.vercel.app/";       // e.g. "https://your-ngrok-url.ngrok-free.dev"
 
 interface SessionData {
   accessToken: string;

@@ -2,7 +2,7 @@ import { ReadonlyURLSearchParams } from 'next/navigation';
 
 export const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : process.env.NEXT_PUBLIC_APP_URL;
+  : process.env.NEXT_PUBLIC_APP_URL || "https://elori-jewels.vercel.app/";
 
 export const createUrl = (
   pathname: string,

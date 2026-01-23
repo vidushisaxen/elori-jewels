@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       }
     `;
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://elori-jewels.vercel.app/";
     const origin = baseUrl ? new URL(baseUrl).origin : undefined;
 
     const headers: Record<string, string> = {
