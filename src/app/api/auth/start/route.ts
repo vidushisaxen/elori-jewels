@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     const loginHint = req.nextUrl.searchParams.get("login_hint") || undefined;
 
     // const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://elori-jewels.vercel.app/";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!baseUrl) {
       return NextResponse.json(
         { ok: false, error: "Missing NEXT_PUBLIC_APP_URL" },
@@ -73,7 +73,8 @@ export async function GET(req: NextRequest) {
     authorizationRequestUrl.searchParams.append("nonce", nonce);
     authorizationRequestUrl.searchParams.append("code_challenge", codeChallenge);
     authorizationRequestUrl.searchParams.append("code_challenge_method", "S256");
-    authorizationRequestUrl.searchParams.append("prompt", prompt);
+    authorizationRequestUrl.searchParams.append("prompt", "login");
+    authorizationRequestUrl.searchParams.append("max_age", "0");
     if (locale) authorizationRequestUrl.searchParams.append("locale", locale);
     if (loginHint) authorizationRequestUrl.searchParams.append("login_hint", loginHint);
 

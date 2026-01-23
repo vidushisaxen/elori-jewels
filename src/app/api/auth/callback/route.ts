@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
     const shopDomain = shopDomainRaw.replace(/^https?:\/\//, "").split("/")[0];
 
     // Use SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID from .env.local
-    const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID;
+    const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID ;
     const clientSecret = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET || "";
     if (!clientId) {
       return NextResponse.redirect(

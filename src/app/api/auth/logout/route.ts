@@ -27,22 +27,30 @@ function parseSessionToken(token: string): SessionData | null {
 }
 
 export async function POST() {
+  console.log("[logout] POST request received");
+  console.log("[logout] SHOPIFY_STORE_ID:", SHOPIFY_STORE_ID);
+  console.log("[logout] APP_URL:", APP_URL);
+
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("shopify_customer_token")?.value;
+  console.log("[logout] sessionToken exists:", !!sessionToken);
 
   // Default response: no remote logout URL, just local cleanup
   const baseJson = { logoutUrl: null as string | null };
 
   // If no session cookie, just clear and return
   if (!sessionToken) {
+    console.log("[logout] No session token found, clearing cookies");
     cookieStore.delete("shopify_customer_token");
     cookieStore.delete("customer_email");
     return NextResponse.json(baseJson);
   }
 
   const session = parseSessionToken(sessionToken);
+  console.log("[logout] Parsed session:", session ? { ...session, accessToken: "[REDACTED]", refreshToken: session.refreshToken ? "[REDACTED]" : undefined, idToken: session.idToken ? "[REDACTED]" : undefined } : null);
 
   if (!session || !session.idToken) {
+    console.log("[logout] Invalid session or no id_token, clearing cookies");
     // Invalid session or no id_token to give Shopify
     cookieStore.delete("shopify_customer_token");
     cookieStore.delete("customer_email");
@@ -50,13 +58,15 @@ export async function POST() {
   }
 
   // Discover OpenID configuration to get end_session_endpoint
-  const discoveryResponse = await fetch(
-    `https://shopify.com/authentication/${SHOPIFY_STORE_ID}/.well-known/openid-configuration`
-  );
+  const discoveryUrl = `https://shopify.com/authentication/${SHOPIFY_STORE_ID}/.well-known/openid-configuration`;
+  console.log("[logout] Fetching discovery URL:", discoveryUrl);
+
+  const discoveryResponse = await fetch(discoveryUrl);
+  console.log("[logout] Discovery response status:", discoveryResponse.status);
 
   if (!discoveryResponse.ok) {
     const text = await discoveryResponse.text();
-    console.error("Discovery error during logout", discoveryResponse.status, text);
+    console.error("[logout] Discovery error during logout", discoveryResponse.status, text);
     // Even if discovery fails, clear local cookies and just do local logout
     cookieStore.delete("shopify_customer_token");
     cookieStore.delete("customer_email");
@@ -64,10 +74,13 @@ export async function POST() {
   }
 
   const config = await discoveryResponse.json();
+  console.log("[logout] Discovery config:", config);
+
   const endSessionEndpoint = config.end_session_endpoint as string | undefined;
+  console.log("[logout] end_session_endpoint:", endSessionEndpoint);
 
   if (!endSessionEndpoint) {
-    console.warn("No end_session_endpoint in discovery config");
+    console.warn("[logout] No end_session_endpoint in discovery config");
     cookieStore.delete("shopify_customer_token");
     cookieStore.delete("customer_email");
     
@@ -77,14 +90,17 @@ export async function POST() {
   // Build logout URL that browser will navigate to
   // Shopify will handle logout and then redirect to post_logout_redirect_uri
   const postLogoutRedirectUri = `${APP_URL}/`; // or a dedicated /logged-out page if you want
+  console.log("[logout] postLogoutRedirectUri:", postLogoutRedirectUri);
 
   const logoutUrl = new URL(endSessionEndpoint);
   logoutUrl.searchParams.set("id_token_hint", session.idToken);
   logoutUrl.searchParams.set("post_logout_redirect_uri", postLogoutRedirectUri);
+  console.log("[logout] Built logoutUrl:", logoutUrl.toString());
 
   // Clear local cookies now so that even if Shopify redirect fails, you're logged out in your app
   cookieStore.delete("shopify_customer_token");
   cookieStore.delete("customer_email");
+  console.log("[logout] Cookies cleared, returning logoutUrl");
 
   return NextResponse.json({
     logoutUrl: logoutUrl.toString(),
