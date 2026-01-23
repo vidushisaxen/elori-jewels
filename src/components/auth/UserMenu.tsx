@@ -73,9 +73,10 @@ export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
   }
 
   // Authenticated - show user menu
+
   const initials = customer
-    ? "USER"
-    : "U";
+    ? `${customer.email[0].toUpperCase() || ""}` 
+    : ":)";
 
   return (
     <div ref={menuRef} className="relative">
@@ -83,7 +84,7 @@ export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
       >
-        <div className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center text-xs font-semibold">
+        <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center text-xs font-semibold">
           {initials}
         </div>
         <ChevronDown
