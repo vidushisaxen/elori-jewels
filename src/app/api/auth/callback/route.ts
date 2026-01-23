@@ -173,6 +173,16 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Log token details for debugging
+    console.log("[auth/callback] Token received:", {
+      accessTokenLength: tokenJson.access_token.length,
+      accessTokenPrefix: tokenJson.access_token.substring(0, 10),
+      hasShcatPrefix: tokenJson.access_token.startsWith("shcat_"),
+      expiresIn: tokenJson.expires_in,
+      hasRefreshToken: !!tokenJson.refresh_token,
+      hasIdToken: !!tokenJson.id_token,
+    });
+
     const expiresIn = tokenJson.expires_in ?? 3600;
     const expiresAt = Date.now() + expiresIn * 1000;
 

@@ -30,7 +30,8 @@ function parseSessionToken(token: string): SessionData | null {
 
 // Fetch customer data using Customer Account API
 async function fetchCustomerFromAccountAPI(accessToken: string) {
-  const customerApiUrl = `https://shopify.com/${SHOPIFY_STORE_ID}/account/customer/api/2024-07/graphql`;
+  // Use 2025-07 API version (matching _customerAccountApi.ts)
+  const customerApiUrl = `https://shopify.com/${SHOPIFY_STORE_ID}/account/customer/api/2025-07/graphql`;
 
   const query = `
     query {
@@ -73,19 +74,39 @@ async function fetchCustomerFromAccountAPI(accessToken: string) {
     }
   `;
 
+  // Get origin from environment variable for headers (required by Shopify)
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const origin = baseUrl ? new URL(baseUrl).origin : undefined;
+
   try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`,
+      "user-agent": "Mozilla/5.0 (compatible; Next.js)",
+    };
+
+    // Add origin header if available (required by Shopify to prevent 401)
+    if (origin) {
+      headers["origin"] = origin;
+    }
+
     const response = await fetch(customerApiUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${accessToken}`,
-      },
+      headers,
       body: JSON.stringify({ query }),
     });
 
     if (!response.ok) {
-      // Token is invalid or expired
-      console.error("[Session] Customer Account API error:", response.status);
+      // Get full error details
+      const errorText = await response.text().catch(() => "Unable to read error");
+      console.error("[Session] Customer Account API error:", {
+        status: response.status,
+        statusText: response.statusText,
+        url: customerApiUrl,
+        errorBody: errorText?.slice(0, 500),
+        hasOrigin: !!origin,
+        origin: origin,
+      });
       return null;
     }
 
@@ -99,6 +120,11 @@ async function fetchCustomerFromAccountAPI(accessToken: string) {
     
     // Only return customer if we got valid data
     if (data.data?.customer) {
+      console.log("[Session] Successfully fetched customer:", {
+        id: data.data.customer.id,
+        email: data.data.customer.emailAddress?.emailAddress,
+        name: `${data.data.customer.firstName || ""} ${data.data.customer.lastName || ""}`.trim(),
+      });
       return data.data.customer;
     }
     
@@ -209,6 +235,27 @@ export async function GET() {
     let customer = null;
     
     if (session.accessToken && !session.accessToken.startsWith("mock-")) {
+      // Log token details before making API call
+      console.log("[Session] Using access token:", {
+        tokenLength: session.accessToken.length,
+        tokenPrefix: session.accessToken.substring(0, 10),
+        hasShcatPrefix: session.accessToken.startsWith("shcat_"),
+      });
+      
+      // Validate token has the required prefix
+      if (!session.accessToken.startsWith("shcat_")) {
+        console.error("[Session] Access token missing shcat_ prefix!", {
+          tokenPrefix: session.accessToken.substring(0, 20),
+          fullTokenLength: session.accessToken.length,
+        });
+        cookieStore.delete("shopify_customer_token");
+        cookieStore.delete("customer_email");
+        return NextResponse.json({ 
+          customer: null,
+          error: "Invalid token format" 
+        });
+      }
+      
       customer = await fetchCustomerFromAccountAPI(session.accessToken);
       
       // If API call failed, token is invalid - clear session
