@@ -43,6 +43,16 @@ export default function AccountPage() {
     setHasInitNameFields(true);
   }, [customer, hasInitNameFields]);
 
+  // If customer has no name yet, auto-open the name editor so they can fill details
+  useEffect(() => {
+    if (!customer) return;
+    if (!customer.firstName || !customer.lastName) {
+      setIsEditingName(true);
+      setNameSaved(false);
+      setNameError(null);
+    }
+  }, [customer]);
+
   const handleLogout = async () => {
     setIsLoggingOut(true);
     await logout();
