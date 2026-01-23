@@ -173,6 +173,30 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Best-effort: store email from id_token so server routes can use it (wishlist, profile update, etc.)
+    if (tokenJson.id_token) {
+      try {
+        const parts = tokenJson.id_token.split(".");
+        if (parts.length === 3) {
+          const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+          const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+          const payload = JSON.parse(Buffer.from(padded, "base64").toString());
+          const email = payload?.email;
+          if (typeof email === "string" && email.includes("@")) {
+            cookieStore.set("customer_email", email, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+              maxAge: tokenJson.expires_in ?? 3600,
+              path: "/",
+            });
+          }
+        }
+      } catch (e) {
+        console.error("[auth/callback] Failed to decode id_token for email", e);
+      }
+    }
+
     // Log token details for debugging
     console.log("[auth/callback] Token received:", {
       accessTokenLength: tokenJson.access_token.length,
@@ -191,6 +215,9 @@ export async function GET(req: NextRequest) {
       refreshToken: tokenJson.refresh_token,
       idToken: tokenJson.id_token,
       expiresAt,
+      // Optional: convenience for server-side routes that need customer email.
+      // (Keep in sync with customer_email cookie above.)
+      email: cookieStore.get("customer_email")?.value,
       // customer will be resolved by /api/auth/session
       customer: { id: "unknown" },
     };

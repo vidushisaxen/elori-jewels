@@ -51,7 +51,7 @@ export async function POST() {
 
   // Discover OpenID configuration to get end_session_endpoint
   const discoveryResponse = await fetch(
-    `https://shopify.com/${SHOPIFY_STORE_ID}/.well-known/openid-configuration`
+    `https://shopify.com/authentication/${SHOPIFY_STORE_ID}/.well-known/openid-configuration`
   );
 
   if (!discoveryResponse.ok) {
@@ -70,6 +70,7 @@ export async function POST() {
     console.warn("No end_session_endpoint in discovery config");
     cookieStore.delete("shopify_customer_token");
     cookieStore.delete("customer_email");
+    
     return NextResponse.json(baseJson);
   }
 

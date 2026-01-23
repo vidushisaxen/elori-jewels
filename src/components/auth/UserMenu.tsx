@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "./ShopifyAuthContext";
-import { User, LogOut, Package, Heart, Settings, ChevronDown } from "lucide-react";
+import { User, LogOut, Package, Heart, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import gsap from "gsap";
 
@@ -11,7 +11,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
-  const { customer, isAuthenticated, isLoading, logout, redirectToShopifyAccount } = useAuth();
+  const { customer, isAuthenticated, isLoading, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -54,19 +54,15 @@ export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
   // Not authenticated - show sign in button
   if (!isAuthenticated) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flexitems-center gap-2">
         <button
           onClick={() => onOpenAuthModal("login")}
-          className="text-sm font-medium hover:opacity-80 transition-opacity"
+          className="group relative  cursor-pointer hover:bg-zinc-800 duration-300 transition-all ease-in-out px-4 py-2 text-sm  bg-black  rounded-full font-medium tracking-wide uppercase overflow-hidden transition-all duration-300"
         >
-          Sign In
-        </button>
-        <span className="text-black">/</span>
-        <button
-          onClick={() => onOpenAuthModal("register")}
-          className="text-sm font-medium hover:opacity-80 transition-opacity"
-        >
-          Sign Up
+          <span className="relative z-10 text-white transition-colors duration-300">
+            Sign In
+          </span>
+
         </button>
       </div>
     );
@@ -74,8 +70,9 @@ export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
 
   // Authenticated - show user menu
 
+  console.log(customer);
   const initials = customer
-    ? `${customer.email[0].toUpperCase() || ""}` 
+    ? `${customer.email[0].toUpperCase() || ""}`
     : ":)";
 
   return (
@@ -112,27 +109,23 @@ export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
 
           {/* Menu Items */}
           <div className="py-2">
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                redirectToShopifyAccount();
-              }}
+            <Link
+              href="/account"
+              onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <User size={18} />
               <span className="text-sm">My Account</span>
-            </button>
+            </Link>
 
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                redirectToShopifyAccount();
-              }}
+            <Link
+              href="/cart"
+              onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <Package size={18} />
-              <span className="text-sm">Orders</span>
-            </button>
+              <span className="text-sm">Cart</span>
+            </Link>
 
             <Link
               href="/wishlist"
@@ -142,17 +135,6 @@ export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
               <Heart size={18} />
               <span className="text-sm">Wishlist</span>
             </Link>
-
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                redirectToShopifyAccount();
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <Settings size={18} />
-              <span className="text-sm">Settings</span>
-            </button>
           </div>
 
           {/* Logout */}

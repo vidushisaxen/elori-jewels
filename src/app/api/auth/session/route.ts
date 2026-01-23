@@ -131,6 +131,7 @@ async function fetchCustomerFromAccountAPI(accessToken: string) {
         id: data.data.customer.id,
         email: data.data.customer.emailAddress?.emailAddress,
         name: `${data.data.customer.firstName || ""} ${data.data.customer.lastName || ""}`.trim(),
+        ordersCount : data.data.customer.orders.edges.length,
       });
       return data.data.customer;
     }

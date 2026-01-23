@@ -112,7 +112,7 @@ export function ShopifyAuthProvider({ children }: { children: ReactNode }) {
 
   const redirectToShopifyAccount = useCallback(() => {
     // In headless mode, keep users inside our Next.js account page.
-    window.location.href = "/account";
+    window.location.href = "/";
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────────

@@ -34,7 +34,8 @@ export async function GET(req: NextRequest) {
     }
 
     const returnUrl = req.nextUrl.searchParams.get("returnUrl") || "/";
-    const prompt = req.nextUrl.searchParams.get("prompt") || undefined;
+    // Default to "login" to force email/OTP even if Shopify has an existing session.
+    const prompt = req.nextUrl.searchParams.get("prompt") || "login";
     const locale = req.nextUrl.searchParams.get("locale") || undefined;
     const loginHint = req.nextUrl.searchParams.get("login_hint") || undefined;
 
@@ -72,7 +73,7 @@ export async function GET(req: NextRequest) {
     authorizationRequestUrl.searchParams.append("nonce", nonce);
     authorizationRequestUrl.searchParams.append("code_challenge", codeChallenge);
     authorizationRequestUrl.searchParams.append("code_challenge_method", "S256");
-    if (prompt) authorizationRequestUrl.searchParams.append("prompt", prompt);
+    authorizationRequestUrl.searchParams.append("prompt", prompt);
     if (locale) authorizationRequestUrl.searchParams.append("locale", locale);
     if (loginHint) authorizationRequestUrl.searchParams.append("login_hint", loginHint);
 

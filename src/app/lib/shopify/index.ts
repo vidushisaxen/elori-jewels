@@ -131,7 +131,11 @@ const removeEdgesAndNodes = <T>(array: Connection<T>): T[] => {
   return array.edges.map((edge) => edge?.node);
 };
 
-const reshapeCart = (cart: ShopifyCart): Cart => {
+const reshapeCart = (cart: ShopifyCart | null | undefined): Cart => {
+  if (!cart) {
+    throw new Error('Cart not found in Shopify response');
+  }
+
   if (!cart.cost?.totalTaxAmount) {
     cart.cost.totalTaxAmount = {
       amount: '0.0',
@@ -223,12 +227,12 @@ const reshapeProducts = (products: ShopifyProduct[]) => {
 };
 
 export async function createCart(): Promise<Cart> {
-  // Check if customer is logged in to associate cart with them
-  const customerAccessToken = (await cookies()).get('shopify_customer_token')?.value;
-  
   const res = await shopifyFetch<ShopifyCreateCartOperation>({
     query: createCartMutation,
-    variables: customerAccessToken ? { buyerIdentity: { customerAccessToken } } : undefined,
+    // NOTE: We deliberately do NOT pass buyerIdentity here, because the cookie
+    // contains a Customer Account API token (shcat_...), not a Storefront
+    // customerAccessToken. Passing it would cause Shopify to return errors/null cart.
+    variables: undefined,
     cache: 'no-store'
   });
 
@@ -238,20 +242,10 @@ export async function createCart(): Promise<Cart> {
 export async function createCartWithLines(
   lines: { merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
-  // Check if customer is logged in to associate cart with them
-  const customerAccessToken = (await cookies()).get('shopify_customer_token')?.value;
-  
-  const variables: { lineItems: typeof lines; buyerIdentity?: { customerAccessToken: string } } = {
-    lineItems: lines,
-  };
-  
-  if (customerAccessToken) {
-    variables.buyerIdentity = { customerAccessToken };
-  }
-  
   const res = await shopifyFetch<ShopifyCreateCartOperation>({
     query: createCartMutation,
-    variables,
+    // Same note as above: do not send Customer Account token as Storefront buyerIdentity.
+    variables: { lineItems: lines },
     cache: 'no-store'
   });
 
