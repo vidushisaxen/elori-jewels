@@ -57,12 +57,11 @@ export function UserMenu({ onOpenAuthModal }: UserMenuProps) {
       <div className="flexitems-center gap-2">
         <button
           onClick={() => onOpenAuthModal("login")}
-          className="group relative  cursor-pointer hover:bg-zinc-800 duration-300 transition-all ease-in-out px-4 py-2 text-sm  bg-black  rounded-full font-medium tracking-wide uppercase overflow-hidden transition-all duration-300"
+          className="group relative cursor-pointer ease-in-out text-sm rounded-full font-medium tracking-wide uppercase transition-all duration-300"
         >
-          <span className="relative z-10 text-white transition-colors duration-300">
+          <span className="relative z-10 text-white group-hover:scale-105 scale-100 transition-all duration-300 inline-block">
             Sign In
           </span>
-
         </button>
       </div>
     );

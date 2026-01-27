@@ -520,10 +520,10 @@ export default function Header() {
           {activeLink.megaMenu.products &&
             activeLink.megaMenu.products.length > 0 && (
               <div className="fadeup-content">
-                <h3 className="text-xs font-thin text-black uppercase tracking-wider mb-4">
+                <h3 className="text-xs font-semibold text-black uppercase tracking-wider mb-4">
                   Featured Products
                 </h3>
-                <ul className="flex flex-col w-full gap-y-3 pl-5">
+                <ul className="flex flex-col w-full gap-y-3">
                   {activeLink.megaMenu.products.map((product, idx) => (
                     <li key={idx} className="flex items-center gap-3 overflow-hidden product-link" style={{ opacity: 0 }}>
                       <Link
@@ -591,26 +591,26 @@ export default function Header() {
         </div>
 
         {/* RIGHT ACTIONS */}
-        <div className="w-fit flex items-center justify-end gap-5 py-[1vw] text-black">
+        <div className="w-fit flex items-center justify-end gap-5 py-[1vw] bg-black px-[2vw] rounded-full text-black">
           <div
             className="w-4 h-4 cursor-pointer flex items-center justify-center group relative"
             onClick={() => setIsSearchOpen(true)}
           >
-            <SearchIcon className="group-hover:scale-110 transition-transform duration-200 ease-out" />
+            <SearchIcon color="white" className="group-hover:scale-110 transition-transform duration-200 ease-out" />
           </div>
-          <div className="w-px h-5 bg-black"></div>
+          <div className="w-px h-5 bg-white"></div>
           <Link
             href="/cart"
             className="w-5 h-5 cursor-pointer flex items-center justify-center relative group"
           >
-            <ShoppingCartIcon strokeWidth={1.4} className="group-hover:scale-110 transition-transform duration-200 ease-out" />
+            <ShoppingCartIcon strokeWidth={1.4} color="white" className="group-hover:scale-110 transition-transform duration-200 ease-out" />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-transparent text-black text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-transparent text-white text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
                 {cartCount}
               </span>
             )}
           </Link>
-          <div className="w-px h-5 bg-black"></div>
+          <div className="w-px h-5 bg-white"></div>
           <Link
             href="/wishlist"
             className="w-5 h-5 cursor-pointer flex items-center justify-center relative group"
@@ -625,17 +625,17 @@ export default function Header() {
           strokeWidth={1.5}
           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
           fill="transparent"
-          stroke="black"
+          stroke="white"
         />
       </svg>
             
             {wishlistCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-transparent text-black text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-transparent text-white text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
                 {wishlistCount}
               </span>
             )}
           </Link>
-          <div className="w-px h-5 bg-black"></div>
+          <div className="w-px h-5 bg-white"></div>
 
           {/* <div className="w-px h-5 bg-white"></div> */}
           
