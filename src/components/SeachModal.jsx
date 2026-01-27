@@ -114,7 +114,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
   return (
     <div
       ref={modalRef}
-      className="fixed inset-0 z-[999] min-h-screen"
+      className="fixed inset-0 z-[999] min-h-screen overflow-hidden"
       style={{ display: 'none' }}
     >
       {/* Backdrop */}

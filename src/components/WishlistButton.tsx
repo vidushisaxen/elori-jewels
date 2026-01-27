@@ -57,7 +57,7 @@ export default function WishlistButton({ product }: { product: any }) {
     <button type="button" onClick={toggle} aria-label="Toggle wishlist" className="text-xl">
       <svg
         className={`w-5 h-5 transition-colors ${
-          isWishlisted ? 'fill-red-500 stroke-red-500' : 'fill-none stroke-zinc-700 hover:stroke-red-500'
+          isWishlisted ? 'fill-[#C9A24D] stroke-[#C9A24D]' : 'fill-none stroke-zinc-700 hover:stroke-[#C9A24D]'
         }`}
         viewBox="0 0 24 24"
       >

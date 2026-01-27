@@ -120,6 +120,9 @@ export default function WishlistPage() {
     });
   };
 
+  
+  
+
   if (wishlistItems.length === 0) {
     return (
       <div className="min-h-screen bg-white">

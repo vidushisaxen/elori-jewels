@@ -146,11 +146,11 @@ export default function JewelryItemClient({ items }: { items: any[] }) {
       {/* Navigation buttons */}
       <button
         onClick={handlePrev}
-        className="group absolute left-2 md:left-[5%] max-sm:top-40  cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all  duration-300  hover:bg-white overflow-hidden"
+        className="group absolute left-[2%]! md:left-[5%] max-sm:top-40  cursor-pointer top-[40%] z-10  w-12 h-12 rounded-full bg-[#C9A24D] backdrop-blur-sm flex items-center justify-center transition-all  duration-300 border-2 border-[#C9A24D]  hover:bg-white overflow-hidden"
         aria-label="Previous slide"
       >
         <div className="translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
-          <ChevronLeft color="black" className="w-6 h-6" />
+          <ChevronLeft color="#C9A24D" className="w-6 h-6" />
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:-translate-x-[250%] transition-transform duration-300">
           <ChevronLeft color="white" className="w-6 h-6" />
@@ -159,11 +159,11 @@ export default function JewelryItemClient({ items }: { items: any[] }) {
 
       <button
         onClick={handleNext}
-        className="group absolute right-2 md:right-[5%] cursor-pointer top-1/2 max-sm:top-40 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white overflow-hidden"
+        className="group absolute right-[2%]! md:right-[5%] cursor-pointer top-[40%] max-sm:top-40 z-10  w-12 h-12 rounded-full bg-[#C9A24D] backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white overflow-hidden border-2 border-[#C9A24D] "
         aria-label="Next slide"
       >
         <div className="-translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
-          <ChevronRight color="black" className="w-6 h-6" />
+          <ChevronRight color="#C9A24D" className="w-6 h-6" />
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:translate-x-[250%] transition-transform duration-300">
           <ChevronRight color="white" className="w-6 h-6" />

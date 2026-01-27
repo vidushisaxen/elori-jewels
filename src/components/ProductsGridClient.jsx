@@ -54,10 +54,7 @@ function ProductCard({ product }) {
     hoverImageRef.current.style.opacity = '1';
     hoverImageRef.current.style.transition = 'all 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
 
-    if (titleRef.current) {
-      titleRef.current.style.color = '#a3a3a3';
-      titleRef.current.style.transition = 'color 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
-    }
+
   };
 
   const handleMouseLeave = () => {
@@ -99,7 +96,7 @@ function ProductCard({ product }) {
               </div>
 
               <Image
-              height={400}
+              height={500}
               width={500}
                 ref={defaultImageRef}
                 src={firstImage.url}
@@ -107,7 +104,7 @@ function ProductCard({ product }) {
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <Image
-              height={400}
+              height={500}
               width={500}
                 ref={hoverImageRef}
                 src={secondImage?.url || firstImage.url}
@@ -125,7 +122,7 @@ function ProductCard({ product }) {
         <div className="mt-6 space-y-2">
           <h3
             ref={titleRef}
-            className="text-sm font-light uppercase tracking-[0.2em] text-black"
+            className="text-sm font-light uppercase tracking-[0.2em] text-black "
           >
             {product.title}
           </h3>

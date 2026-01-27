@@ -9,7 +9,7 @@ const LinkButton = ({href,text}) => {
             href={href}
             className="cursor-pointer! h-fit group space-y-1 relative w-fit"
           >
-            <div className="uppercase overflow-hidden relative z-10 text-xs w-20 tracking-widest ">
+            <div className="uppercase overflow-hidden relative z-10 text-xs min-w-25 tracking-widest ">
               <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300 ">{text}</p>
               <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300 ">{text}</span>
             </div>

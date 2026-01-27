@@ -12,6 +12,7 @@ import { useStore } from "../../store";
 import type { Cart } from "../lib/shopify/types";
 import { useEffect, useState } from "react";
 import PrimaryButton from "../../components/Buttons/PrimaryButton";
+import LinkButton from "../../components/Buttons/LinkButton";
 import { ShoppingCartIcon, Loader2 } from "lucide-react";
 import { useAuth } from "../../components/auth/ShopifyAuthContext";
 
@@ -27,6 +28,8 @@ export default function CartPageClient({
   const associateCartWithCustomer = useStore((state) => state.associateCartWithCustomer);
   const { isAuthenticated } = useAuth();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const addCartItem = useStore((state) => state.addCartItem);
+const clearWishlist = useStore((state) => state.clearWishlist);
 
   // Sync initial server cart with Zustand store
   useEffect(() => {
@@ -38,6 +41,86 @@ export default function CartPageClient({
   const handleDeleteAll = () => {
     clearCart();
   };
+  const handleImportFromWishlist = async () => {
+  const wishlistItems = useStore.getState().wishlist;
+  
+  if (wishlistItems.length === 0) {
+    alert("Your wishlist is empty");
+    return;
+  }
+
+  setIsCheckingOut(true); 
+  
+  try {
+    for (const item of wishlistItems) {
+      let variantId = item.variantId;
+      let priceAmount = item.priceAmount || "0";
+      let currencyCode = item.currencyCode || "USD";
+
+      // If no variantId, fetch the product to get it
+      if (!variantId) {
+        const res = await fetch(`/api/shopify?handle=${item.handle}`);
+        if (!res.ok) continue; // Skip this item if fetch fails
+        
+        const productData = await res.json();
+        if (!productData?.variants?.[0]?.id) continue;
+
+        variantId = productData.variants[0].id;
+        priceAmount = productData.variants[0].price?.amount || priceAmount;
+        currencyCode = productData.variants[0].price?.currencyCode || currencyCode;
+      }
+
+      // Create variant and product objects
+      const variant = {
+        id: variantId,
+        title: "Default",
+        availableForSale: true,
+        selectedOptions: [],
+        price: {
+          amount: priceAmount,
+          currencyCode: currencyCode,
+        },
+      };
+
+      const product = {
+        id: item.id,
+        handle: item.handle,
+        title: item.name,
+        availableForSale: true,
+        description: "",
+        descriptionHtml: "",
+        options: [],
+        priceRange: {
+          maxVariantPrice: variant.price,
+          minVariantPrice: variant.price,
+        },
+        variants: [variant],
+        featuredImage: {
+          url: item.defaultImage,
+          altText: item.name,
+          width: 800,
+          height: 800,
+        },
+        images: [],
+        seo: { title: item.name, description: "" },
+        tags: [],
+        updatedAt: new Date().toISOString(),
+      };
+
+      await addCartItem(variant, product);
+    }
+
+    // Clear wishlist after successful import
+    clearWishlist();
+    // alert(`Successfully imported ${wishlistItems.length} items to cart!`);
+    
+  } catch (error) {
+    console.error("Import error:", error);
+    // alert("Some items could not be imported. Please try again.");
+  } finally {
+    setIsCheckingOut(false);
+  }
+};
 
   const handleCheckout = async () => {
     if (!cart?.checkoutUrl) return;
@@ -72,15 +155,26 @@ export default function CartPageClient({
           <ShoppingCartIcon className="w-24 h-24 text-zinc-300 mb-6" />
         </div>
         <p className="text-zinc-600 mb-8">Your cart is empty.</p>
+        <div className="flex flex-col items-center justify-center">
         <div
-          onClick={handleDeleteAll}
-          className="w-fit mt-0 text-center inline-block"
+          className="w-fit mt-0 text-center"
         >
           <PrimaryButton
             text={"Continue Shopping"}
             href={"/products"}
             border={true}
           />
+        </div>
+        <div
+         onClick={handleImportFromWishlist}
+          className="w-fit mt-0 text-center"
+        >
+          <PrimaryButton
+            text={"Import from Wishlist"}
+            href={"#"}
+            border={true}
+          />
+        </div>
         </div>
       </div>
     );
@@ -97,8 +191,13 @@ export default function CartPageClient({
             <p className="text-zinc-600 text-sm">{cart.totalQuantity} items</p>
           </div>
 
+<div className=" flex flex-col items-start justify-start">
           <div onClick={handleDeleteAll} className="w-fit mt-0 text-center">
-            <PrimaryButton text={"Delete All"} href={"#"} border={true} />
+            <LinkButton text={"Delete All"} href={"#"}/>
+          </div>
+           <div onClick={handleImportFromWishlist} className="w-fit mt-0 text-center">
+            <LinkButton text={"Import from Wishlist"} href={"#"}/>
+          </div>
           </div>
         </div>
 

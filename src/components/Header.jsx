@@ -474,9 +474,9 @@ export default function Header() {
     <header className={`w-full fixed top-0 left-0 z-[999] transform transition-transform duration-300 ${
       hidden ? "-translate-y-full" : "translate-y-0"
     }`}>
-      <nav className="grid grid-cols-3 items-center px-6 py-6 shadow-sm relative z-50 bg-white">
+      <nav className="flex justify-between items-center px-8 py-6 shadow-sm relative z-50 bg-white">
         {/* LEFT MENU */}
-        <div className="flex justify-start">
+        <div className="">
           <Link
             href="/"
             className="text-xl font-medium uppercase"
@@ -507,90 +507,91 @@ export default function Header() {
             style={{ width: `${leftLinks.length * 8}vw` }}
           >
             <div
-              ref={megaMenuRef}
-              className="w-full rounded-[1vw] bg-white border border-black/10 overflow-hidden mt-6"
-              style={{ height: "0", paddingTop: "0", paddingBottom: "0", opacity: 0, visibility: "hidden" }}
-            >
-              <div ref={contentRef} className="w-full px-12 flex flex-col">
-                {/* Top Section: Products and Image in Flex */}
-                {activeLink && (
-                  <div className="flex gap-8 mb-6">
-                    {/* Left side: Products */}
-                    <div className="flex-1 flex flex-col">
-                      {/* Top 5 Products */}
-                      {activeLink.megaMenu.products &&
-                        activeLink.megaMenu.products.length > 0 && (
-                          <div className="fadeup-content">
-                            <h3 className="text-xs font-thin text-black uppercase tracking-wider mb-4">
-                              Featured Products
-                            </h3>
-                            <ul className="flex flex-col w-full gap-y-3">
-                              {activeLink.megaMenu.products.map((product, idx) => (
-                                <li key={idx} className="flex items-center gap-3 overflow-hidden product-link" style={{ opacity: 0 }}>
-                                  <span className="text-gray-400 text-xs rotate-45">◆</span>
-                                  <Link
-                                    href={`/product/${product.handle}`}
-                                    className="cursor-pointer group relative w-fit overflow-hidden"
-                                    onClick={closeMenu}
-                                  >
-                                    <div className="overflow-hidden relative z-10 text-sm tracking-widest">
-                                      <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
-                                        {product.title}
-                                      </p>
-                                      <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
-                                        {product.title}
-                                      </span>
-                                    </div>
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                    </div>
-
-                    {/* Right side: Collection Image */}
-                    {activeLink.megaMenu.image && (
-                      <div className="w-[200px] flex flex-col collection-image" style={{ opacity: 0 }}>
-                        <div className="relative w-full h-[180px] rounded-lg overflow-hidden">
-                          <img
-                            src={activeLink.megaMenu.image}
-                            alt={activeLink.label}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+  ref={megaMenuRef}
+  className="w-full rounded-[1vw] bg-white border border-black/10 overflow-hidden mt-10"
+  style={{ height: "0", paddingTop: "0", paddingBottom: "0", opacity: 0, visibility: "hidden" }}
+>
+  <div ref={contentRef} className="w-full px-6 flex gap-8">
+    {activeLink && (
+      <>
+        {/* Left side: Products, Separator, and Button */}
+        <div className="flex-1 flex flex-col justify-between py-3">
+          {/* Products Links */}
+          {activeLink.megaMenu.products &&
+            activeLink.megaMenu.products.length > 0 && (
+              <div className="fadeup-content">
+                <h3 className="text-xs font-thin text-black uppercase tracking-wider mb-4">
+                  Featured Products
+                </h3>
+                <ul className="flex flex-col w-full gap-y-3 pl-5">
+                  {activeLink.megaMenu.products.map((product, idx) => (
+                    <li key={idx} className="flex items-center gap-3 overflow-hidden product-link" style={{ opacity: 0 }}>
+                      <Link
+                        href={`/product/${product.handle}`}
+                        className="cursor-pointer group relative w-fit overflow-hidden"
+                        onClick={closeMenu}
+                      >
+                        <div className="overflow-hidden relative z-10 text-sm tracking-widest">
+                          <p className="group-hover:-translate-y-full translate-y-0 transition-all duration-300">
+                            {product.title}
+                          </p>
+                          <span className="w-full h-full translate-y-full group-hover:translate-y-0 absolute left-0 top-0 transition-all duration-300">
+                            {product.title}
+                          </span>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* View All Button - Full Width at Bottom */}
-                {activeLink && activeLink.megaMenu.featured &&
-                  activeLink.megaMenu.featured.length > 0 && (
-                    <div className="w-full border-t border-gray-200  mt-4 view-all-btn" style={{ opacity: 0 }}>
-                      {activeLink.megaMenu.featured.map((featuredLink, idx) => (
-                        <div
-                          onClick={closeMenu}
-                          key={idx}
-                          className="w-fit cursor-pointer transform hover:scale-105 transition-transform duration-200"
-                        >
-                          <PrimaryButton
-                            border={true}
-                            href={featuredLink.href}
-                            text={"View All"}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
+            )}
+
+          {/* Separator */}
+          <div className="w-full border-t border-gray-200 mt-5"></div>
+
+          {/* View All Button */}
+          {activeLink.megaMenu.featured &&
+            activeLink.megaMenu.featured.length > 0 && (
+              <div className="view-all-btn" style={{ opacity: 0 }}>
+                {activeLink.megaMenu.featured.map((featuredLink, idx) => (
+                  <div
+                    onClick={closeMenu}
+                    key={idx}
+                    className="w-fit cursor-pointer transform hover:scale-105 transition-transform duration-200"
+                  >
+                    <PrimaryButton
+                      border={true}
+                      href={featuredLink.href}
+                      text={"View All"}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+        </div>
+
+        {/* Right side: Full Height Image */}
+        {activeLink.megaMenu.image && (
+          <div className="w-[280px] collection-image" style={{ opacity: 0 }}>
+            <div className="relative w-full h-full rounded-lg overflow-hidden">
+              <img
+                src={activeLink.megaMenu.image}
+                alt={activeLink.label}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
             </div>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+</div>
           </div>
         </div>
 
         {/* RIGHT ACTIONS */}
-        <div className="w-fit px-[2vw] absolute right-[1.2vw] rounded-full flex items-center justify-between gap-5 py-[1vw] text-black">
+        <div className="w-fit flex items-center justify-end gap-5 py-[1vw] text-black">
           <div
             className="w-4 h-4 cursor-pointer flex items-center justify-center group relative"
             onClick={() => setIsSearchOpen(true)}
@@ -634,7 +635,9 @@ export default function Header() {
               </span>
             )}
           </Link>
-          <div className="w-px h-5 bg-white"></div>
+          <div className="w-px h-5 bg-black"></div>
+
+          {/* <div className="w-px h-5 bg-white"></div> */}
           
           {/* Shopify Auth - User Menu */}
           <UserMenu onOpenAuthModal={openAuthModal} />
