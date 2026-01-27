@@ -12,9 +12,12 @@ export default function WishlistPage() {
   const removeFromWishlist = useStore((state) => state.removeFromWishlist);
   const addCartItem = useStore((state) => state.addCartItem);
   const clearWishlist = useStore((state) => state.clearWishlist);
+  const setWishlist = useStore((state) => state.setWishlist);
+  const syncWishlistToShopify = useStore((state) => state.syncWishlistToShopify);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isAddingId, setIsAddingId] = useState<string | null>(null);
+  const [isMovingAll, setIsMovingAll] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastText, setToastText] = useState("");
   const timerRef = useRef<number | null>(null);
@@ -108,6 +111,106 @@ export default function WishlistPage() {
     });
   };
 
+  const moveWishlistItemToCart = async (item: WishlistItem) => {
+    let variantId = item.variantId;
+    let priceAmount = item.priceAmount || "0";
+    let currencyCode = item.currencyCode || "USD";
+
+    // If no variantId, fetch the product to get it
+    if (!variantId) {
+      const res = await fetch(`/api/shopify?handle=${item.handle}`);
+      if (!res.ok) {
+        throw new Error("Failed to fetch product details");
+      }
+      const productData = await res.json();
+
+      if (!productData?.variants?.[0]?.id) {
+        throw new Error("Product variant not available");
+      }
+
+      variantId = productData.variants[0].id;
+      priceAmount = productData.variants[0].price?.amount || priceAmount;
+      currencyCode = productData.variants[0].price?.currencyCode || currencyCode;
+    }
+
+    // Create a minimal variant and product object for the cart
+    const variant = {
+      id: variantId,
+      title: "Default",
+      availableForSale: true,
+      selectedOptions: [],
+      price: {
+        amount: priceAmount,
+        currencyCode: currencyCode,
+      },
+    };
+
+    const product = {
+      id: item.id,
+      handle: item.handle,
+      title: item.name,
+      availableForSale: true,
+      description: "",
+      descriptionHtml: "",
+      options: [],
+      priceRange: {
+        maxVariantPrice: variant.price,
+        minVariantPrice: variant.price,
+      },
+      variants: [variant],
+      featuredImage: {
+        url: item.defaultImage,
+        altText: item.name,
+        width: 800,
+        height: 800,
+      },
+      images: [],
+      seo: { title: item.name, description: "" },
+      tags: [],
+      updatedAt: new Date().toISOString(),
+    };
+
+    await addCartItem(variant as any, product as any);
+  };
+
+  const handleMoveAllToCart = () => {
+    if (wishlistItems.length === 0) return;
+    const snapshot = [...wishlistItems];
+
+    setIsMovingAll(true);
+    startTransition(async () => {
+      try {
+        const failed: WishlistItem[] = [];
+        let moved = 0;
+
+        for (const item of snapshot) {
+          try {
+            await moveWishlistItemToCart(item);
+            moved += 1;
+          } catch (err) {
+            console.error("[Wishlist] Move all -> failed item:", item?.handle, err);
+            failed.push(item);
+          }
+        }
+
+        if (failed.length === 0) {
+          clearWishlist();
+          showToast(`Moved ${moved} item${moved === 1 ? "" : "s"} to cart`);
+          return;
+        }
+
+        // Keep failed items in wishlist and sync once
+        setWishlist(failed);
+        await syncWishlistToShopify();
+        showToast(
+          `Moved ${moved}/${snapshot.length} to cart. ${failed.length} failed.`
+        );
+      } finally {
+        setIsMovingAll(false);
+      }
+    });
+  };
+
   const handleDeleteAll = () => {
     startTransition(async () => {
       try {
@@ -146,7 +249,7 @@ export default function WishlistPage() {
             >
               Continue Shopping
             </Link> */}
-            <PrimaryButton text={"Continue Shopping"} href={"/products"} border={true}/>
+            <PrimaryButton text={"Continue Shopping"} href={"/products"} border={true} />
           </div>
         </div>
       </div>
@@ -167,10 +270,38 @@ export default function WishlistPage() {
               {wishlistItems.length === 1 ? "item" : "items"}
             </p>
           </div>
-           <div className="w-fit flex items-end justify-end ml-auto" onClick={handleDeleteAll}>
-        <PrimaryButton text={"Delete All"} href={"#"} border={true}/>
-        </div>
+          <div className="w-fit flex items-end justify-end ml-auto">
+            <button
+              type="button"
+              onClick={handleMoveAllToCart}
+              disabled={isPending || isMovingAll}
+              className={[
+                "mt-8 max-sm:mt-4 flex items-center min-w-[10vw] justify-between gap-3 p-1.5 rounded-full bg-white text-[#111111] text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-[#111111] hover:text-white group border border-black",
+                (isPending || isMovingAll) ? "opacity-60 cursor-not-allowed" : "",
+              ].join(" ")}
+            >
+              <div className="flex pl-[1vw] flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
+                <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full">
+                  {isMovingAll ? "Moving…" : "Move All to Cart"}
+                </span>
+                <span className="font-medium absolute top-full left-[1vw] transition-transform duration-300 group-hover:-translate-y-full">
+                  {isMovingAll ? "Moving…" : "Move All to Cart"}
+                </span>
+              </div>
+
+              <div className="size-[2.2vw] p-2 max-sm:size-[8vw] rounded-full overflow-hidden bg-[#111111] group-hover:bg-white transition-all duration-300">
+                <span className="size-full relative flex items-center justify-center">
+                  <div className="size-full -rotate-45 group-hover:translate-x-[150%] group-hover:translate-y-[-150%] transition-all duration-300 flex items-center justify-center">
+                    →
+                  </div>
+                  <div className="size-full -rotate-45 absolute top-0 duration-300 translate-x-[-150%] translate-y-[150%] left-0 flex items-center justify-center group-hover:translate-x-[0%] group-hover:translate-y-[0%]">
+                    →
+                  </div>
+                </span>
+              </div>
+            </button>
           </div>
+        </div>
 
         {/* Wishlist Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -197,8 +328,8 @@ export default function WishlistPage() {
 
                   {/* Product Images */}
                   <Image
-                  height={500}
-                  width={500}
+                    height={500}
+                    width={500}
                     src={item.defaultImage}
                     alt={item.name}
                     className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out"
@@ -209,8 +340,8 @@ export default function WishlistPage() {
                     }}
                   />
                   <Image
-                  height={500}
-                  width={500}
+                    height={500}
+                    width={500}
                     src={item.hoverImage || item.defaultImage}
                     alt={`${item.name} Detail`}
                     className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out"
@@ -222,7 +353,7 @@ export default function WishlistPage() {
                   />
 
                   {/* Add to Cart Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <button
                       type="button"
                       onClick={(e) => {
@@ -251,9 +382,9 @@ export default function WishlistPage() {
             </div>
           ))}
         </div>
-        
+
         <div className="w-fit flex items-end justify-end ml-auto" >
-        <PrimaryButton text={"Shop More"} href={"/products"} border={true}/>
+          <PrimaryButton text={"Shop More"} href={"/products"} border={true} />
         </div>
       </div>
 
@@ -261,6 +392,7 @@ export default function WishlistPage() {
       <div
         className={[
           "fixed bottom-6 right-6 z-[9999] w-[320px] max-w-[90vw]",
+          "fixed bottom-6 right-6 z-9999 w-[320px] max-w-[90vw]",
           "transition-all duration-300 ease-out",
           toastOpen
             ? "translate-y-0 opacity-100"

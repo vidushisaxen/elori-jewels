@@ -15,10 +15,10 @@ export default async function page() {
       <Loader />
       <Hero />
       <Necklaces />
-         <OverlappingCollage />
+      <OverlappingCollage />
       <Earrings />
       <Journey collections={collections} />
       <Rings />
-       </>
+    </>
   );
 }

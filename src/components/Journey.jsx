@@ -293,7 +293,7 @@ const Journey = ({ collections }) => {
         </div>
 
         {/* Collection Info Overlay */}
-        <div className="absolute inset-x-0 max-sm:bottom-9 bottom-24 z-20 text-center px-6">
+        <div className="absolute inset-x-0 max-sm:bottom-9 bottom-10 z-20 text-center px-6">
           <div className="max-w-2xl flex items-center justify-center mx-auto">
             <div className="w-fit">
               <PrimaryButton 

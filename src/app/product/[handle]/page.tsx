@@ -98,7 +98,7 @@ async function ProductPageContent({ handle }: { handle: string }) {
           </div>
 
           {/* Right Side - Sticky Product Details (50%) */}
-          <div className="lg:sticky lg:top-20 lg:h-screen lg:overflow-y-auto px-8 py-12 lg:px-16 lg:py-20">
+          <div className="lg:sticky lg:top-20  lg:h-screen lg:overflow-y-auto px-8 py-12 lg:px-16 lg:py-[10vw]">
             <div className="max-w-2xl">
               <div className='w-full flex gap-5 justify-between items-start'>
                 {/* Product Title */}
