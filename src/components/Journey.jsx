@@ -2,8 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { Observer } from "gsap/Observer";
-import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import PrimaryButton from "./Buttons/PrimaryButton";
 
 gsap.registerPlugin(Observer);
@@ -235,15 +234,15 @@ const Journey = ({ collections }) => {
         )}
 
         {/* Navigation Buttons - Desktop only */}
-        <nav className="absolute bottom-8 left-8 z-20 max-sm:hidden flex gap-3">
+        <nav className="absolute top-1/2 justify-between z-20 max-sm:hidden flex w-screen px-8 -translate-y-1/2">
           <button
             onClick={() => navigate(PREV)}
             disabled={isAnimating}
-            className="group w-14 h-14 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-white/20 overflow-hidden"
+            className="group w-14 h-14 bg-[#C9A24D] backdrop-blur-md text-[#C9A24D] rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border-2 border-[#C9A24D] overflow-hidden"
             aria-label="Previous slide"
           >
             <div className="translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
-              <ChevronLeft color="black" className="w-6 h-6" />
+              <ChevronLeft color="#C9A24D" className="w-6 h-6" />
             </div>
             <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:-translate-x-[250%] transition-transform duration-300">
               <ChevronLeft color="white" className="w-6 h-6" />
@@ -252,11 +251,11 @@ const Journey = ({ collections }) => {
           <button
             onClick={() => navigate(NEXT)}
             disabled={isAnimating}
-            className="group w-14 h-14 bg-white/10 backdrop-blur-md text-white rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border border-white/20 overflow-hidden"
+            className="group w-14 h-14 bg-[#C9A24D] backdrop-blur-md text-[#C9A24D] rounded-full hover:bg-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer border-2 border-[#C9A24D] overflow-hidden"
             aria-label="Next slide"
           >
             <div className="-translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
-              <ChevronRight color="black" className="w-6 h-6" />
+              <ChevronRight color="#C9A24D" className="w-6 h-6" />
             </div>
             <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:translate-x-[250%] transition-transform duration-300">
               <ChevronRight color="white" className="w-6 h-6" />
@@ -306,39 +305,11 @@ const Journey = ({ collections }) => {
         </div>
 
         {/* Slide counter with progress bar */}
-        <div className="absolute bottom-8 max-sm:hidden right-8 z-20 flex flex-col items-end gap-3">
-          <div className="mix-blend-difference text-white text-sm font-light">
-            <span className="text-2xl font-bold">
-              {String(current + 1).padStart(2, "0")}
-            </span>
-            <span className="mx-2 opacity-60">/</span>
-            <span className="opacity-60">
-              {String(slidesTotal).padStart(2, "0")}
-            </span>
-          </div>
-          {/* Progress indicators */}
-          <div className="flex gap-2">
-            {collections.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  if (index !== current) {
-                    navigate(index > current ? NEXT : PREV);
-                  }
-                }}
-                className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
-                  index === current
-                    ? "w-8 bg-white"
-                    : "w-4 bg-white/40 hover:bg-white/60"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
+        
 
         <div className="size-full z-10 bg-black/30 inset-0 absolute pointer-events-none"></div>
       </div>
+      
 
       {/* Navigation Buttons - Mobile only (below slider) */}
       <nav className="hidden max-sm:flex justify-center gap-3 py-6">
@@ -359,6 +330,36 @@ const Journey = ({ collections }) => {
           <ChevronRight className="w-6 h-6" />
         </button>
       </nav>
+      <div className="absolute bottom-[2vw]  max-sm:hidden right-8 z-50 flex flex-col items-end gap-3">
+          <div className=" text-white text-sm font-light">
+            <span className="text-xl font-bold">
+              {String(current + 1).padStart(2, "0")}
+            </span>
+            <span className="mx-2 opacity-60">/</span>
+            <span className="opacity-60">
+              {String(slidesTotal).padStart(2, "0")}
+            </span>
+          </div>
+          {/* Progress indicators */}
+          <div className="flex gap-2">
+            {collections.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  if (index !== current) {
+                    navigate(index > current ? NEXT : PREV);
+                  }
+                }}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  index === current
+                    ? "w-5 bg-white"
+                    : "w-2 bg-white/40 hover:bg-white/60"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
     </div>
   );
 };

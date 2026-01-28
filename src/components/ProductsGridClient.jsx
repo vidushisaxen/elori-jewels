@@ -81,7 +81,7 @@ function ProductCard({ product }) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="relative w-full aspect-3/4 overflow-hidden bg-neutral-50">
+        <div className="relative w-full h-100 aspect-3/4 overflow-hidden bg-neutral-50">
           {firstImage ? (
             <>
               {/* Wishlist button */}

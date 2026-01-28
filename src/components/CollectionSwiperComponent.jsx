@@ -82,7 +82,7 @@ const ProductItemInCollection = ({ product }) => {
         onMouseLeave={handleMouseLeave}
         onDragStart={(e) => e.preventDefault()}
       >
-        <div className="relative w-full aspect-3/4 overflow-hidden">
+        <div className="relative w-full h-100  aspect-3/4 overflow-hidden">
           {/* Wishlist button */}
           <div
             className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:bg-white transition-all duration-300"
@@ -146,13 +146,13 @@ export default function CollectionSwiperComponent({ products }) {
     <div className="relative">
       <SmoothySlider
         ref={sliderRef}
-        className="py-4 cursor-grab active:cursor-grabbing"
+        className="py-2 cursor-grab active:cursor-grabbing"
         config={{ infinite: true, snap: true }}
       >
         {products.map((product, index) => (
           <Slide
             key={product.id || index}
-            className="w-[80vw] md:w-[30vw] px-3 md:px-6"
+            className="w-screen md:w-[30vw] px-3 md:px-6"
           >
             <ProductItemInCollection product={product} />
           </Slide>
@@ -162,11 +162,11 @@ export default function CollectionSwiperComponent({ products }) {
       {/* Navigation buttons */}
       <button
         onClick={handlePrev}
-        className="group absolute left-2 md:left-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all  duration-300  hover:bg-white overflow-hidden"
+        className="group absolute left-[-20%] md:left-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-[#C9A24D] backdrop-blur-sm flex items-center justify-center transition-all  duration-300  hover:bg-white overflow-hidden border-2 border-[#C9A24D]"
         aria-label="Previous slide"
       >
         <div className="translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
-          <ChevronLeft color="black" className="w-6 h-6" />
+          <ChevronLeft color="#C9A24D" className="w-6 h-6" />
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:-translate-x-[250%] transition-transform duration-300"> 
           <ChevronLeft color="white" className="w-6 h-6" />
@@ -175,11 +175,11 @@ export default function CollectionSwiperComponent({ products }) {
 
       <button
         onClick={handleNext}
-        className="group absolute right-2 md:right-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-black backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white overflow-hidden"
+        className="group absolute right-1 md:right-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-[#C9A24D] backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white overflow-hidden border-2 border-[#C9A24D]"
         aria-label="Next slide"
       >
         <div className="-translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
-          <ChevronRight color="black" className="w-6 h-6" />
+          <ChevronRight color="#C9A24D" className="w-6 h-6" />
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 group-hover:translate-x-[250%] transition-transform duration-300"> 
           <ChevronRight color="white" className="w-6 h-6" />

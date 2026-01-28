@@ -67,7 +67,7 @@ export default async function CollectionPage({ params }) {
 
 
   return (
-    <section className="bg-white px-8 py-16 mt-8">
+    <section className="bg-white px-8 py-16 mt-15">
       <div className="mx-auto ">
         {/* Collection Header */}
         <div className="mb-2 text-center">

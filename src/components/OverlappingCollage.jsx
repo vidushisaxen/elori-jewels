@@ -80,7 +80,7 @@ const Advantage = () => {
   }, []);
 
   return (
-    <section className="bg-[#F2F2F2] overflow-hidden h-screen max-sm:h-fit">
+    <section className="bg-[#f6e4ca] overflow-hidden h-screen max-sm:h-fit">
       <div className="flex items-center max-sm:flex-col h-full">
         {/* Left - Text */}
         <div className=" w-1/2 max-sm:w-full max-sm:px-5 max-sm:py-8 px-16 flex flex-col justify-center">
@@ -166,7 +166,7 @@ const Diversify = () => {
   }, []);
 
   return (
-    <section className="bg-[#F2F2F2] overflow-hidden h-screen max-sm:h-fit">
+    <section className="bg-[#f6e4ca] overflow-hidden h-screen max-sm:h-fit">
       <div className="flex items-center max-sm:flex-col-reverse h-full">
         {/* Left - Image */}
         <div className="w-1/2 max-sm:w-[90%] h-full max-sm:h-[60vw] overflow-hidden">
