@@ -2,8 +2,6 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/dist/ScrollTrigger";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import PrimaryButton from "./Buttons/PrimaryButton";
 import Image from "next/image";
 
@@ -80,17 +78,17 @@ const Advantage = () => {
   }, []);
 
   return (
-    <section className="bg-[#f6e4ca] overflow-hidden h-screen max-sm:h-fit">
+    <section className="bg-[#eae2d8] overflow-hidden h-screen max-sm:h-fit">
       <div className="flex items-center max-sm:flex-col h-full">
         {/* Left - Text */}
-        <div className=" w-1/2 max-sm:w-full max-sm:px-5 max-sm:py-8 px-16 flex flex-col justify-center">
+        <div className=" w-1/2 max-sm:w-full max-sm:px-5 max-sm:py-15 px-16 flex flex-col justify-center">
           <h2 className="text-6xl max-sm:text-4xl font-light mb-8 max-sm:mb-4">Elegant by Design</h2>
           <div className="space-y-6 mb-8 max-sm:mb-4">
             <p className="text-lg leading-relaxed">
               Elori Jewels showcases a carefully crafted visual experience that mirrors the sophistication of fine jewelry. The storefront features a clean, modern aesthetic with luxurious spacing, elegant typography, and a refined color palette that lets each piece shine. Every element has been thoughtfully designed to create an immersive shopping experience that highlights the beauty and craftsmanship of each jewel.
             </p>
           </div>
-          <div className="w-fit max-sm:w-full flex items-center max-sm:mb-4 justify-center">
+          <div className="w-fit max-sm:w-fit flex items-center max-sm:mb-4 justify-center">
          <PrimaryButton text={"Shop Now"} href={"/products"} border={false}/>
          </div>
         </div>
@@ -149,7 +147,7 @@ const Diversify = () => {
           },
           {
             scale: 1,
-            y: 0,
+            y: -50,
             ease: "none",
             scrollTrigger: {
               trigger: imageRef.current,
@@ -166,7 +164,7 @@ const Diversify = () => {
   }, []);
 
   return (
-    <section className="bg-[#f6e4ca] overflow-hidden h-screen max-sm:h-fit">
+    <section className="bg-[#eae2d8] overflow-hidden h-screen max-sm:h-fit">
       <div className="flex items-center max-sm:flex-col-reverse h-full">
         {/* Left - Image */}
         <div className="w-1/2 max-sm:w-[90%] h-full max-sm:h-[60vw] overflow-hidden">
@@ -188,7 +186,7 @@ const Diversify = () => {
               The product presentation emphasizes visual storytelling, with high-quality imagery and intuitive layouts that guide customers through diverse collections. From delicate everyday pieces to statement jewelry, each category is designed to inspire and engage. The browsing experience feels personal and refined, making it effortless for customers to discover pieces that resonate with their unique style.
             </p>
           </div>
-       <div className="w-fit max-sm:w-full flex items-center max-sm:mb-4 justify-center">
+       <div className="w-fit max-sm:w-fit flex items-center max-sm:mb-4 justify-center">
          <PrimaryButton text={"View Collections"} href={"/products"} border={false}/>
          </div>
         </div>

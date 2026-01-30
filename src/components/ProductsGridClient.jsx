@@ -179,7 +179,7 @@ export default function ProductsGridClient({ products, defaultCols = 4 }) {
   return (
     <div>
       {/* Grid Controls */}
-      <div className="mb-5 flex justify-end ">
+      <div className="mb-5 flex justify-end max-sm:hidden">
         <GridSlider cols={cols} setCols={setCols} />
       </div>
 

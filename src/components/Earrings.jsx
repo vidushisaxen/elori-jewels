@@ -38,12 +38,12 @@ async function JewelrySectionContent() {
   }
 
   return (
-    <div className="min-h-screen w-screen overflow-x-hidden flex items-center justify-center bg-[#F1EFEA] px-6 py-40">
+    <div className="min-h-screen max-sm:min-h-fit w-screen overflow-x-hidden flex items-center justify-center bg-[#F1EFEA] px-6 py-40 max-sm:py-10">
       <div className="w-full ">
         <h1 className="text-lg uppercase tracking-wider text-black/60 text-center mb-10">
           Earrings Collection
         </h1>
-        <div className="text-center mt-12 flex items-end justify-end pr-3 pb-5">
+        <div className="text-center mt-12 max-sm:mt-2 flex items-end justify-end pr-3 pb-5">
           <LinkButton href={"/collection/earrings"} text={"View All"}/>
         </div>
         

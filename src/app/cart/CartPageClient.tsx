@@ -6,7 +6,6 @@ import { startTransition, useActionState } from "react";
 import {
   removeItem,
   updateItemQuantity,
-  redirectToCheckout,
 } from "../../components/cart/actions";
 import { useStore } from "../../store";
 import type { Cart } from "../lib/shopify/types";
@@ -183,8 +182,8 @@ const clearWishlist = useStore((state) => state.clearWishlist);
   return (
     <div className="min-h-screen bg-white pt-20">
       <div className="mx-auto max-w-7xl px-4 py-16">
-        <div className="flex items-start justify-between mb-12">
-          <div>
+        <div className="flex max-sm:flex-col items-start justify-between mb-12">
+          <div className="max-sm:flex max-sm:justify-between w-full max-sm:items-center">
             <h1 className="text-4xl font-light uppercase tracking-wide mb-2">
               My Cart
             </h1>

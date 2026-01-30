@@ -260,8 +260,8 @@ export default function WishlistPage() {
     <div className="min-h-screen bg-white pt-20">
       <div className="mx-auto max-w-7xl px-4 py-16">
         {/* Header */}
-        <div className="flex items-start justify-between mb-12">
-          <div>
+        <div className="flex items-start max-sm:flex-col max-sm:items-center max-sm:justify-center justify-between mb-12">
+          <div className="max-sm:flex max-sm:justify-center max-sm:flex-col max-sm:items-center">
             <h1 className="text-4xl font-light uppercase tracking-wide mb-2">
               My Wishlist
             </h1>
@@ -270,37 +270,37 @@ export default function WishlistPage() {
               {wishlistItems.length === 1 ? "item" : "items"}
             </p>
           </div>
-          <div className="w-fit flex items-end justify-end ml-auto">
-            <button
-              type="button"
-              onClick={handleMoveAllToCart}
-              disabled={isPending || isMovingAll}
-              className={[
-                "mt-8 max-sm:mt-4 flex items-center min-w-[10vw] justify-between gap-3 p-1.5 rounded-full bg-white text-[#111111] text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-[#111111] hover:text-white group border border-black",
-                (isPending || isMovingAll) ? "opacity-60 cursor-not-allowed" : "",
-              ].join(" ")}
-            >
-              <div className="flex pl-[1vw] flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
-                <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full">
-                  {isMovingAll ? "Moving…" : "Move All to Cart"}
-                </span>
-                <span className="font-medium absolute top-full left-[1vw] transition-transform duration-300 group-hover:-translate-y-full">
-                  {isMovingAll ? "Moving…" : "Move All to Cart"}
-                </span>
-              </div>
+         <div className="w-fit flex items-end max-sm:items-start max-sm:justify-start justify-end ml-auto max-sm:ml-0">
+  <button
+    type="button"
+    onClick={handleMoveAllToCart}
+    disabled={isPending || isMovingAll}
+    className={[
+      "mt-8 max-sm:mt-4 flex items-center min-w-[10vw] max-sm:min-w-0 justify-between gap-3 max-sm:gap-2 p-1.5 max-sm:p-1 rounded-full bg-white text-[#111111] text-xs max-sm:text-[10px] font-light uppercase tracking-wide transition-all duration-300 hover:bg-[#111111] hover:text-white group border border-black",
+      (isPending || isMovingAll) ? "opacity-60 cursor-not-allowed" : "",
+    ].join(" ")}
+  >
+    <div className="flex pl-[1vw] max-sm:pl-2 flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
+      <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full whitespace-nowrap">
+        {isMovingAll ? "Moving…" : "Move All to Cart"}
+      </span>
+      <span className="font-medium absolute top-full left-[1vw] max-sm:left-2 transition-transform duration-300 group-hover:-translate-y-full whitespace-nowrap">
+        {isMovingAll ? "Moving…" : "Move All to Cart"}
+      </span>
+    </div>
 
-              <div className="size-[2.2vw] p-2 max-sm:size-[8vw] rounded-full overflow-hidden bg-[#111111] group-hover:bg-white transition-all duration-300">
-                <span className="size-full relative flex items-center justify-center">
-                  <div className="size-full -rotate-45 group-hover:translate-x-[150%] group-hover:translate-y-[-150%] transition-all duration-300 flex items-center justify-center">
-                    →
-                  </div>
-                  <div className="size-full -rotate-45 absolute top-0 duration-300 translate-x-[-150%] translate-y-[150%] left-0 flex items-center justify-center group-hover:translate-x-[0%] group-hover:translate-y-[0%]">
-                    →
-                  </div>
-                </span>
-              </div>
-            </button>
-          </div>
+    <div className="size-[2.2vw]  p-2 max-sm:size-8 max-sm:p-1.5 rounded-full overflow-hidden bg-[#111111] group-hover:bg-white transition-all duration-300 flex-shrink-0">
+      <span className="size-full relative flex items-center justify-center text-white group-hover:text-[#111111]">
+        <div className="size-full -rotate-45 group-hover:translate-x-[150%] group-hover:translate-y-[-150%] transition-all duration-300 flex items-center justify-center">
+          →
+        </div>
+        <div className="size-full -rotate-45 absolute top-0 duration-300 translate-x-[-150%] translate-y-[150%] left-0 flex items-center justify-center group-hover:translate-x-[0%] group-hover:translate-y-[0%]">
+          →
+        </div>
+      </span>
+    </div>
+  </button>
+</div>
         </div>
 
         {/* Wishlist Grid */}
@@ -383,7 +383,7 @@ export default function WishlistPage() {
           ))}
         </div>
 
-        <div className="w-fit flex items-end justify-end ml-auto" >
+        <div className="w-fit flex items-end justify-end ml-auto max-sm:ml-0" >
           <PrimaryButton text={"Shop More"} href={"/products"} border={true} />
         </div>
       </div>

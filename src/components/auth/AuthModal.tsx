@@ -85,7 +85,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-            <h2 className="text-xl font-medium tracking-wide uppercase">
+            <h2 className="text-xl font-medium tracking-wide uppercase max-sm:text-black!">
               Sign In
             </h2>
             <button

@@ -8,7 +8,7 @@ const PrimaryButton = ({href, text ,border}) => {
     <div>
         <Link
           href={href} 
-          className={`mt-8 max-sm:mt-4 flex items-center min-w-[10vw] justify-between gap-3 p-1.5 rounded-full bg-white text-[#111111] text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-[#111111] hover:text-white group ${border ? 'border border-black' : ' border-none'} `}
+          className={`mt-8 max-sm:mt-4 flex items-center min-w-[10vw] justify-between gap-3 p-1.5 max-sm:px-4 rounded-full bg-white text-[#111111] text-xs font-light uppercase tracking-wide transition-all duration-300 hover:bg-[#111111] hover:text-white group ${border ? 'border border-black' : ' border-none'} `}
         >
           <div className="flex pl-[1vw] flex-col relative items-start justify-center w-fit overflow-hidden h-[1.2em]">
             <span className="font-medium transition-transform duration-300 group-hover:-translate-y-full">{text}</span>

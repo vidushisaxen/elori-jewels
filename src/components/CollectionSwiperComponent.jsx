@@ -162,7 +162,7 @@ export default function CollectionSwiperComponent({ products }) {
       {/* Navigation buttons */}
       <button
         onClick={handlePrev}
-        className="group absolute left-[-20%] md:left-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-[#C9A24D] backdrop-blur-sm flex items-center justify-center transition-all  duration-300  hover:bg-white overflow-hidden border-2 border-[#C9A24D]"
+        className="group absolute max-sm:left-5 left-[-20%] md:left-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-[#C9A24D] backdrop-blur-sm flex items-center justify-center transition-all  duration-300  hover:bg-white overflow-hidden border-2 border-[#C9A24D]"
         aria-label="Previous slide"
       >
         <div className="translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">
@@ -175,7 +175,7 @@ export default function CollectionSwiperComponent({ products }) {
 
       <button
         onClick={handleNext}
-        className="group absolute right-1 md:right-[5%] cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-[#C9A24D] backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white overflow-hidden border-2 border-[#C9A24D]"
+        className="group absolute right-1 md:right-[5%] max-sm:right-5 cursor-pointer top-1/2 z-10 -translate-y-1/2 w-12 h-12 rounded-full bg-[#C9A24D] backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-white overflow-hidden border-2 border-[#C9A24D]"
         aria-label="Next slide"
       >
         <div className="-translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300">

@@ -106,5 +106,16 @@ body {
     list-style: disc;
   }
 
-  /* @media (max-width: 1025px) {
-  } */
+  @media (max-width: 1025px) {
+
+    .policyContent h2 {
+      font-size: 6.5vw;
+    }
+
+    .policyContent p {
+    font-size: 4vw;
+  }
+  .policyContent li {
+    font-size: 4vw;
+  }
+}

@@ -63,7 +63,7 @@ export default async function PolicyPage({
     <div className=" mx-auto px-4 py-12 pt-30 pr-8">
       <h1 className="text-4xl font-bold mb-8 text-center">{policy.title}</h1>
       <div 
-        className="prose prose-lg max-w-none policyContent w-[60%]"
+        className="prose prose-lg max-w-none policyContent w-[60%] "
         dangerouslySetInnerHTML={{ __html: policy.body }}
       />
     </div>

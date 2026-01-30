@@ -41,6 +41,7 @@ export default async function ProductsPage() {
         <div className="mx-auto w-full">
           <h1 className="mb-16 text-center bg-black py-2 text-white w-fit mx-auto px-4  text-4xl font-light tracking-tight">
           Our Collections
+          
           </h1>
 
           {/* Collections with Product Swipers */}
@@ -48,12 +49,12 @@ export default async function ProductsPage() {
             <div key={collection.id} className="mb-24 border-b border-neutral-900  pb-24">
               {/* Collection Header */}
               <div className="mb-5 text-center">
-                <h2 className="text-3xl font-light tracking-wide uppercase text-neutral-700">
+                <h2 className="text-3xl  font-light tracking-wide uppercase text-neutral-700">
                   {collection.title}
                 </h2>
 
                 {collection.description && (
-  <p className="mt-3 text-sm text-neutral-500 max-w-2xl mx-auto">
+  <p className="mt-3 text-sm text-neutral-500 max-sm:w-[90%] max-w-2xl mx-auto">
     {truncateAtSecondPeriod(collection.description)}
   </p>
 )}

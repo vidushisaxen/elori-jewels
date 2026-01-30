@@ -27,8 +27,6 @@ export async function generateMetadata({ params }) {
   }
 }
 
-
-
   function truncateBySentences(text, sentenceCount = 2) {
   if (!text) return "";
 
@@ -63,8 +61,6 @@ export default async function CollectionPage({ params }) {
     console.error('Error fetching collection:', error);
     notFound();
   }
-
-
 
   return (
     <section className="bg-white px-8 py-16 mt-15">

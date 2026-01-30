@@ -11,7 +11,8 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const lenis = useLenis();
-  
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+
   const modalRef = useRef(null);
   const backdropRef = useRef(null);
   const contentRef = useRef(null);
@@ -57,14 +58,56 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
     }
   }, [searchTerm, products]);
 
-  // GSAP Animation for opening/closing modal
+  // GSAP Animation - Desktop (slide from top) and Mobile (expand dropdown)
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    const isMobileView = window.innerWidth < 640;
+    
     if (isOpen) {
-      // Opening animation
-      const tl = gsap.timeline();
+      gsap.set(modalRef.current, { display: 'block' });
       
-      tl.set(modalRef.current, { display: 'block' })
-        .to(backdropRef.current, {
+      if (isMobileView) {
+        // Mobile: Dropdown animation similar to navbar
+        const items = contentRef.current?.querySelectorAll('.mobile-stagger-item');
+        
+        gsap.killTweensOf([contentRef.current, items]);
+        
+        // Backdrop fade in
+        gsap.to(backdropRef.current, {
+          opacity: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+        
+        // Dropdown opens
+        gsap.to(contentRef.current, {
+          maxHeight: '100vh',
+          duration: 0.6,
+          ease: 'power2.inOut',
+        });
+        
+        // Stagger items
+        gsap.fromTo(
+          items,
+          {
+            opacity: 0,
+            y: 14,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            delay: 0.35,
+            duration: 0.35,
+            ease: 'power2.out',
+            stagger: 0.07,
+          }
+        );
+      } else {
+        // Desktop: Slide from top
+        const tl = gsap.timeline();
+        
+        tl.to(backdropRef.current, {
           opacity: 1,
           duration: 0.3,
           ease: 'power2.out'
@@ -78,24 +121,60 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
           },
           '-=0.2'
         );
+      }
     } else {
-      // Closing animation
-      const tl = gsap.timeline({
-        onComplete: () => {
-          gsap.set(modalRef.current, { display: 'none' });
-        }
-      });
-      
-      tl.to(contentRef.current, {
-        y: '-100%',
-        duration: 0.5,
-        ease: 'power3.in'
-      })
+      if (isMobileView) {
+        // Mobile: Close animation
+        const items = contentRef.current?.querySelectorAll('.mobile-stagger-item');
+        
+        gsap.killTweensOf([contentRef.current, items]);
+        
+        // Reverse stagger
+        gsap.to(items, {
+          opacity: 0,
+          y: 10,
+          duration: 0.2,
+          ease: 'power2.in',
+          stagger: {
+            each: 0.05,
+            from: 'end',
+          },
+        });
+        
+        gsap.to(contentRef.current, {
+          maxHeight: 0,
+          delay: 0.15,
+          duration: 0.6,
+          ease: 'power2.inOut',
+          onComplete: () => {
+            gsap.set(modalRef.current, { display: 'none' });
+          }
+        });
+        
+        gsap.to(backdropRef.current, {
+          opacity: 0,
+          duration: 0.3,
+          ease: 'power2.in'
+        });
+      } else {
+        // Desktop: Slide up
+        const tl = gsap.timeline({
+          onComplete: () => {
+            gsap.set(modalRef.current, { display: 'none' });
+          }
+        });
+        
+        tl.to(contentRef.current, {
+          y: '-100%',
+          duration: 0.5,
+          ease: 'power3.in'
+        })
         .to(backdropRef.current, {
           opacity: 0,
           duration: 0.3,
           ease: 'power2.in'
         }, '-=0.3');
+      }
     }
   }, [isOpen]);
 
@@ -125,49 +204,54 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
         onClick={handleClose}
       />
 
-      {/* Modal Content */}
-      <div
-        ref={contentRef}
-        className="absolute top-0 left-0 right-0 bg-stone-50"
-        style={{ transform: 'translateY(-100%)' }}
-      >
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          {/* Close Button */}
-          <button
+        <button
             onClick={handleClose}
-            className="absolute cursor-pointer top-6 right-6 text-stone-600 hover:text-stone-900 transition-colors group"
+            className="mobile-stagger-item z-10 absolute cursor-pointer top-6 max-sm:top-4 right-6 max-sm:right-4 text-stone-600 hover:text-stone-900 transition-colors group"
           >
             <X size={24} className='group-hover:rotate-180 duration-300 transition-all ease-in-out'/>
           </button>
 
+      {/* Modal Content */}
+      <div
+        ref={contentRef}
+        className="absolute top-0 left-0 right-0 bg-stone-50 max-sm:overflow-hidden h-screen"
+        style={{ 
+          transform: typeof window !== 'undefined' && window.innerWidth >= 640 ? 'translateY(-100%)' : 'none',
+          maxHeight: typeof window !== 'undefined' && window.innerWidth < 640 ? 0 : 'none'
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6 max-sm:px-4 py-12 max-sm:py-6">
+          {/* Close Button */}
+        
+
           {/* Brand Name */}
-          <div className="text-2xl  tracking-wider text-center mb-12 font-calibre!">
+          <div className="mobile-stagger-item text-2xl max-sm:text-xl tracking-wider text-center mb-12 max-sm:mb-6 font-calibre!">
             ELORI JEWELS
           </div>
 
           {/* Search Input */}
-          <div className="relative mb-8">
+          <div className="mobile-stagger-item relative mb-8 max-sm:mb-6">
             <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
             <input
               type="text"
               placeholder="Enter Search Term"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-transparent border-b border-stone-300 pl-8 pr-4 py-3 text-lg focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400"
-              autoFocus
+              className="w-full bg-transparent border-b border-stone-300 pl-8 pr-4 py-3 max-sm:py-2 text-lg max-sm:text-base focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400"
+              autoFocus={!isMobile}
             />
           </div>
 
           {/* Suggested Terms - Only show when not searching */}
           {!searchTerm && (
-            <div className="mb-12">
-              <div className="text-xs text-stone-500 tracking-wider mb-4 font-calibre!">SUGGESTED TERMS:</div>
-              <div className="flex flex-wrap gap-4">
+            <div className="mobile-stagger-item mb-12 max-sm:mb-6">
+              <div className="text-xs text-stone-500 tracking-wider mb-4 max-sm:mb-3 font-calibre!">SUGGESTED TERMS:</div>
+              <div className="flex flex-wrap gap-4 max-sm:gap-3">
                 {suggestedTerms.map((term) => (
                   <button
                     key={term}
                     onClick={() => handleSuggestedClick(term)}
-                    className="text-sm text-stone-400 hover:text-stone-900 transition-colors tracking-wider"
+                    className="text-sm max-sm:text-xs text-stone-400 hover:text-stone-900 transition-colors tracking-wider"
                   >
                     {term}
                   </button>
@@ -178,11 +262,11 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
 
           {/* Featured Collections - Only show when not searching */}
           {!searchTerm && collections && collections.length > 0 && (
-            <div> 
-              <h2 className="text-3xl  mb-8 text-center font-calibre!">
+            <div className="mobile-stagger-item"> 
+              <h2 className="text-3xl max-sm:text-xl mb-8 max-sm:mb-4 text-center font-calibre!">
                 Looking for something more...
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-sm:gap-4">
                 {collections.slice(0, 3).map((collection) => (
                   <Link
                     key={collection.id}
@@ -190,7 +274,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
                     className="group cursor-pointer"
                     onClick={handleClose}
                   >
-                    <div className="aspect-square bg-stone-200 overflow-hidden mb-4">
+                    <div className="aspect-square max-sm:h-35 mx-auto max-sm:w-[70%] bg-stone-200 overflow-hidden mb-4 max-sm:mb-2">
                       {collection.image ? (
                         <Image height={500} width={500} src={collection.image.url || collection.image.src || collection.image}
                           alt={collection.title}
@@ -198,11 +282,11 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
                        
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-stone-400">
-                          <span className="text-sm">No image</span>
+                          <span className="text-sm max-sm:text-xs">No image</span>
                         </div>
                       )}
                     </div>
-                    <h3 className="font-calibre text-xl text-center">{collection.title}</h3>
+                    <h3 className="font-calibre text-xl max-sm:text-base text-center">{collection.title}</h3>
                   </Link>
                 ))}
               </div>
@@ -211,13 +295,13 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
 
           {/* Search Results - Only show when searching */}
           {searchTerm && (
-            <div data-lenis-prevent>
+            <div className="mobile-stagger-item" data-lenis-prevent>
               {filteredProducts.length > 0 ? (
                 <>
-                  <h2 className="text-2xl font-serif mb-6">
+                  <h2 className="text-2xl max-sm:text-lg font-serif mb-6 max-sm:mb-4">
                     Found {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
                   </h2>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-h-[500px] overflow-y-auto pr-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-sm:gap-3 max-h-[500px] max-sm:max-h-[400px] overflow-y-auto pr-2">
                     {filteredProducts.map((product) => {
                       // Handle different image structures from Shopify
                       const imageUrl = product.featuredImage?.url || 
@@ -238,7 +322,7 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
                           className="group cursor-pointer"
                           onClick={handleClose}
                         >
-                          <div className="aspect-square bg-stone-200 overflow-hidden mb-3">
+                          <div className="aspect-square bg-stone-200 overflow-hidden mb-3 max-sm:mb-2">
                             {imageUrl ? (
                               <Image height={500} width={500} src={imageUrl}
                                 alt={product.title}
@@ -251,9 +335,9 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
                               </div>
                             )}
                           </div>
-                          <h3 className="font-serif text-sm mb-1 line-clamp-2">{product.title}</h3>
+                          <h3 className="font-serif text-sm max-sm:text-xs mb-1 line-clamp-2">{product.title}</h3>
                           {price && (
-                            <p className="text-stone-600 text-sm">
+                            <p className="text-stone-600 text-sm max-sm:text-xs">
                               ${typeof price === 'string' ? price : Number(price).toFixed(2)}
                             </p>
                           )}
@@ -263,9 +347,9 @@ export const SearchModal = ({ isOpen, onClose, products, collections }) => {
                   </div>
                 </>
               ) : (
-                <div className="text-center py-16">
-                  <p className="text-stone-500 text-lg mb-2">No products found</p>
-                  <p className="text-stone-400 text-sm">Try searching for something else</p>
+                <div className="text-center py-16 max-sm:py-8">
+                  <p className="text-stone-500 text-lg max-sm:text-base mb-2">No products found</p>
+                  <p className="text-stone-400 text-sm max-sm:text-xs">Try searching for something else</p>
                 </div>
               )}
             </div>
