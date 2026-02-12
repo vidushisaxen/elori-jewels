@@ -537,7 +537,7 @@ export default function Header() {
     <header className={`w-full fixed top-0 left-0 z-[999] transform transition-transform duration-300 ${
       hidden ? "-translate-y-full" : "translate-y-0"
     }`}>
-      <nav className="flex justify-between items-center px-8 max-sm:px-4 py-6 max-sm:py-4 shadow-sm relative z-50 bg-white">
+      <nav className="flex justify-between items-center px-8 max-sm:px-8 py-6 max-sm:py-4 shadow-sm relative z-50 bg-white">
         {/* LEFT MENU - Logo */}
         <div className="">
           <Link
